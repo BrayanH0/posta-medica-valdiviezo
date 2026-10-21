@@ -47,14 +47,11 @@ export class LoginAdminComponent {
         this.authService.login(this.usuario, this.clave).subscribe({
           next: (response) => {
             if (response.success && response.tipo === 'administrador') {
-              // Guardar datos del administrador en localStorage
-              localStorage.setItem('userTipo', response.tipo);
+              // Guardar la sesión con el mismo esquema que paciente y médico
               localStorage.setItem('userId', response.id.toString());
-              localStorage.setItem('userNombre', response.nombres);
-              localStorage.setItem('userApellidos', response.apellidos);
-              localStorage.setItem('userDni', response.dni);
-              localStorage.setItem('userRol', response.rol);
-              
+              localStorage.setItem('userName', `${response.nombres} ${response.apellidos}`);
+              localStorage.setItem('userType', response.tipo);
+
               this.router.navigate(['/admin']);
             } else if (response.success && response.tipo === 'paciente') {
               this.error = 'Este usuario es un paciente, no un administrador. Use el login de pacientes.';
@@ -64,7 +61,11 @@ export class LoginAdminComponent {
           },
           error: (error) => {
             console.error('Error en login:', error);
-            this.error = 'Error al iniciar sesión. Por favor intente nuevamente.';
+            if (error.status === 401) {
+              this.error = 'Credenciales inválidas';
+            } else {
+              this.error = 'No se pudo conectar con el servidor. Intente nuevamente.';
+            }
           }
         });
     }

@@ -49,11 +49,11 @@ export class LoginMedicoComponent {
             next: (res: any) => {
                 console.log('Login exitoso', res);
                 if (res && res.success) {
-                    if (res.id) localStorage.setItem('userId', res.id.toString());
-                    if (res.nombres) localStorage.setItem('userName', `${res.nombres} ${res.apellidos}`);
-                    if (res.tipo) localStorage.setItem('userType', res.tipo);
-
+                    // La sesión se guarda solo si el usuario es médico
                     if (res.tipo === 'medico') {
+                        if (res.id) localStorage.setItem('userId', res.id.toString());
+                        if (res.nombres) localStorage.setItem('userName', `${res.nombres} ${res.apellidos}`);
+                        if (res.tipo) localStorage.setItem('userType', res.tipo);
                         this.router.navigate(['/medico-dashboard']);
                     } else {
                         this.error = 'Error: El usuario no es un médico.';
@@ -64,7 +64,11 @@ export class LoginMedicoComponent {
             },
             error: (err: any) => {
                 console.error('Error login', err);
-                this.error = 'Credenciales inválidas';
+                if (err.status === 401) {
+                    this.error = 'Credenciales inválidas';
+                } else {
+                    this.error = 'No se pudo conectar con el servidor. Intente nuevamente.';
+                }
             }
         });
     }

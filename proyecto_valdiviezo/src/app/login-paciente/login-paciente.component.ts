@@ -59,15 +59,11 @@ export class LoginPacienteComponent {
             },
             error: (err: any) => {
                 console.error('Error login', err);
-                // Fallback para pruebas si el backend no responde
-                if(this.clave === '123456') {
-                    // Mock ID 1 for testing existing data
-                    localStorage.setItem('userId', '1');
-                    localStorage.setItem('userName', 'Juan Perez (Mock)');
-                    localStorage.setItem('userType', 'paciente');
-                    this.router.navigate(['/welcome']);
-                } else {
+                // Si el login falla no se guarda sesión ni se entra al sistema
+                if (err.status === 401) {
                     this.error = 'Credenciales inválidas';
+                } else {
+                    this.error = 'No se pudo conectar con el servidor. Intente nuevamente.';
                 }
             }
         });

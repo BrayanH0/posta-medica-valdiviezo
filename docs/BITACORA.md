@@ -133,3 +133,39 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Por qué: completar el diagnóstico y dejar la trazabilidad entre hallazgos, cambios planificados y pruebas.
 - Resultado: 26 hallazgos (H-001 a H-026) y 17 pruebas (P01 a P17). Se confirmaron los 11 hallazgos propuestos; ninguno se descartó. H-022 se verificó en código y BD, no en pantalla.
 - Evidencia: `docs/evidencias/h002-paciente-tras-cerrar-sesion.png`, `docs/evidencias/h002-mis-citas-accesible-tras-cerrar-sesion.png`; commit "Docs: hallazgos completos y matriz de trazabilidad".
+
+### [2026-10-20 20:44] RFC-001 registrada
+- Qué se hizo: se creó `docs/rfc/RFC-001.md` (paquete correctivo del login: H-001, H-002, H-003) antes de tocar código, con análisis de impacto, plan de implementación y plan de back-out. Para el análisis se buscaron con grep todas las lecturas y escrituras de localStorage.
+- Por qué: todo cambio de código pasa primero por una solicitud de cambio registrada (flujo de aprobación del curso).
+- Resultado: RFC en estado "Registrado".
+- Evidencia: `docs/rfc/RFC-001.md`.
+
+### [2026-10-20 20:46–20:49] RFC-001: flujo de aprobación
+- Qué se hizo: la RFC pasó por "¿Solicitud completa?" (sí), "Investigación preliminar", "¿Es correcta?" (sí), "Aprobado" (Brayan, gestor del cambio, por ser un cambio de emergencia) y "Asignado" (Claude Code).
+- Por qué: el código no se modifica hasta que la RFC está aprobada y asignada.
+- Resultado: RFC en estado "Asignado".
+- Evidencia: sección "Historial de estados" de `docs/rfc/RFC-001.md`.
+
+### [2026-10-20 20:50] RFC-001: implementación
+- Qué se hizo: se modificaron 6 archivos del frontend: `login-paciente.component.ts` (se eliminó el atajo de la clave `123456`), `login-medico.component.ts` (la sesión se guarda solo si el usuario es médico), `login-admin.component.ts` (mismo esquema `userId`, `userName`, `userType`), `admin-dashboard.component.ts` (cierre de sesión con `AuthService.logout()`), `welcome.component.ts` y `welcome.component.html` (el "Cerrar Sesión" del paciente pasa de enlace a acción que borra la sesión). En los 3 logins: 401 → "Credenciales inválidas"; cualquier otro error → "No se pudo conectar con el servidor. Intente nuevamente."
+- Por qué: corregir H-001, H-002 y H-003.
+- Resultado: **el mismo cambio (manejo de error 401 / sin conexión) se tuvo que repetir en 3 archivos**, uno por componente de login, porque la lógica de login está copiada (H-008). No se unificaron: eso es la refactorización R1 DRY. No se tocaron los componentes huérfanos de H-009. El grep posterior solo encuentra claves viejas (`token`, `role`) en componentes huérfanos (H-009 y el nuevo H-027).
+- Evidencia: diff del commit de LB-1.
+
+### [2026-10-20 20:52] RFC-001: compilación
+- Qué se hizo: `ng build --configuration development`.
+- Por qué: confirmar que el cambio no introduce errores de compilación.
+- Resultado: "Application bundle generation complete" con las mismas 2 advertencias NG8113 de LB-0 (H-011). Sin errores nuevos.
+- Evidencia: salida de consola de la sesión.
+
+### [2026-10-20 20:53–21:05] RFC-001: batería de regresión P01–P18 (LB-1)
+- Qué se hizo: se recargó la BD (`DROP DATABASE` + `BDPostaMedica.sql`, 21 citas) y se corrió la batería completa. Se creó la prueba P18 (backend apagado + clave `123456`). Se apagó y volvió a encender el backend para P11 y P18. A pedido del usuario, se agregó a cada prueba la línea "Tipo:" y la nota de que la batería completa es la prueba de regresión.
+- Por qué: comprobar que el cambio cumple su objetivo y no altera nada más.
+- Resultado: P07, P08, P10 y P17 pasaron de FALLA (o mixta) a PASA; P18 PASA; las otras 13 pruebas dieron lo mismo que en LB-0. Durante las pruebas se registraron H-027 (más componentes huérfanos con claves viejas) y H-028 (el login de paciente acepta credenciales de médico; existía en LB-0).
+- Evidencia: 11 capturas `docs/evidencias/lb1-*.png`; sección "Resultados de LB-1" de `docs/PRUEBAS.md`.
+
+### [2026-10-20 21:10] RFC-001 cerrada
+- Qué se hizo: evaluación post-implementación en la RFC; H-001, H-002 y H-003 pasaron a "Cerrado (RFC-001, LB-1)"; la gravedad de H-002 subió a Alta; EC-02 se marcó como modificado en LB-1.
+- Por qué: cerrar formalmente el cambio.
+- Resultado: RFC-001 en estado "Cerrado". No se usó el plan de back-out.
+- Evidencia: `docs/rfc/RFC-001.md`, `docs/HALLAZGOS.md`.
