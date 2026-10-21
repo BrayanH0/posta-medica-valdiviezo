@@ -1,13 +1,15 @@
 # Batería oficial de pruebas (auditoría)
 
-> **Regla:** En las columnas R1 a R4 el resultado esperado es IGUAL al de la línea base, porque una refactorización no cambia el comportamiento externo. Si un resultado cambia, la refactorización introdujo un error.
+> **Regla:** Cada cambio se compara con la línea base anterior. En los cambios correctivos (RFC) los resultados pueden cambiar a propósito. En la reorganización y en las refactorizaciones (LB-2 a LB-6) el resultado debe ser IGUAL al de la línea base anterior.
+>
+> Una refactorización no cambia el comportamiento externo: si en LB-2 a LB-6 un resultado cambia, ese cambio introdujo un error. Esto incluye las pruebas que hoy FALLAN por hallazgos correctivos sin RFC (por ejemplo P13, doble reserva, H-012): deben seguir fallando igual.
 
 **Entorno de la línea base (LB-0):** backend en `http://localhost:8080`, frontend en `http://localhost:4200`, base `posta_medica_valdiviezo` recién cargada con `BDPostaMedica.sql`.
 Las pruebas de navegador se hacen con Playwright, **una pestaña nueva por caso**, escribiendo en el formulario.
 
 **Credenciales de prueba:** paciente `12345678` / `123456` · médico `10000001` / `123456` · admin `87654321` / `123456`.
 
-**Nota sobre "esperado":** el resultado esperado describe el comportamiento correcto. Si en la línea base lo obtenido no coincide, la prueba queda como FALLA y se enlaza el hallazgo. En R1–R4 se compara contra lo **obtenido** en LB-0.
+**Nota sobre "esperado":** el resultado esperado describe el comportamiento correcto. Si en la línea base lo obtenido no coincide, la prueba queda como FALLA y se enlaza el hallazgo. En cada línea base se compara contra lo **obtenido** en la línea base anterior.
 
 ---
 
@@ -134,29 +136,41 @@ Las pruebas de navegador se hacen con Playwright, **una pestaña nueva por caso*
 - Evidencia: `docs/evidencias/paso5b-red-mis-citas-respuesta-api-cita.json` (cuerpo de la respuesta), `docs/evidencias/paso5b-red-mis-citas-peticiones.txt` (lista de peticiones). No se adjunta captura de la pestaña de red de DevTools porque Playwright no puede capturar DevTools; se exportó el registro de red del navegador.
 - Resultado: **FALLA** → H-013 (y H-014 por peticiones repetidas)
 
+### P17 — Cerrar sesión como paciente
+- Qué se hace: login por formulario `12345678` / `123456`; revisar localStorage; pulsar "Cerrar Sesión" en el menú; revisar localStorage; abrir `/paciente/mis-citas`.
+- Esperado: cerrar sesión borra los datos de sesión del navegador y las pantallas del paciente ya no muestran sus datos.
+- Obtenido:
+  - Tras login: URL `/welcome`, localStorage `{"userId":"1","userName":"Juan Perez Gomez","userType":"paciente"}`.
+  - Tras "Cerrar Sesión": URL `/login-selection`, localStorage `{"userId":"1","userName":"Juan Perez Gomez","userType":"paciente"}` (sin cambios).
+  - Al abrir `/paciente/mis-citas`: muestra "Mis Citas 2023-07-01 - 09:00:00 Atendida Médico: Jorge Santos Ruiz …" con localStorage intacto.
+- Evidencia: `docs/evidencias/h002-paciente-tras-cerrar-sesion.png`, `docs/evidencias/h002-mis-citas-accesible-tras-cerrar-sesion.png`
+- Resultado: **FALLA** → H-002
+- Nota de método: el clic simulado de Playwright sobre el enlace no lo activaba; se activó con `element.click()` sobre el mismo enlace, que es el evento que produce un clic real. El enlace navegó a `/login-selection` como indica su `routerLink`.
+
 ---
 
 ## Tabla de resultados
 
-| ID | Prueba | Antes (LB-0) | R1 DRY | R2 SRP | R3 OCP | R4 IoC |
-|---|---|---|---|---|---|---|
-| P01 | Endpoints GET de catálogos y listados | PASA (14/14 en 200) | | | | |
-| P02 | Endpoints de reportes y consultas agregadas | PASA (6/6 en 200) | | | | |
-| P03 | Endpoints por ID | PASA (11/11 en 200; expone `clave`, H-007) | | | | |
-| P04 | `/api/medico/resumenMedico` | FALLA (500, H-005) | | | | |
-| P05 | Login por formulario: paciente | PASA (`/welcome`; `userId`, `userName`, `userType`) | | | | |
-| P06 | Login por formulario: médico | PASA (`/medico-dashboard`; `userId`, `userName`, `userType`) | | | | |
-| P07 | Login por formulario: admin | FALLA (`/admin/inicio`; claves `userTipo`, `userNombre`… distintas, H-002) | | | | |
-| P08 | Login con contraseña incorrecta (3 roles) | PASA en seguridad (401, no entra); FALLA en mensaje distinto en admin (H-003) | | | | |
-| P09 | Login directo a la API | PASA (200 ×3, 401 inválido) | | | | |
-| P10 | Login paciente con DNI inexistente + `123456` | FALLA (entra como paciente 1, H-001) | | | | |
-| P11 | Módulo médico con backend apagado | FALLA (datos simulados, sin error, H-004) | | | | |
-| P12 | Registrar cita desde el formulario | PASA (cita 22 guardada, `estado_cita = 1`) | | | | |
-| P13 | Doble reserva | FALLA (citas 22 y 23 a la misma hora, H-012) | | | | |
-| P14 | Alcance de `/api/cita` | FALLA (23 devueltas / 4 del paciente 1, H-013) | | | | |
-| P15 | Alcance de `/api/historia_clinica` | FALLA (5 devueltas / 1 del paciente 1, H-013) | | | | |
-| P16 | Registros en "Mis Citas" (red) | FALLA (23 recibidas / 4 mostradas, H-013) | | | | |
+| ID | Prueba | LB-0 | LB-1 RFC-001 | LB-2 Reorg | LB-3 DRY | LB-4 SRP | LB-5 OCP | LB-6 IoC |
+|---|---|---|---|---|---|---|---|---|
+| P01 | Endpoints GET de catálogos y listados | PASA (14/14 en 200) | | | | | | |
+| P02 | Endpoints de reportes y consultas agregadas | PASA (6/6 en 200) | | | | | | |
+| P03 | Endpoints por ID | PASA (11/11 en 200; expone `clave`, H-007) | | | | | | |
+| P04 | `/api/medico/resumenMedico` | FALLA (500, H-005) | | | | | | |
+| P05 | Login por formulario: paciente | PASA (`/welcome`; `userId`, `userName`, `userType`) | | | | | | |
+| P06 | Login por formulario: médico | PASA (`/medico-dashboard`; `userId`, `userName`, `userType`) | | | | | | |
+| P07 | Login por formulario: admin | FALLA (`/admin/inicio`; claves `userTipo`, `userNombre`… distintas, H-002) | | | | | | |
+| P08 | Login con contraseña incorrecta (3 roles) | PASA en seguridad (401, no entra); FALLA en mensaje distinto en admin (H-003) | | | | | | |
+| P09 | Login directo a la API | PASA (200 ×3, 401 inválido) | | | | | | |
+| P10 | Login paciente con DNI inexistente + `123456` | FALLA (entra como paciente 1, H-001) | | | | | | |
+| P11 | Módulo médico con backend apagado | FALLA (datos simulados, sin error, H-004) | | | | | | |
+| P12 | Registrar cita desde el formulario | PASA (cita 22 guardada, `estado_cita = 1`) | | | | | | |
+| P13 | Doble reserva | FALLA (citas 22 y 23 a la misma hora, H-012) | | | | | | |
+| P14 | Alcance de `/api/cita` | FALLA (23 devueltas / 4 del paciente 1, H-013) | | | | | | |
+| P15 | Alcance de `/api/historia_clinica` | FALLA (5 devueltas / 1 del paciente 1, H-013) | | | | | | |
+| P16 | Registros en "Mis Citas" (red) | FALLA (23 recibidas / 4 mostradas, H-013) | | | | | | |
+| P17 | Cerrar sesión como paciente | FALLA (localStorage queda intacto, H-002) | | | | | | |
 
-**Resumen LB-0:** 7 PASA · 8 FALLA · 1 mixta (P08).
+**Resumen LB-0:** 7 PASA · 9 FALLA · 1 mixta (P08).
 
-> **Atención al repetir P12 y P13:** cada ejecución agrega citas a la BD. Antes de correr la batería en R1–R4, recargar la base (`DROP DATABASE posta_medica_valdiviezo;` y volver a ejecutar `BDPostaMedica.sql`, porque el script usa `CREATE TABLE` sin `DROP`) o borrar las citas de prueba con `DELETE FROM Cita WHERE motivo LIKE 'Prueba LB-0%';` para partir del mismo estado.
+> **Atención al repetir P12 y P13:** cada ejecución agrega citas a la BD. Antes de correr la batería en cada línea base nueva, recargar la base (`DROP DATABASE posta_medica_valdiviezo;` y volver a ejecutar `BDPostaMedica.sql`, porque el script usa `CREATE TABLE` sin `DROP`) o borrar las citas de prueba con `DELETE FROM Cita WHERE motivo LIKE 'Prueba LB-0%';` para partir del mismo estado.
