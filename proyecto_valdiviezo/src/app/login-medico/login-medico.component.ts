@@ -56,7 +56,7 @@ export class LoginMedicoComponent {
                         if (res.tipo) localStorage.setItem('userType', res.tipo);
                         this.router.navigate(['/medico-dashboard']);
                     } else {
-                        this.error = 'Error: El usuario no es un médico.';
+                        this.error = 'Este usuario no es un médico. Use el login que le corresponde.';
                     }
                 } else {
                     this.error = 'Respuesta inesperada del servidor';

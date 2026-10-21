@@ -17,6 +17,9 @@
 - Si no estás seguro de que un cambio sea correcto, dilo. Es
   preferible un "no estoy seguro" a un cambio que solo parece
   funcionar.
+- Los archivos se crean, modifican y borran SOLO con las herramientas
+  de edición (Edit/Write), nunca con comandos de terminal (rm, sed,
+  echo >, etc.), para que los hooks puedan controlarlos.
 
 ## Documentación
 - Todo cambio queda en docs/BITACORA.md con: qué se cambió, por qué,

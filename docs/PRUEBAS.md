@@ -1,8 +1,8 @@
 # Batería oficial de pruebas (auditoría)
 
-> **Regla:** Cada cambio se compara con la línea base anterior. En los cambios correctivos (RFC) los resultados pueden cambiar a propósito. En la reorganización y en las refactorizaciones (LB-2 a LB-6) el resultado debe ser IGUAL al de la línea base anterior.
+> **Regla:** Cada cambio se compara con la línea base anterior. En los cambios correctivos (RFC) los resultados pueden cambiar a propósito. En la reorganización y en las refactorizaciones (LB-3 a LB-7) el resultado debe ser IGUAL al de la línea base anterior.
 >
-> Una refactorización no cambia el comportamiento externo: si en LB-2 a LB-6 un resultado cambia, ese cambio introdujo un error. Esto incluye las pruebas que hoy FALLAN por hallazgos correctivos sin RFC (por ejemplo P13, doble reserva, H-012): deben seguir fallando igual.
+> Una refactorización no cambia el comportamiento externo: si en LB-3 a LB-7 un resultado cambia, ese cambio introdujo un error. Esto incluye las pruebas que hoy FALLAN por hallazgos correctivos sin RFC (por ejemplo P13, doble reserva, H-012): deben seguir fallando igual.
 
 > **Regresión:** correr la batería completa (todas las pruebas, P01 en adelante) en cada línea base nueva es la **prueba de regresión** del proyecto. Su objetivo es comprobar que un cambio no rompió nada de lo que ya funcionaba y que lo que fallaba sigue fallando igual, salvo lo que el cambio corrige a propósito.
 
@@ -219,31 +219,86 @@ Ejecución del 2026-10-20, entre 20:46 y 20:57 *(hora corregida; antes decía "d
 
 ---
 
+### P19 — Matriz de roles cruzados
+- Tipo: Sistema/E2E (navegador de punta a punta) y Aceptación
+- Qué se hace: en cada uno de los 3 logins, entrar por formulario con las credenciales de los otros 2 roles (6 combinaciones): login de paciente con médico `10000001` y con admin `87654321`; login de médico con paciente `12345678` y con admin `87654321`; login de admin con paciente `12345678` y con médico `10000001` (clave `123456` en todos).
+- Esperado: en los 6 casos no entra, no guarda nada en localStorage y muestra "Este usuario no es un {paciente|médico|administrador}. Use el login que le corresponde." según el login usado.
+- Creada en: LB-2 (RFC-002). En LB-1 no se ejecutó; el login de paciente con credenciales de médico entraba (H-028), y médico y admin mostraban mensajes distintos ("Error: El usuario no es un médico.", "Este usuario es un paciente, no un administrador. Use el login de pacientes." y "Credenciales incorrectas").
+- Obtenido (LB-2): en los 6 casos el backend responde `200 POST /login` (las credenciales son válidas), el navegador se queda en el login usado y localStorage queda `{}`:
+
+  | Login usado | Credenciales | URL final | localStorage | Mensaje |
+  |---|---|---|---|---|
+  | paciente | médico `10000001` | `/login-paciente` | `{}` | Este usuario no es un paciente. Use el login que le corresponde. |
+  | paciente | admin `87654321` | `/login-paciente` | `{}` | Este usuario no es un paciente. Use el login que le corresponde. |
+  | médico | paciente `12345678` | `/login-medico` | `{}` | Este usuario no es un médico. Use el login que le corresponde. |
+  | médico | admin `87654321` | `/login-medico` | `{}` | Este usuario no es un médico. Use el login que le corresponde. |
+  | admin | paciente `12345678` | `/login-admin` | `{}` | Este usuario no es un administrador. Use el login que le corresponde. |
+  | admin | médico `10000001` | `/login-admin` | `{}` | Este usuario no es un administrador. Use el login que le corresponde. |
+- Evidencia: `docs/evidencias/lb2-P19-login-paciente-con-medico.png`, `lb2-P19-login-paciente-con-admin.png`, `lb2-P19-login-medico-con-paciente.png`, `lb2-P19-login-medico-con-admin.png`, `lb2-P19-login-admin-con-paciente.png`, `lb2-P19-login-admin-con-medico.png`
+- Resultado (LB-2): **PASA**
+
+---
+
+## Resultados de LB-2 (RFC-002)
+
+Ejecución del 2026-10-21, entre 09:30 y 09:37 (hora real: `date` antes y después), con la BD recargada (`DROP DATABASE` + `BDPostaMedica.sql`, 21 citas) y el frontend con los cambios de RFC-002. Objetivo: P19 debe pasar; todas las demás deben dar lo mismo que en LB-1.
+
+| ID | Obtenido en LB-2 | ¿Igual a LB-1? |
+|---|---|---|
+| P01 | 200 en los 14; mismos tamaños (cie 291 B, cita 2811 B, …, usuarios 99 B) | Igual |
+| P02 | 200 en los 6 | Igual |
+| P03 | 11/11 en 200; `/api/paciente/codigo/1` sigue devolviendo `"clave":"123456"` | Igual |
+| P04 | `500 Cannot instantiate query result type …ResumenMedico…` | Igual |
+| P05 | `200 POST /login` → `/welcome`; localStorage `{"userId":"1","userName":"Juan Perez Gomez","userType":"paciente"}` | Igual |
+| P06 | `200 POST /login` → `/medico-dashboard`; localStorage `{"userId":"1","userName":"Jorge Santos Ruiz","userType":"medico"}` | Igual |
+| P07 | `200 POST /login` → `/admin/inicio`; localStorage `{"userId":"1","userName":"Admin Principal","userType":"administrador"}` | Igual |
+| P08 | Los 3 roles: `401 POST /login`, se quedan en su login, localStorage `{}`, mensaje "Credenciales inválidas" | Igual |
+| P09 | 200 ×3 con los datos del rol; `401 {"error":"Credenciales inválidas"}` | Igual |
+| P10 | DNI `99999999` / `123456`: `401 POST /login`, URL `/login-paciente`, localStorage `{}`, mensaje "Credenciales inválidas" | Igual |
+| P11 | Backend encendido: 0 peticiones a `:8080`, tabla `101 Maria Lopez Quispe, 102 Luis Torres Paz, 103 Ana Diaz Ruiz`. Backend apagado (pid 26728, 09:37:16): la misma tabla, 0 errores de consola | Igual |
+| P12 | `POST /api/cita` 200; cita `idCita = 22`, médico 1, `2026-10-26 10:00:00`, `estado_cita = 1`; "Mis Citas" la muestra | Igual |
+| P13 | Pestaña nueva: `10:00` no aparece (`tiene1000: false`). `POST /api/cita` duplicado → `HTTP 200`, `idCita = 23`; `COUNT(*) = 2` para médico 1, 2026-10-26, 10:00 | Igual |
+| P14 | `/api/cita`: total 23, paciente 1: 4, 13 pacientes distintos | Igual |
+| P15 | `/api/historia_clinica`: total 5, paciente 1: 1 | Igual |
+| P16 | Navegador: respuesta de `/api/cita` con 23 registros, 4 del paciente 1; 9 peticiones (`/api/cita` ×1, `/api/medico/codigo/1` ×3, `/api/medico/codigo/6` ×1, `/api/especialidad/1` ×4) | Igual |
+| P17 | Los 3 roles: tras "Cerrar Sesión", URL `/login-selection`, localStorage `{}`; paciente: `/paciente/mis-citas` redirige al login | Igual |
+| P18 | `ERR_CONNECTION_REFUSED`, URL `/login-paciente`, localStorage `{}`, mensaje "No se pudo conectar con el servidor. Intente nuevamente." | Igual |
+| P19 | Ver P19: 6/6 combinaciones no entran, localStorage `{}`, mensaje unificado | **Nueva: PASA** (objetivo) |
+
+**Evidencias LB-2:** `lb2-P19-*.png` (6 capturas), `lb2-P12-registrar-cita-formulario.png`, `lb2-P12-mis-citas-con-cita-nueva.png`, `lb2-P13-pestana-nueva-oculta-1000.png`, `lb2-P18-paciente-backend-apagado-mensaje-conexion.png` (todas en `docs/evidencias/`).
+
+**Notas de método LB-2:** mismas que en LB-1 (pestaña nueva por caso; `element.click()` para "Cerrar Sesión", la hora de la cita y "Confirmar Cita"; P13 con pestaña nueva y POST duplicado). Antes de la batería se reiniciaron backend y frontend porque estaban caídos desde la sesión anterior.
+
+---
+
 ## Tabla de resultados
 
-| ID | Prueba | LB-0 | LB-1 RFC-001 | LB-2 Reorg | LB-3 DRY | LB-4 SRP | LB-5 OCP | LB-6 IoC |
-|---|---|---|---|---|---|---|---|---|
-| P01 | Endpoints GET de catálogos y listados | PASA (14/14 en 200) | PASA (igual) |  |  |  |  |  |
-| P02 | Endpoints de reportes y consultas agregadas | PASA (6/6 en 200) | PASA (igual) |  |  |  |  |  |
-| P03 | Endpoints por ID | PASA (11/11 en 200; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) |  |  |  |  |  |
-| P04 | `/api/medico/resumenMedico` | FALLA (500, H-005) | FALLA (igual, H-005) |  |  |  |  |  |
-| P05 | Login por formulario: paciente | PASA (`/welcome`; `userId`, `userName`, `userType`) | PASA (igual) |  |  |  |  |  |
-| P06 | Login por formulario: médico | PASA (`/medico-dashboard`; `userId`, `userName`, `userType`) | PASA (igual) |  |  |  |  |  |
-| P07 | Login por formulario: admin | FALLA (`/admin/inicio`; claves `userTipo`, `userNombre`… distintas, H-002) | **PASA** (cambió: claves iguales a los otros roles) |  |  |  |  |  |
-| P08 | Login con contraseña incorrecta (3 roles) | PASA en seguridad (401, no entra); FALLA en mensaje distinto en admin (H-003) | **PASA** (cambió: mismo mensaje en los 3 roles) |  |  |  |  |  |
-| P09 | Login directo a la API | PASA (200 ×3, 401 inválido) | PASA (igual) |  |  |  |  |  |
-| P10 | Login paciente con DNI inexistente + `123456` | FALLA (entra como paciente 1, H-001) | **PASA** (cambió: no entra, localStorage vacío) |  |  |  |  |  |
-| P11 | Módulo médico con backend apagado | FALLA (datos simulados, sin error, H-004) | FALLA (igual, H-004) |  |  |  |  |  |
-| P12 | Registrar cita desde el formulario | PASA (cita 22 guardada, `estado_cita = 1`) | PASA (igual) |  |  |  |  |  |
-| P13 | Doble reserva | FALLA (citas 22 y 23 a la misma hora, H-012) | FALLA (igual, H-012) |  |  |  |  |  |
-| P14 | Alcance de `/api/cita` | FALLA (23 devueltas / 4 del paciente 1, H-013) | FALLA (igual, 23 / 4, H-013) |  |  |  |  |  |
-| P15 | Alcance de `/api/historia_clinica` | FALLA (5 devueltas / 1 del paciente 1, H-013) | FALLA (igual, 5 / 1, H-013) |  |  |  |  |  |
-| P16 | Registros en "Mis Citas" (red) | FALLA (23 recibidas / 4 mostradas, H-013) | FALLA (igual, 23 recibidas / 4 mostradas, H-013) |  |  |  |  |  |
-| P17 | Cerrar sesión como paciente | FALLA (localStorage queda intacto, H-002) | **PASA** (cambió: localStorage vacío en los 3 roles) |  |  |  |  |  |
-| P18 | Login paciente con backend apagado + `123456` | No ejecutada (creada en LB-1) | **PASA** (nueva) |  |  |  |  |  |
+| ID | Prueba | LB-0 | LB-1 RFC-001 | LB-2 RFC-002 | LB-3 Reorg | LB-4 DRY | LB-5 SRP | LB-6 OCP | LB-7 IoC |
+|---|---|---|---|---|---|---|---|---|---|
+| P01 | Endpoints GET de catálogos y listados | PASA (14/14 en 200) | PASA (igual) | PASA (igual) |  |  |  |  |  |
+| P02 | Endpoints de reportes y consultas agregadas | PASA (6/6 en 200) | PASA (igual) | PASA (igual) |  |  |  |  |  |
+| P03 | Endpoints por ID | PASA (11/11 en 200; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) |  |  |  |  |  |
+| P04 | `/api/medico/resumenMedico` | FALLA (500, H-005) | FALLA (igual, H-005) | FALLA (igual, H-005) |  |  |  |  |  |
+| P05 | Login por formulario: paciente | PASA (`/welcome`; `userId`, `userName`, `userType`) | PASA (igual) | PASA (igual) |  |  |  |  |  |
+| P06 | Login por formulario: médico | PASA (`/medico-dashboard`; `userId`, `userName`, `userType`) | PASA (igual) | PASA (igual) |  |  |  |  |  |
+| P07 | Login por formulario: admin | FALLA (`/admin/inicio`; claves `userTipo`, `userNombre`… distintas, H-002) | **PASA** (cambió: claves iguales a los otros roles) | PASA (igual) |  |  |  |  |  |
+| P08 | Login con contraseña incorrecta (3 roles) | PASA en seguridad (401, no entra); FALLA en mensaje distinto en admin (H-003) | **PASA** (cambió: mismo mensaje en los 3 roles) | PASA (igual) |  |  |  |  |  |
+| P09 | Login directo a la API | PASA (200 ×3, 401 inválido) | PASA (igual) | PASA (igual) |  |  |  |  |  |
+| P10 | Login paciente con DNI inexistente + `123456` | FALLA (entra como paciente 1, H-001) | **PASA** (cambió: no entra, localStorage vacío) | PASA (igual) |  |  |  |  |  |
+| P11 | Módulo médico con backend apagado | FALLA (datos simulados, sin error, H-004) | FALLA (igual, H-004) | FALLA (igual, H-004) |  |  |  |  |  |
+| P12 | Registrar cita desde el formulario | PASA (cita 22 guardada, `estado_cita = 1`) | PASA (igual) | PASA (igual) |  |  |  |  |  |
+| P13 | Doble reserva | FALLA (citas 22 y 23 a la misma hora, H-012) | FALLA (igual, H-012) | FALLA (igual, H-012) |  |  |  |  |  |
+| P14 | Alcance de `/api/cita` | FALLA (23 devueltas / 4 del paciente 1, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) |  |  |  |  |  |
+| P15 | Alcance de `/api/historia_clinica` | FALLA (5 devueltas / 1 del paciente 1, H-013) | FALLA (igual, 5 / 1, H-013) | FALLA (igual, 5 / 1, H-013) |  |  |  |  |  |
+| P16 | Registros en "Mis Citas" (red) | FALLA (23 recibidas / 4 mostradas, H-013) | FALLA (igual, 23 recibidas / 4 mostradas, H-013) | FALLA (igual, 23 / 4, H-013) |  |  |  |  |  |
+| P17 | Cerrar sesión como paciente | FALLA (localStorage queda intacto, H-002) | **PASA** (cambió: localStorage vacío en los 3 roles) | PASA (igual) |  |  |  |  |  |
+| P18 | Login paciente con backend apagado + `123456` | No ejecutada (creada en LB-1) | **PASA** (nueva) | PASA (igual) |  |  |  |  |  |
+| P19 | Matriz de roles cruzados (6 combinaciones) | No ejecutada (creada en LB-2) | No ejecutada (creada en LB-2) | **PASA** (nueva: 6/6 no entran, mensaje unificado) |  |  |  |  |  |
 
 **Resumen LB-0:** 7 PASA · 9 FALLA · 1 mixta (P08).
 
 **Resumen LB-1:** 12 PASA · 6 FALLA. Cambiaron solo P07, P08, P10 y P17 (objetivo de RFC-001) y se agregó P18. Las otras 13 pruebas dieron lo mismo que en LB-0.
+
+**Resumen LB-2:** 13 PASA · 6 FALLA. Se agregó P19 (objetivo de RFC-002), que pasa. Las 18 pruebas anteriores dieron lo mismo que en LB-1. Sin efectos no deseados.
 
 > **Atención al repetir P12 y P13:** cada ejecución agrega citas a la BD. Antes de correr la batería en cada línea base nueva, recargar la base (`DROP DATABASE posta_medica_valdiviezo;` y volver a ejecutar `BDPostaMedica.sql`, porque el script usa `CREATE TABLE` sin `DROP`) o borrar las citas de prueba con `DELETE FROM Cita WHERE motivo LIKE 'Prueba LB-0%';` para partir del mismo estado.

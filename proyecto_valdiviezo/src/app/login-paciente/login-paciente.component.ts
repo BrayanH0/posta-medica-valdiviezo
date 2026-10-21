@@ -49,10 +49,15 @@ export class LoginPacienteComponent {
             next: (res: any) => {
                 console.log('Login exitoso', res);
                 if (res && res.success) {
-                    if (res.id) localStorage.setItem('userId', res.id.toString());
-                    if (res.nombres) localStorage.setItem('userName', `${res.nombres} ${res.apellidos}`);
-                    if (res.tipo) localStorage.setItem('userType', res.tipo);
-                    this.router.navigate(['/welcome']);
+                    // La sesión se guarda solo si el usuario es paciente
+                    if (res.tipo === 'paciente') {
+                        if (res.id) localStorage.setItem('userId', res.id.toString());
+                        if (res.nombres) localStorage.setItem('userName', `${res.nombres} ${res.apellidos}`);
+                        if (res.tipo) localStorage.setItem('userType', res.tipo);
+                        this.router.navigate(['/welcome']);
+                    } else {
+                        this.error = 'Este usuario no es un paciente. Use el login que le corresponde.';
+                    }
                 } else {
                     this.error = 'Respuesta inesperada del servidor';
                 }

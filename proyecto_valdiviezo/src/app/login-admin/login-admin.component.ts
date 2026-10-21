@@ -53,8 +53,9 @@ export class LoginAdminComponent {
               localStorage.setItem('userType', response.tipo);
 
               this.router.navigate(['/admin']);
-            } else if (response.success && response.tipo === 'paciente') {
-              this.error = 'Este usuario es un paciente, no un administrador. Use el login de pacientes.';
+            } else if (response.success) {
+              // Usuario válido pero de otro rol (paciente o médico)
+              this.error = 'Este usuario no es un administrador. Use el login que le corresponde.';
             } else {
               this.error = 'Credenciales incorrectas';
             }

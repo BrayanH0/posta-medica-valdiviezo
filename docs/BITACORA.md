@@ -226,3 +226,42 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Problema encontrado y corregido durante las pruebas: la primera versión de los hooks 1 y 2 interpretaba mal las rutas de estilo Git Bash (`/c/Users/...`) y calculaba una ruta relativa errónea; se agregó una normalización a `C:/...`. Las rutas de Windows, que son las que envía Claude Code, ya funcionaban.
 - El hook 3 se activó en vivo en esta misma sesión, sin reiniciar: bloqueó dos comandos míos porque su texto mencionaba los comandos de Git prohibidos (uno era la prueba del propio hook y el otro un heredoc que documentaba el hook). Es un falso positivo aceptado y quedó documentado en CLAUDE.md.
 - Evidencia: salida de las pruebas citada en el reporte de la tarea; scripts en este commit.
+
+### [2026-10-21 09:28] Regla nueva en CLAUDE.md
+- Qué se hizo: se agregó en "Calidad de los cambios" la regla de crear, modificar y borrar archivos solo con las herramientas de edición (Edit/Write), nunca con comandos de terminal.
+- Por qué: los hooks de control (`proteger-pruebas.js`, `datos-prueba.js`) solo ven las herramientas Edit/Write/MultiEdit; un `sed` o un `echo >` los esquivaría.
+- Alternativas descartadas: ampliar los hooks para analizar comandos de terminal (detectar escrituras dentro de un comando es poco fiable).
+- Evidencia: `CLAUDE.md`. Desde esta entrada, la bitácora y los demás documentos se editan solo con Edit/Write.
+
+### [2026-10-21 09:28] RFC-002 registrada (H-028)
+- Qué se hizo: se creó `docs/rfc/RFC-002.md` antes de tocar código, con alternativas evaluadas, análisis de impacto y plan de back-out. A las 09:29 pasó por "¿Solicitud completa?", "Investigación preliminar", "¿Es correcta?", "Aprobado" (Comité de control de configuración, Brayan en representación del grupo) y "Asignado" (Claude Code).
+- Por qué: todo cambio de código pasa primero por una solicitud de cambio registrada y aprobada.
+- Resultado: RFC-002 en estado "Asignado".
+- Evidencia: `docs/rfc/RFC-002.md`.
+
+### [2026-10-21 09:29] RFC-002: causa del problema (antes de modificar código)
+- Por qué ocurre H-028: el backend (`AuthController`) busca el DNI en pacientes, médicos y administradores y responde 200 con el `tipo` que encuentre; no sabe desde qué pantalla se intentó entrar. Por eso cada login del frontend tiene que comprobar que `tipo` sea el de su rol. Los logins de médico (`login-medico.component.ts:53`) y admin (`login-admin.component.ts:49`) lo hacen; el de paciente (`login-paciente.component.ts:51-55`) guarda la sesión y navega con cualquier `success`, sin mirar `tipo`. Con un médico, guarda `userType = medico` y `userId` del médico, y las pantallas del paciente usan ese `userId` como si fuera un ID de paciente.
+- Mensajes actuales ante un rol equivocado (se unifican en esta RFC): médico → "Error: El usuario no es un médico."; admin con paciente → "Este usuario es un paciente, no un administrador. Use el login de pacientes."; admin con médico → "Credenciales incorrectas" (cae en la rama genérica `else`); paciente → no comprueba.
+- Alternativa elegida y descartada: ver "Alternativas evaluadas" en RFC-002 (se descarta validar el rol en el backend porque toca `AuthController`, objetivo de R3 OCP, y depende de H-016).
+
+### [2026-10-21 09:29] RFC-002: implementación
+- Qué se cambió: 3 archivos, cada uno por separado. `login-paciente.component.ts`: guarda la sesión y entra solo si `res.tipo === 'paciente'`; si no, muestra "Este usuario no es un paciente. Use el login que le corresponde.". `login-medico.component.ts`: el mensaje de rol equivocado pasa de "Error: El usuario no es un médico." a "Este usuario no es un médico. Use el login que le corresponde.". `login-admin.component.ts`: cualquier usuario válido que no sea administrador (antes solo se distinguía al paciente; el médico caía en "Credenciales incorrectas") muestra "Este usuario no es un administrador. Use el login que le corresponde.".
+- Por qué: corregir la causa de H-028 (falta la comprobación de `tipo` en el login de paciente) y dejar los 3 logins con el mismo comportamiento ante un rol equivocado, para que la unificación DRY no tenga diferencias que resolver.
+- Alternativas descartadas: validar el rol en el backend (ver RFC-002); unificar los 3 logins ahora (es la refactorización DRY y se hace aparte).
+- **El mismo cambio (mensaje de rol equivocado) se repitió en 3 archivos**, como en RFC-001 (H-008).
+- Evidencia: diff del commit de LB-2.
+
+### [2026-10-21 09:30] RFC-002: compilación y reinicio del entorno
+- Qué se hizo: `ng build --configuration development` (09:30:12, `2026-10-21T14:30:12Z`). Backend y frontend estaban caídos desde la sesión anterior: se reiniciaron (`mvnw spring-boot:run`, `npm start`) y se recargó la BD (`DROP DATABASE` + `BDPostaMedica.sql`, 21 citas) a las 09:30:52.
+- Resultado: compilación sin errores nuevos (las mismas 2 advertencias NG8113, H-011).
+- Evidencia: salida de consola de la sesión.
+
+### [2026-10-21 entre 09:30 y 09:37] RFC-002: batería de regresión P01–P19 (LB-2)
+- Qué se hizo: batería completa en el orden del documento; se creó P19 (matriz de roles cruzados, 6 combinaciones). Para P11 y P18 se apagó el backend a las 09:37:16 (pid 26728) y se volvió a encender después.
+- Resultado: P19 PASA en las 6 combinaciones; P01–P18 dieron lo mismo que en LB-1. Sin efectos no deseados. Se registró H-030 (mensajes distintos ante una respuesta 200 sin `success`; fuera del alcance).
+- Evidencia: 10 capturas `docs/evidencias/lb2-*.png`; sección "Resultados de LB-2" de `docs/PRUEBAS.md`.
+
+### [2026-10-21 09:39] RFC-002 cerrada
+- Qué se hizo: evaluación post-implementación en RFC-002; H-028 pasó a "Cerrado (RFC-002, LB-2)"; la tabla de PRUEBAS.md recibió la columna "LB-2 RFC-002" y las siguientes se renumeraron (Reorganización → LB-3, DRY → LB-4, SRP → LB-5, OCP → LB-6, IoC → LB-7), igual que la regla del encabezado (LB-3 a LB-7). HALLAZGOS.md nombra los cambios por su nombre (R1 DRY, Reorganización…), no por número de línea base, así que no requirió renumeración; RFC-001 tampoco menciona esos números. La entrada de LB-1 de esta bitácora que dice "reorganización (LB-2)" se deja como estaba, porque registra lo planificado en ese momento.
+- Errores de registro corregidos en el momento: en el historial de RFC-002 se escribieron dos horas por adelantado ("En implementación" 09:30, cuando `date` dio 09:29:48; "Cerrado" 09:41, cuando `date` dio 09:39:36). Ambas se reemplazaron por la hora real antes del commit, aplicando la regla de CLAUDE.md.
+- Evidencia: `docs/rfc/RFC-002.md`, `docs/HALLAZGOS.md`, `docs/PRUEBAS.md`.
