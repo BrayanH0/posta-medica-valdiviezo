@@ -592,3 +592,9 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Decisión: el médico 1 solo tiene citas Atendidas en el script, así que sus listas de pendientes, confirmadas y canceladas salían vacías. Para mostrar datos reales se usaron los médicos 6, 2 y 4, los únicos con citas en esos estados (`SELECT ... WHERE estado_cita IN (1,2,3)`); su login se comprobó antes con `curl` (200).
 - No se registró ninguna cita: la BD queda como la deja el script (21 citas).
 - Evidencia: `docs/entrega/pantallas/*.png`; registro de consola en `.playwright-mcp/` (fuera de Git).
+
+### [2026-10-21 16:45] Commit y tag ENTREGA-T2
+- Qué se hizo: commit de `docs/entrega/` (4 documentos y 18 capturas), `BITACORA.md` y `HALLAZGOS.md` (H-040, H-041), y tag anotado `ENTREGA-T2` ("Version entregada para la evaluacion T2").
+- Evidencia: commit `50521a358743959ec767d116609456e5b364c3f5` (2026-10-21 16:45:25) — "Entrega: paquete de documentacion para el grupo". Esta entrada va en un commit posterior porque un commit no puede contener su propio hash; por eso queda fuera del tag.
+- Nota: la fila nueva de H-040 tiene pipes escapados (`\|`) en su evidencia; en Markdown se ven bien, pero un `awk -F'|'` sin más la cuenta con 12 columnas. Para contar hallazgos con `awk`, revisar a mano las filas H-027 y H-040.
+- Cumplimiento de CLAUDE.md en la tarea 13: sin cambios en el código de la aplicación ni en pruebas; documentos creados y modificados solo con Write/Edit; las capturas (binarios) las escribió la herramienta de Playwright, como las evidencias de tareas anteriores; horas tomadas de `date`, `ls -la` y `git log`; donde no hubo dato (títulos de 9 puntos de la presentación, resultado de las pruebas en LB-0 de la carpeta `tests/`) se escribió "Sin registro". No se corrió la batería de `PRUEBAS.md` porque no hubo cambio de código.
