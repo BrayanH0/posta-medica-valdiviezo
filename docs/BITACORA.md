@@ -121,3 +121,9 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Resultado: `/api/cita` devuelve 23 citas, 4 del paciente 1. `/api/historia_clinica` devuelve 5 historias, 1 del paciente 1. El navegador recibe las 23 citas y filtra 4. Hallazgos H-013 y H-014. Además se registró H-015 (controlador de citas sin capa de servicio).
 - Evidencia: `docs/evidencias/paso5b-red-mis-citas-respuesta-api-cita.json`, `docs/evidencias/paso5b-red-mis-citas-peticiones.txt`; P14–P16 en `PRUEBAS.md`.
 - Limitación: no hay captura de la pestaña de red de DevTools (Playwright no puede capturarla); se exportó el registro de red.
+
+### [2026-10-20 20:11] Commit y tag de la línea base LB-0
+- Qué se hizo: commit de todos los archivos modificados (incluido `application.properties`, porque el repositorio es local y no se publica) y tag anotado `LB-0`.
+- Por qué: congelar el estado inicial documentado contra el que se van a comparar las refactorizaciones R1–R4.
+- Resultado: 16 archivos en el commit: `BDPostaMedica.sql`, `README.md`, `SETUP.md`, `application.properties`, `package-lock.json`, los 4 documentos de `docs/`, 6 evidencias y `docs/refactorizaciones/.gitkeep`.
+- Evidencia: commit `744c84b7219efe0d4444d2549bd62e2c88ffa4aa` — "Linea base LB-0: entorno verificado y documentado". Tag anotado `LB-0` ("Linea base 0: estado inicial antes de refactorizar") apunta a ese commit. Esta entrada se agregó en un commit posterior porque un commit no puede contener su propio hash.
