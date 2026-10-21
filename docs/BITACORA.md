@@ -330,3 +330,9 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Qué se hizo: evaluación post-implementación en RFC-003; H-004 → "Cerrado (RFC-003, LB-3)"; H-023 → resuelto en el módulo médico y pendiente en `registrar-cita`, `mis-citas`, `CitaRepository` y en el nombre "aprobadas" de ruta, archivos y clase; EC-01, EC-02 y EC-08 actualizados. La tabla de PRUEBAS.md recibió la columna "LB-3 RFC-003" y las siguientes se renumeraron (Reorganización → LB-4, DRY → LB-5, SRP → LB-6, OCP → LB-7, IoC → LB-8), igual que la regla del encabezado (LB-4 a LB-8). HALLAZGOS.md y las RFC anteriores no usan esos números. La entrada de LB-2 que dice "reorganización (LB-3)" se deja como registro de lo planificado en ese momento.
 - Estado del entorno: backend (8080) y frontend (4200) corriendo, iniciados en esta sesión; la BD quedó con las citas 22 (Confirmada) y 23 (Cancelada) de la batería; `node_modules/` de Playwright instalado en la raíz (ignorado por Git).
 - Evidencia: `docs/rfc/RFC-003.md`, `docs/HALLAZGOS.md`, `docs/PRUEBAS.md`, `docs/ELEMENTOS_CONFIGURACION.md`.
+
+### [2026-10-21 10:16] Commit y tag de la línea base LB-3
+- Qué se hizo: commit de RFC-003 (39 archivos: backend, frontend del módulo médico, 5 pruebas de Playwright, documentación, 7 evidencias; incluye también `CLAUDE.md` y `.gitignore` de las entradas de las 09:48 y 09:49) y tag anotado `LB-3`.
+- Por qué: congelar el estado tras el tercer cambio correctivo; es la línea base contra la que se comparará la reorganización (LB-4).
+- Resultado: tag `LB-3` ("Linea base 3: RFC-003 aplicado") apunta al commit.
+- Evidencia: commit `335f0cf44964723312871c14cce70d70819aae86` (2026-10-21 10:16:04) — "RFC-003: modulo medico conectado a la base de datos (H-004)". Esta entrada se agregó en un commit posterior porque un commit no puede contener su propio hash.
