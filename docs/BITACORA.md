@@ -429,3 +429,8 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - `app.routes.ts` figura en Git como borrado + agregado (similitud 41 %); su historia se sigue con `git log --follow -M30% -- frontend/src/app/app.routes.ts`.
 - **Estado del entorno al cerrar:** backend (8080, desde `backend/`) y frontend (4200, desde `frontend/`) corriendo; la BD tiene las citas 22 (Confirmada) y 23 (Cancelada) de la batería. Restos en disco **ignorados por Git** que no borré porque CLAUDE.md no permite borrar archivos con la terminal: `node_modules/`, `package-lock.json` y `test-results/` en la raíz (de cuando Playwright vivía ahí; ya no se usan, el nuevo está en `e2e/`), y `.playwright-mcp/`. El usuario puede borrarlos a mano.
 - Evidencia: `docs/rfc/RFC-004.md`, `docs/HALLAZGOS.md`, `docs/PRUEBAS.md`, `docs/ELEMENTOS_CONFIGURACION.md`.
+
+### [2026-10-21 11:27] Commit y tag de la línea base LB-4
+- Qué se hizo: commit de RFC-004 (228 renombrados, 16 eliminados —14 archivos de código, `test-results/.last-run.json` y la ruta vieja de `app.routes.ts`—, 11 modificados y 10 agregados: RFC-004, 8 evidencias y la ruta nueva de `app.routes.ts`) y tag anotado `LB-4` ("Linea base 4: estructura reorganizada").
+- Por qué: congelar la estructura reorganizada; es la línea base contra la que se comparará la refactorización DRY (LB-5).
+- Evidencia: commit `31f5826054389a16b51cd58f8ac249f4abcfab4d` (2026-10-21 11:27:58) — "RFC-004: reorganizacion de la estructura de carpetas". Esta entrada se agregó en un commit posterior porque un commit no puede contener su propio hash.
