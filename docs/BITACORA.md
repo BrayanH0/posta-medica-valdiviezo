@@ -377,3 +377,7 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Evidencia: `docs/PRUEBAS.md`, `docs/ELEMENTOS_CONFIGURACION.md`.
 - Estado del entorno: backend (8080) y frontend (4200) siguen corriendo; no se reiniciaron ni se tocó la base de datos (las pruebas unitarias no la usan).
 - Batería P01–P24: **no se ejecutó** en esta tarea. Motivo: no cambió ningún archivo de la aplicación (`git status` solo muestra archivos de prueba nuevos, `tsconfig.caracterizacion.json` y `docs/`), así que no hay línea base nueva contra la que comparar; los resultados vigentes siguen siendo los de LB-3. Si el usuario considera que la regla de `CLAUDE.md` ("cada cambio se valida con la batería completa") se aplica también a esta tarea, queda pendiente correrla.
+
+### [2026-10-21 10:35] Commit de la tarea 9 (sin tag)
+- Qué se hizo: commit de las 11 pruebas nuevas (6 del frontend, 5 del backend), `tsconfig.caracterizacion.json` y la documentación. Sin tag: no cambia la aplicación, solo agrega pruebas.
+- Evidencia: commit `d9c6375a30d2c2bc7ca26358f419d82229b3dc1d` (2026-10-21 10:35:50) — "Pruebas unitarias de caracterizacion (frontend y backend)". Esta entrada se agregó en un commit posterior porque un commit no puede contener su propio hash.
