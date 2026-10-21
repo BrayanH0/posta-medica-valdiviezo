@@ -1,0 +1,92 @@
+/* paciente-detalle.css */
+
+/* ---------- Card principal ---------- */
+.card {
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* ---------- Header con título y botón cerrar ---------- */
+.card-header {
+  background: linear-gradient(135deg, #4e73df, #2e59d9);
+  color: #fff;
+  padding: 0.75rem 1rem;
+}
+.card-header .row {
+  align-items: center;
+}
+.card-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+/* Botón cerrar (Bootstrap ya lo tiene, solo ajustamos) */
+.btn-close {
+  filter: invert(1) brightness(1.2);
+}
+
+/* ---------- Body del formulario ---------- */
+.card-body {
+  padding: 1.5rem;
+}
+.card-body .row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+.card-body label {
+  margin-bottom: 0.35rem;
+  font-weight: 500;
+  color: #4e73df;
+}
+.card-body .form-control {
+  border-radius: 0.4rem;
+  border: 1px solid #ced4da;
+  padding: 0.45rem 0.75rem;
+}
+
+/* ---------- Footer con botones ---------- */
+.card-footer {
+  background: #f8f9fc;
+  padding: 0.75rem 1rem;
+  text-align: right;
+}
+.card-footer .btn {
+  min-width: 100px;
+}
+
+/* ---------- Botones principales ---------- */
+.btn-primary {
+  background: #4e73df;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.45rem 1rem;
+  transition: background 0.2s, transform 0.2s;
+}
+.btn-primary:hover {
+  background: #2e59d9;
+  transform: translateY(-2px);
+}
+.btn-secondary {
+  background: #858796;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.45rem 1rem;
+}
+.btn-secondary:hover {
+  background: #6c757d;
+}
+
+/* ---------- Responsivo (pantallas pequeñas) ---------- */
+@media (max-width: 576px) {
+  .card-header .col-11,
+  .card-header .col-1 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  .card-header .col-1 {
+    text-align: right;
+    margin-top: 0.5rem;
+  }
+}

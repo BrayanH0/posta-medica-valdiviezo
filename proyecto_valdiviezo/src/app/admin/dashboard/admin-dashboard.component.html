@@ -1,0 +1,19 @@
+<div class="dashboard-wrapper" [class.collapsed]="collapsed">
+  <aside class="sidebar">
+    <div class="logo">Panel Admin</div>
+    <nav class="nav">
+      <a routerLink="inicio" routerLinkActive="active">Inicio</a>
+      <a routerLink="pacientes" routerLinkActive="active">Pacientes</a>
+      <a routerLink="medicos" routerLinkActive="active">Medicos</a>
+      <a routerLink="reportes" routerLinkActive="active">Informes</a>
+      <a routerLink="cant-estado-cita" routerLinkActive="active">Gráficos</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="toggle" (click)="toggleSidebar()">{{ collapsed ? '>' : '<' }}</button>
+          <button class="logout-btn" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </aside>
+  <main class="content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

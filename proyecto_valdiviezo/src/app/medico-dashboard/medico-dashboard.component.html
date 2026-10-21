@@ -1,0 +1,21 @@
+<div class="dashboard-container">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Panel Médico</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <a routerLink="/medico-dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">Inicio</a>
+            <a routerLink="/medico-dashboard/pacientes" routerLinkActive="active" class="nav-item">Pacientes</a>
+            <a routerLink="/medico-dashboard/citas-pendientes" routerLinkActive="active" class="nav-item">Citas Pendientes</a>
+            <a routerLink="/medico-dashboard/citas-aprobadas" routerLinkActive="active" class="nav-item">Citas Aprobadas</a>
+            <a routerLink="/medico-dashboard/citas-canceladas" routerLinkActive="active" class="nav-item">Citas Canceladas</a>
+        </nav>
+        <div class="sidebar-footer">
+            <button (click)="logout()" class="logout-btn">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <router-outlet></router-outlet>
+    </div>
+</div>

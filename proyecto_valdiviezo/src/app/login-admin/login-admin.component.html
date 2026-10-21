@@ -1,0 +1,31 @@
+<div class="login-container">
+    <div class="login-box admin-box">
+        <h2>Iniciar Sesión - Administrador</h2>
+        <form (ngSubmit)="login()">
+            <div class="form-group">
+                <label for="usuario">DNI:</label>
+                <input type="text" id="usuario" [(ngModel)]="usuario" name="usuario" required placeholder="Ingrese su DNI" maxlength="8" pattern="[0-9]*" (keypress)="$event.charCode >= 48 && $event.charCode <= 57">
+            </div>
+            
+            <div class="form-group">
+                <label for="clave">Contraseña:</label>
+                <div class="password-input">
+                    <input [type]="mostrarClave ? 'text' : 'password'" id="clave" [(ngModel)]="clave" name="clave" required placeholder="Ingrese su contraseña">
+                    <button type="button" (click)="toggleMostrarClave()" class="toggle-btn" title="Mostrar/Ocultar contraseña">
+                        {{ mostrarClave ? 'Ocultar' : 'Mostrar' }}
+                    </button>
+                </div>
+            </div>
+
+            <div *ngIf="error" class="error-message">
+                {{ error }}
+            </div>
+
+            <button type="submit" class="btn-login btn-admin">Iniciar Sesión</button>
+        </form>
+        
+        <div class="actions">
+            <button type="button" class="btn-secondary" routerLink="/login-selection">Volver</button>
+        </div>
+    </div>
+</div>

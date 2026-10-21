@@ -1,0 +1,33 @@
+<div class="citas-container">
+    <h2>Gestión de Citas Aprobadas</h2>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Paciente</th>
+                    <th>DNI</th>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Motivo</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let cita of citas$ | async">
+                    <td>{{ cita.id }}</td>
+                    <td>{{ cita.paciente }}</td>
+                    <td>{{ cita.dni }}</td>
+                    <td>{{ cita.fecha }}</td>
+                    <td>{{ cita.hora }}</td>
+                    <td>{{ cita.motivo }}</td>
+                    <td><span class="badge badge-success">{{ cita.estado }}</span></td>
+                </tr>
+                <tr *ngIf="(citas$ | async)?.length === 0">
+                    <td colspan="7" class="empty-message">No hay citas aprobadas.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

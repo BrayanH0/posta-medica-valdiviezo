@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "prueba",
+            "request": "launch",
+            "mainClass": "com.centro_valdiviezo.backend.seguridad.prueba",
+            "projectName": "backend"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-CentroValdiviezoApplication<backend>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.centro_valdiviezo.backend.CentroValdiviezoApplication",
+            "projectName": "backend",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

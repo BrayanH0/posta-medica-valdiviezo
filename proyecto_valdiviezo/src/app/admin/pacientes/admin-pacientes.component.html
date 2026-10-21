@@ -1,0 +1,93 @@
+<div class="admin-pacientes-container">
+  <h2>Gestión de Pacientes</h2>
+  
+  <div class="table-actions">
+    <button class="btn-refresh" (click)="cargarPacientes()">🔄 Actualizar</button>
+  </div>
+
+  <!-- Modal de Edición -->
+  <div class="modal-overlay" *ngIf="modoEdicion" (click)="cancelarEdicion()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>Editar Paciente</h3>
+      <form *ngIf="pacienteSeleccionado" (ngSubmit)="guardarCambios()">
+        <div class="form-group">
+          <label>Nombres:</label>
+          <input type="text" [(ngModel)]="pacienteSeleccionado.nombres" name="nombres" required>
+        </div>
+        <div class="form-group">
+          <label>Apellidos:</label>
+          <input type="text" [(ngModel)]="pacienteSeleccionado.apellidos" name="apellidos" required>
+        </div>
+        <div class="form-group">
+          <label>DNI:</label>
+          <input type="text" [(ngModel)]="pacienteSeleccionado.dni" name="dni" required>
+        </div>
+        <div class="form-group">
+          <label>Fecha de Nacimiento:</label>
+          <input type="date" [(ngModel)]="pacienteSeleccionado.fecha_nacimiento" name="fecha_nacimiento" required>
+        </div>
+        <div class="form-group">
+          <label>Sexo:</label>
+          <select [(ngModel)]="pacienteSeleccionado.sexo" name="sexo" required>
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Teléfono:</label>
+          <input type="text" [(ngModel)]="pacienteSeleccionado.telefono" name="telefono">
+        </div>
+        <div class="form-group">
+          <label>Estado:</label>
+          <input type="number" [(ngModel)]="pacienteSeleccionado.id_estado_paciente" name="estado" required>
+        </div>
+        <div class="form-group">
+          <label>Ubigeo:</label>
+          <input type="number" [(ngModel)]="pacienteSeleccionado.id_ubigeo" name="ubigeo" required>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-save">Guardar</button>
+          <button type="button" class="btn-cancel" (click)="cancelarEdicion()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tabla de Pacientes -->
+  <div class="table-wrapper">
+    <table class="pacientes-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombres</th>
+          <th>Apellidos</th>
+          <th>DNI</th>
+          <th>Fecha Nacimiento</th>
+          <th>Sexo</th>
+          <th>Estado</th>
+          <th>Ubigeo</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let paciente of pacientes">
+          <td>{{ paciente.idPaciente }}</td>
+          <td>{{ paciente.nombres }}</td>
+          <td>{{ paciente.apellidos }}</td>
+          <td>{{ paciente.dni }}</td>
+          <td>{{ paciente.fecha_nacimiento }}</td>
+          <td>{{ paciente.sexo }}</td>
+          <td>{{ paciente.id_estado_paciente }}</td>
+          <td>{{ paciente.id_ubigeo }}</td>
+          <td class="actions">
+            <button class="btn-edit" (click)="editarPaciente(paciente)">✏️ Editar</button>
+            <button class="btn-delete" (click)="eliminarPaciente(paciente.idPaciente)">🗑️ Eliminar</button>
+          </td>
+        </tr>
+        <tr *ngIf="pacientes.length === 0">
+          <td colspan="9" class="no-data">No hay pacientes registrados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

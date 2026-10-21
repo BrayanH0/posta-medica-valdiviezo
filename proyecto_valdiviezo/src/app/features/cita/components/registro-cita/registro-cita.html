@@ -1,0 +1,58 @@
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-header bg-primary text-white">
+      <h4>Registrar Nueva Cita</h4>
+    </div>
+    <div class="card-body">
+      <form (ngSubmit)="registrarCita()">
+        
+        <!-- Especialidad -->
+        <div class="mb-3">
+          <label class="form-label">Especialidad</label>
+          <select class="form-select" [(ngModel)]="cita.idEspecialidad" name="especialidad" (change)="onEspecialidadChange()" required>
+            <option value="">Seleccione Especialidad...</option>
+            <option *ngFor="let esp of especialidades" [value]="esp.id">{{ esp.nombre }}</option>
+          </select>
+        </div>
+
+        <!-- Médico -->
+        <div class="mb-3">
+          <label class="form-label">Médico</label>
+          <select class="form-select" [(ngModel)]="cita.idMedico" name="medico" required [disabled]="!cita.idEspecialidad">
+            <option value="">Seleccione Médico...</option>
+            <option *ngFor="let med of medicosFiltrados" [value]="med.id_medico">{{ med.nombres }} {{ med.apellidos }}</option>
+          </select>
+        </div>
+
+        <!-- Fecha -->
+        <div class="mb-3">
+          <label class="form-label">Fecha de Atención</label>
+          <input type="date" class="form-control" [(ngModel)]="cita.fecha" name="fecha" required>
+        </div>
+
+        <!-- Horario -->
+        <div class="mb-3">
+          <label class="form-label">Horario Disponible</label>
+          <select class="form-select" [(ngModel)]="cita.hora" name="hora" required>
+            <option value="">Seleccione Hora...</option>
+            <option *ngFor="let hora of horariosDisponibles" [value]="hora">{{ hora }}</option>
+          </select>
+        </div>
+
+        <!-- Motivo -->
+        <div class="mb-3">
+          <label class="form-label">Motivo de Consulta</label>
+          <textarea class="form-control" [(ngModel)]="cita.motivo" name="motivo" rows="2" required></textarea>
+        </div>
+
+        <!-- Síntomas -->
+        <div class="mb-3">
+          <label class="form-label">Síntomas</label>
+          <textarea class="form-control" [(ngModel)]="cita.sintomas" name="sintomas" rows="2"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-success w-100">Registrar Cita</button>
+      </form>
+    </div>
+  </div>
+</div>

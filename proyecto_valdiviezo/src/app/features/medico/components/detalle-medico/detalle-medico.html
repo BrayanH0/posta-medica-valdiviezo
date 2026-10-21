@@ -1,0 +1,44 @@
+<link rel="stylesheet" href="detalle-medico.css">
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-11">
+                <div class="card-title" *ngIf="id===0">Nuevo Medico</div>
+                <div class="card-title" *ngIf="id!=0"> Medico {{id}}</div>
+            </div>
+            <div class="col-1">
+                <button class="btn-close" (click)="cerrar()"></button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <label for="txt_nombres">Nombre</label>
+            <input type="text" class="form-control" id="txt_nombres">
+        </div>
+        <div class="row">
+            <label for="txt_apellidos">Apellidos</label>
+            <input type="text" class="form-control" id="txt_apellidos">
+        </div>
+        <div class="row">
+            <label for="txt_cmp">CMP</label>
+            <input type="text" class="form-control" id="txt_cmp">
+        </div>
+        <div class="row">
+            <label for="combo_especialidad">Especialidad</label>
+            <select class="form-select" id="combo_especialidad">
+                <option value="" disabled selected>Seleccione una especialidad</option>
+                <option *ngFor="let esp of especialidades" [value]="esp.id_especialidad">
+                    {{ esp.nombre_especialidad }} - {{ esp.descripcion }}
+                </option>
+            </select>
+
+        </div>
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-secondary" (click)="cerrar()">Cancelar</button>
+        &nbsp;
+        <button class="btn btn-primary" (click)="guardar()">Grabar</button>
+    </div>
+</div>

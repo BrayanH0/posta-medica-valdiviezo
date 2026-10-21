@@ -1,0 +1,41 @@
+<div class="card">
+    <div class="card-header">
+        <h3>Citas por Estado</h3>
+    </div>
+    <div class="card-body">
+        <div #pieContainer id="pieEstadoCita" style="width:100%;height:400px;"></div>
+
+        <p *ngIf="datosEstado.length === 0 && !pieChart">
+            No hay información disponible para el gráfico de estado.
+        </p>
+    </div>
+</div>
+
+<hr />
+
+<div class="card">
+    <div class="card-header">
+        <h3>Citas por Especialidad</h3>
+    </div>
+    <div class="card-body">
+        <div #barContainer id="barEspecialidad" style="width:100%;height:400px;"></div>
+
+        <p *ngIf="datosEspecialidad.length === 0 && !barChart">
+            No hay información disponible para el gráfico de especialidad.
+        </p>
+    </div>
+</div>
+
+<hr />
+
+<div class="card">
+    <div class="card-header">
+        <h3>Ingresos Mensuales</h3>
+    </div>
+    <div class="card-body">
+        <div id="lineIngresos" style="width:100%;height:400px;"></div>
+        <p *ngIf="ingresosMensuales.length === 0 && !lineChart">
+            No hay información disponible para el gráfico de ingresos.
+        </p>
+    </div>
+</div>

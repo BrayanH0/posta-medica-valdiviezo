@@ -1,0 +1,51 @@
+<div class="container mt-5 pt-5">
+  <div class="card shadow">
+    <div class="card-header bg-success text-white">
+      <h3 class="mb-0 text-center">Historial Médico</h3>
+    </div>
+    <div class="card-body">
+      <div *ngIf="historia">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h5>Datos Generales</h5>
+                <p><strong>Tipo de Sangre:</strong> {{ historia.tipo_sangre }}</p>
+                <p><strong>Alergias:</strong> <span class="text-danger">{{ historia.alergias }}</span></p>
+                <p><strong>Observaciones:</strong> {{ historia.observaciones }}</p>
+                <p><strong>Fecha Creación:</strong> {{ historia.fecha_creacion }}</p>
+            </div>
+        </div>
+
+        <hr>
+
+        <h4 class="mt-4 mb-3">Evoluciones y Diagnósticos</h4>
+        <div *ngIf="evoluciones.length === 0" class="alert alert-light">No hay evoluciones registradas.</div>
+
+        <!-- Manual Accordion Implementation to fix toggle issue -->
+        <div class="accordion" id="accordionEvoluciones">
+            <div class="accordion-item" *ngFor="let evo of evoluciones; let i = index">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" [class.collapsed]="!evo.isOpen" (click)="toggleEvolucion(evo)">
+                        {{ evo.fecha_evolucion }} - {{ evo.diagnostico }}
+                    </button>
+                </h2>
+                <div class="accordion-collapse collapse" [class.show]="evo.isOpen">
+                    <div class="accordion-body">
+                        <p><strong>Médico:</strong> {{ evo.medico }}</p>
+                        <p><strong>Diagnóstico (CIE):</strong> {{ evo.codigo_cie }} - {{ evo.diagnostico }}</p>
+                        <p><strong>Anotaciones:</strong> {{ evo.anotaciones }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+
+      <div *ngIf="!historia" class="alert alert-warning text-center">
+        No se encontró historia clínica para este paciente.
+      </div>
+
+      <div class="mt-4">
+        <a routerLink="/welcome" class="btn btn-secondary">Volver</a>
+      </div>
+    </div>
+  </div>
+</div>

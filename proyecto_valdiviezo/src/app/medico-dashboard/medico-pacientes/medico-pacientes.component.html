@@ -1,0 +1,79 @@
+<div class="pacientes-container">
+    <h2>Gestión de Pacientes</h2>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombres</th>
+                    <th>Apellidos</th>
+                    <th>DNI</th>
+                    <th>Fecha Nacimiento</th>
+                    <th>Sexo</th>
+                    <th>Estado</th>
+                    <th>Ubigeo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let paciente of pacientes">
+                    <td>{{ paciente.id }}</td>
+                    <td>{{ paciente.nombres }}</td>
+                    <td>{{ paciente.apellidos }}</td>
+                    <td>{{ paciente.dni }}</td>
+                    <td>{{ paciente.fechaNacimiento | date:'dd/MM/yyyy' }}</td>
+                    <td>{{ paciente.sexo === 'M' ? 'Masculino' : 'Femenino' }}</td>
+                    <td>{{ paciente.estado }}</td>
+                    <td>{{ paciente.ubigeo }}</td>
+                    <td>
+                        <button class="btn-resumen" (click)="openModal(paciente)">Resumen</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="selectedPaciente">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Resumen del Paciente</h3>
+            <button class="close-btn" (click)="closeModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="patient-highlight">
+                <h2>{{ selectedPaciente.nombres }} {{ selectedPaciente.apellidos }}</h2>
+                <p class="dni">DNI: {{ selectedPaciente.dni }}</p>
+            </div>
+
+            <div class="patient-details-grid">
+                <div class="column">
+                    <p><strong>Fecha de Nacimiento:</strong> {{ selectedPaciente.fechaNacimiento | date:'dd/MM/yyyy' }}</p>
+                    <p><strong>Sexo:</strong> {{ selectedPaciente.sexo === 'M' ? 'Masculino' : 'Femenino' }}</p>
+                    <p><strong>Estado:</strong> {{ selectedPaciente.estado }}</p>
+                </div>
+                <div class="column">
+                    <p><strong>Ubigeo:</strong> {{ selectedPaciente.ubigeo }}</p>
+                    <p><strong>Dirección:</strong> {{ selectedPaciente.direccion }}</p>
+                    <p><strong>Teléfono:</strong> {{ selectedPaciente.telefono }}</p>
+                    <p><strong>Email:</strong> {{ selectedPaciente.email }}</p>
+                </div>
+            </div>
+
+            <div class="patient-history">
+                <h4>Historial Reciente (Mock)</h4>
+                <ul>
+                    <li *ngFor="let item of selectedPaciente.historial">
+                        {{ item.titulo }} - {{ item.fecha }} - {{ item.estado }}
+                    </li>
+                    <li *ngIf="selectedPaciente.historial.length === 0">No hay historial reciente.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-close-modal" (click)="closeModal()">Cerrar</button>
+        </div>
+    </div>
+</div>

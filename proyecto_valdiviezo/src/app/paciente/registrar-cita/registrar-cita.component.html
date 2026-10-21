@@ -1,0 +1,67 @@
+<div class="container mt-5 pt-5">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h3 class="mb-0 text-center">Registrar Nueva Cita</h3>
+    </div>
+    <div class="card-body">
+      <form (ngSubmit)="registrarCita()">
+
+        <!-- Especialidad -->
+        <div class="mb-3">
+          <label class="form-label">Seleccione Especialidad:</label>
+          <select class="form-select" [(ngModel)]="cita.id_especialidad" name="especialidad" (change)="cargarMedicos()" required>
+            <option *ngFor="let esp of especialidades" [value]="esp.id_especialidad">
+              {{ esp.nombre_especialidad }} (S/ {{ esp.precio }})
+            </option>
+          </select>
+        </div>
+
+        <!-- Médico -->
+        <div class="mb-3">
+          <label class="form-label">Seleccione Médico:</label>
+          <select class="form-select" [(ngModel)]="cita.id_medico" name="medico" (change)="cargarHorarios()" required [disabled]="!cita.id_especialidad">
+            <option *ngFor="let med of medicos" [value]="med.id_medico">
+              Dr(a). {{ med.nombres }} {{ med.apellidos }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Fecha -->
+        <div class="mb-3">
+          <label class="form-label">Seleccione Fecha:</label>
+          <input type="date" class="form-control" [(ngModel)]="cita.fecha_cita" name="fecha" required [min]="minDate" (change)="cargarHorarios()">
+        </div>
+
+        <!-- Horarios -->
+        <div class="mb-3" *ngIf="horariosDisponibles.length > 0">
+          <label class="form-label">Seleccione Hora Disponible:</label>
+          <div class="d-flex flex-wrap gap-2">
+            <button type="button"
+                    *ngFor="let hora of horariosDisponibles"
+                    class="btn btn-outline-primary rounded-pill"
+                    [class.active]="cita.hora_cita === hora"
+                    (click)="cita.hora_cita = hora">
+              {{ hora }}
+            </button>
+          </div>
+        </div>
+        <div *ngIf="cita.fecha_cita && cita.id_medico && horariosDisponibles.length === 0" class="alert alert-warning">
+            No hay horarios disponibles para esta fecha.
+        </div>
+
+        <!-- Motivo -->
+        <div class="mb-3">
+          <label class="form-label">Motivo de la Consulta:</label>
+          <textarea class="form-control" [(ngModel)]="cita.motivo" name="motivo" rows="3" required></textarea>
+        </div>
+
+        <!-- Botones -->
+        <div class="d-flex justify-content-between mt-4">
+          <a routerLink="/welcome" class="btn btn-secondary">Volver</a>
+          <button type="submit" class="btn btn-primary" [disabled]="!isValid()">Confirmar Cita</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

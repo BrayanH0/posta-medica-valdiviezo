@@ -1,0 +1,48 @@
+<div class="container mt-5" style="max-width: 600px;">
+  <div class="card p-4">
+    <h2 class="text-center mb-4">Formulario de Registro</h2>
+    <form (ngSubmit)="registrar()">
+      
+      <div class="mb-3">
+        <label class="form-label">DNI</label>
+        <input type="text" class="form-control" [(ngModel)]="paciente.dni" name="dni" required maxlength="8">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Nombres</label>
+        <input type="text" class="form-control" [(ngModel)]="paciente.nombres" name="nombres" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Apellidos</label>
+        <input type="text" class="form-control" [(ngModel)]="paciente.apellidos" name="apellidos" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Contraseña</label>
+        <input type="password" class="form-control" [(ngModel)]="paciente.clave" name="clave" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Fecha de Nacimiento</label>
+        <input type="date" class="form-control" [(ngModel)]="paciente.fecha_nacimiento" name="fecha_nacimiento" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Sexo</label>
+        <select class="form-select" [(ngModel)]="paciente.sexo" name="sexo" required>
+          <option value="">Seleccione...</option>
+          <option value="M">Masculino</option>
+          <option value="F">Femenino</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Teléfono</label>
+        <input type="text" class="form-control" [(ngModel)]="paciente.telefono" name="telefono" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100">Registrarse</button>
+    </form>
+  </div>
+</div>

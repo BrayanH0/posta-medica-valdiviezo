@@ -1,0 +1,14 @@
+<div class="welcome-container">
+  <div class="card">
+    <h1 class="mb-4">Bienvenido al Hospital María Auxiliadora</h1>
+    <p class="mb-4">Por favor, seleccione su rol para iniciar sesión:</p>
+    
+    <button class="btn-role btn-paciente" (click)="goToLogin('paciente')">
+      Soy Paciente
+    </button>
+    
+    <button class="btn-role btn-admin" (click)="goToLogin('admin')">
+      Soy Administrador
+    </button>
+  </div>
+</div>

@@ -1,0 +1,81 @@
+/* paciente-principal.css */
+
+/* ---------- Contenedor Card ---------- */
+.card {
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* ---------- Header del Card ---------- */
+.card-header {
+  background: linear-gradient(135deg, #4e73df, #2e59d9);
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 600;
+  padding: 1rem 1.5rem;
+}
+
+/* ---------- Botón Nuevo Paciente ---------- */
+.btn-success {
+  background: #1cc88a;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.45rem 1rem;
+  font-weight: 500;
+  transition: background 0.2s, transform 0.2s;
+}
+.btn-success:hover {
+  background: #17a673;
+  transform: translateY(-2px);
+}
+
+/* ---------- Tabla ---------- */
+.table {
+  margin-bottom: 0;
+}
+.table thead th {
+  background: #f8f9fc;
+  color: #4e73df;
+  font-weight: 600;
+  border-bottom: 2px solid #e3e6f0;
+}
+.table tbody tr:hover {
+  background: rgba(78, 115, 223, 0.05);
+}
+.table tbody td {
+  vertical-align: middle;
+  text-align: center;
+}
+
+/* ---------- Botones de Acción ---------- */
+.btn-warning {
+  background: #f6c23e;
+  border: none;
+  border-radius: 0.4rem;
+  padding: 0.35rem 0.75rem;
+}
+.btn-warning:hover {
+  background: #dda20a;
+}
+.btn-danger {
+  background: #e74a3b;
+  border: none;
+  border-radius: 0.4rem;
+  padding: 0.35rem 0.75rem;
+}
+.btn-danger:hover {
+  background: #c0392b;
+}
+
+/* ---------- Espaciado del Row ---------- */
+.row {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ---------- Ajuste de columnas ---------- */
+.col-3 {
+  display: flex;
+  align-items: center;
+}

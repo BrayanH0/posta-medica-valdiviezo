@@ -1,0 +1,57 @@
+<div class="registro-container">
+    <div class="registro-box">
+        <h2>Registro de Paciente</h2>
+        <form (ngSubmit)="registrar()">
+            <div *ngIf="error" class="error-message">
+                {{ error }}
+            </div>
+            
+            <div class="form-group">
+                <label for="dni">DNI:</label>
+                <input type="text" id="dni" [(ngModel)]="paciente.dni" name="dni" required maxlength="8" placeholder="74308060" pattern="[0-9]*" (keypress)="$event.charCode >= 48 && $event.charCode <= 57">
+            </div>
+
+            <div class="form-group">
+                <label for="nombres">Nombres:</label>
+                <input type="text" id="nombres" [(ngModel)]="paciente.nombres" name="nombres" required placeholder="Pedro Luis">
+            </div>
+
+            <div class="form-group">
+                <label for="apellidos">Apellidos:</label>
+                <input type="text" id="apellidos" [(ngModel)]="paciente.apellidos" name="apellidos" required placeholder="Sanchez Dominguez">
+            </div>
+
+            <div class="form-group">
+                <label for="clave">Contraseña:</label>
+                <input type="password" id="clave" [(ngModel)]="paciente.clave" name="clave" required placeholder="Ingrese su contraseña">
+            </div>
+
+            <div class="form-group">
+                <label for="fecha_nacimiento">Fecha de Nacimiento:</label>
+                <input type="date" id="fecha_nacimiento" [(ngModel)]="paciente.fecha_nacimiento" name="fecha_nacimiento" required [min]="minFechaNacimiento" [max]="maxFechaNacimiento">
+            </div>
+
+            <div class="form-group">
+                <label for="sexo">Sexo:</label>
+                <select id="sexo" [(ngModel)]="paciente.sexo" name="sexo" required>
+                    <option value="">Seleccione...</option>
+                    <option value="M">Masculino</option>
+                    <option value="F">Femenino</option>
+                </select>
+            </div>
+
+            <h3 class="section-title">Datos Opcionales</h3>
+
+            <div class="form-group">
+                <label for="telefono">Teléfono:</label>
+                <input type="tel" id="telefono" [(ngModel)]="paciente.telefono" name="telefono" placeholder="987654321">
+            </div>
+
+            <button type="submit" class="btn-registro">Registrar</button>
+        </form>
+        
+        <div class="actions">
+            <button type="button" class="btn-secondary" routerLink="/login-paciente">Volver</button>
+        </div>
+    </div>
+</div>

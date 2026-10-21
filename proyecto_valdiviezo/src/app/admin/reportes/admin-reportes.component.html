@@ -1,0 +1,72 @@
+<div class="admin-reportes-container">
+  <h2>Reportes y Estadísticas</h2>
+  
+  <div class="table-actions">
+    <button class="btn-refresh" (click)="actualizarDatos()">🔄 Actualizar</button>
+  </div>
+
+  <!-- Tarjetas de Estadísticas Generales -->
+  <div class="stats-cards">
+    <div class="stat-card total">
+      <div class="stat-icon">📊</div>
+      <div class="stat-info">
+        <h3>Total de Citas</h3>
+        <p class="stat-value">{{ estadisticas.totalCitas }}</p>
+      </div>
+    </div>
+    
+    <div class="stat-card atendidas">
+      <div class="stat-icon">✅</div>
+      <div class="stat-info">
+        <h3>Citas Atendidas</h3>
+        <p class="stat-value">{{ estadisticas.citasAtendidas }}</p>
+      </div>
+    </div>
+    
+    <div class="stat-card canceladas">
+      <div class="stat-icon">❌</div>
+      <div class="stat-info">
+        <h3>Citas Canceladas</h3>
+        <p class="stat-value">{{ estadisticas.citasCanceladas }}</p>
+      </div>
+    </div>
+    
+    <div class="stat-card ingreso">
+      <div class="stat-icon">💰</div>
+      <div class="stat-info">
+        <h3>Total de Ingreso</h3>
+        <p class="stat-value">S/ {{ estadisticas.totalIngresos | number:'1.2-2' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla por Especialidad -->
+  <div class="especialidad-section">
+    <h3>Resumen (Últimas 5 citas por especialidad)</h3>
+    <div class="table-wrapper">
+      <table class="especialidad-table">
+        <thead>
+          <tr>
+            <th>Especialidad</th>
+            <th>Paciente</th>
+            <th>Médico</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of resumenCitas">
+            <td>{{ item.especialidad }}</td>
+            <td>{{ item.pacienteNombre }}</td>
+            <td>{{ item.medicoNombre }}</td>
+            <td>{{ item.fecha }}</td>
+            <td>{{ item.hora }}</td>
+          </tr>
+          <tr *ngIf="resumenCitas.length === 0">
+            <td colspan="5" class="no-data">No hay datos disponibles</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

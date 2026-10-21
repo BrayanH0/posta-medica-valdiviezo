@@ -1,0 +1,25 @@
+<div class="container mt-5" style="max-width: 400px;">
+  <div class="card p-4">
+    <h2 class="text-center mb-4">Login Paciente</h2>
+    <form (ngSubmit)="login()">
+      <div class="mb-3">
+        <label class="form-label">DNI</label>
+        <input type="text" class="form-control" [(ngModel)]="dni" name="dni" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Contraseña</label>
+        <div class="input-group">
+          <input [type]="mostrarClave ? 'text' : 'password'" class="form-control" [(ngModel)]="clave" name="clave" required>
+          <button class="btn btn-outline-secondary" type="button" (click)="toggleMostrarClave()">
+            <i class="bi" [class.bi-eye]="!mostrarClave" [class.bi-eye-slash]="mostrarClave"></i>
+            {{ mostrarClave ? 'Ocultar' : 'Mostrar' }}
+          </button>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary w-100 mb-3">Iniciar Sesión</button>
+      <button type="button" class="btn btn-outline-secondary w-100" (click)="goToRegister()">
+        Registrarse
+      </button>
+    </form>
+  </div>
+</div>

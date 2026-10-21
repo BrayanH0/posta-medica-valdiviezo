@@ -1,0 +1,39 @@
+<link rel="stylesheet" href="main-medico.css">
+
+<div class="card">
+    <div class="card-header">Lista de Medicos</div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-3">
+                <button class="btn btn-success" (click)="nuevo()">Nuevo Medico</button>
+            </div>
+        </div>
+        <table class="table table-striped">
+            <thead>
+                <tr class="table-dark">
+                    <th>ID</th>
+                    <th>Nombres</th>
+                    <th>Apellidos</th>
+                    <th>CMP</th>
+                    <th>Especialidad</th>
+                    <th>Descripcion</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let item of listamedicos">
+                    <td>{{ item.id_medico }}</td>
+                    <td>{{ item.nombre_medico }}</td>
+                    <td>{{ item.apellido_medico }}</td>
+                    <td>{{ item.cmp }}</td>
+                    <td>{{ item.nombre_especialidad }}</td>
+                    <td>{{ item.descripcion }}</td>
+                    <td>
+                        <button class="btn btn-warning" (click)="editar(item)">Editar</button>
+                        &nbsp;
+                        <button class="btn btn-danger" (click)="eliminar(item)">Eliminar</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

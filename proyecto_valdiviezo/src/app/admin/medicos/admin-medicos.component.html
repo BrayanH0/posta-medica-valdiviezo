@@ -1,0 +1,35 @@
+<div class="admin-medicos-container">
+  <h2>Gestión de Médicos</h2>
+  
+  <div class="table-actions">
+    <button class="btn-refresh" (click)="cargarMedicos()">🔄 Actualizar</button>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="medicos-table">
+      <thead>
+        <tr>
+          <th>ID Médico</th>
+          <th>Nombres</th>
+          <th>Apellidos</th>
+          <th>CMP</th>
+          <th>Especialidad</th>
+          <th>Descripción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let medico of medicos">
+          <td>{{ medico.id_medico }}</td>
+          <td>{{ medico.nombre_medico }}</td>
+          <td>{{ medico.apellido_medico }}</td>
+          <td>{{ medico.cmp }}</td>
+          <td>{{ medico.nombre_especialidad }}</td>
+          <td>{{ medico.descripcion }}</td>
+        </tr>
+        <tr *ngIf="medicos.length === 0">
+          <td colspan="6" class="no-data">No hay médicos registrados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
