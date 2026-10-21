@@ -3,18 +3,21 @@ package com.centro_valdiviezo.backend.controller;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.centro_valdiviezo.backend.autenticacion.AutenticadorAdministrador;
+import com.centro_valdiviezo.backend.autenticacion.AutenticadorMedico;
+import com.centro_valdiviezo.backend.autenticacion.AutenticadorPaciente;
 import com.centro_valdiviezo.backend.model.Medico;
 import com.centro_valdiviezo.backend.repository.MedicoRepository;
 import com.centro_valdiviezo.backend.repository.PacienteRepository;
 import com.centro_valdiviezo.backend.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -29,12 +32,15 @@ public class AuthControllerTest {
     @Mock
     private UsuarioRepository usuarioRepository;
 
-    @InjectMocks
     private AuthController authController;
 
     @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
+        authController = new AuthController(List.of(
+                new AutenticadorPaciente(pacienteRepository),
+                new AutenticadorMedico(medicoRepository),
+                new AutenticadorAdministrador(usuarioRepository)));
     }
 
     @Test

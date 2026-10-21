@@ -5,16 +5,20 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
+import com.centro_valdiviezo.backend.autenticacion.AutenticadorAdministrador;
+import com.centro_valdiviezo.backend.autenticacion.AutenticadorMedico;
+import com.centro_valdiviezo.backend.autenticacion.AutenticadorPaciente;
 import com.centro_valdiviezo.backend.model.Medico;
 import com.centro_valdiviezo.backend.model.Paciente;
 import com.centro_valdiviezo.backend.model.UsuarioModel;
@@ -36,8 +40,15 @@ class AuthControllerCaracterizacionTest {
     @Mock
     private UsuarioRepository usuarioRepository;
 
-    @InjectMocks
     private AuthController authController;
+
+    @BeforeEach
+    void construir() {
+        authController = new AuthController(List.of(
+                new AutenticadorPaciente(pacienteRepository),
+                new AutenticadorMedico(medicoRepository),
+                new AutenticadorAdministrador(usuarioRepository)));
+    }
 
     private static Map<String, String> credenciales(String dni, String clave) {
         Map<String, String> c = new HashMap<>();
