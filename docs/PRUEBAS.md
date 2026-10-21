@@ -5,11 +5,14 @@
 > Una refactorización no cambia el comportamiento externo: si en LB-4 a LB-8 un resultado cambia, ese cambio introdujo un error. Esto incluye las pruebas que hoy FALLAN por hallazgos correctivos sin RFC (por ejemplo P13, doble reserva, H-012): deben seguir fallando igual.
 
 > **Regresión:** correr la batería completa (todas las pruebas, P01 en adelante) en cada línea base nueva es la **prueba de regresión** del proyecto. Su objetivo es comprobar que un cambio no rompió nada de lo que ya funcionaba y que lo que fallaba sigue fallando igual, salvo lo que el cambio corrige a propósito.
+>
+> **Pruebas unitarias en la regresión (desde 2026-10-21, tarea 9):** cada línea base nueva corre también las pruebas unitarias del frontend (U01–U32) y del backend (U33–U62 más las 3 clases de prueba que ya tenía el proyecto), con los comandos de la sección "Pruebas unitarias". Deben dar el **mismo resultado** que en la línea base anterior. En la reorganización y en las refactorizaciones (LB-4 a LB-8) eso significa que todas siguen pasando sin modificarlas, incluidas las que caracterizan errores conocidos. Si un RFC correctivo corrige a propósito un error caracterizado (por ejemplo H-022, H-029, H-031 o H-032), la prueba de ese error fallará: el RFC debe nombrarla y el usuario decide cómo se cambia.
 
 **Tipos de prueba** (línea "Tipo:" en cada prueba):
 - **Integración (API + base de datos):** se llama al backend con `curl` y se comprueba la respuesta contra los datos de la BD, sin navegador.
 - **Sistema/E2E (navegador de punta a punta):** se usa la aplicación en el navegador como un usuario (frontend → backend → BD).
 - **Aceptación:** prueba de punta a punta que verifica un criterio del usuario o de una RFC (por ejemplo, "registrar una cita", "cerrar sesión borra la sesión").
+- **Unitaria:** prueba de una clase aislada (componente, servicio o controlador) con dobles de prueba (mocks) en lugar de `HttpClient`, `Router`, `AuthService` o los repositorios. No usa el backend real ni la base de datos. Ver la sección "Pruebas unitarias".
 
 **Orden de ejecución:** las pruebas se corren en el orden del documento. P14–P16 dependen de P12 y P13 (que agregan 2 citas): en LB-0 se midieron con 23 citas en la BD.
 
@@ -357,6 +360,120 @@ Ejecución del 2026-10-21, entre 10:04 y 10:13 (hora real: `date` antes y despu�
 **Evidencias LB-3:** `lb3-medico-citas-pendientes.png`, `lb3-medico-citas-confirmadas.png`, `lb3-medico-citas-canceladas.png`, `lb3-medico-pacientes.png`, `lb3-medico-pacientes-resumen.png`, `lb3-P11-medico-backend-apagado-error.png`, `lb3-P12-mis-citas-con-cita-nueva.png` (todas en `docs/evidencias/`).
 
 **Notas de método LB-3:** mismas que en LB-2. En P21 y P22 los botones "Aceptar"/"Cancelar" y los de confirmación se activaron con `element.click()`. En el script de P11 quedó por error una navegación previa a una ruta inexistente del módulo; no afecta el resultado.
+
+---
+
+## Pruebas unitarias
+
+**Qué son.** Son pruebas de **caracterización**: comprueban el comportamiento **actual** del código, aunque sea incorrecto. Su función es servir de red de seguridad para la reorganización y las refactorizaciones: si una refactorización cambia el comportamiento, una prueba falla. No dicen cómo *debería* funcionar el sistema (eso lo dicen el "Esperado" de P01–P24 y las RFC).
+
+Cuando una prueba comprueba un comportamiento que es un error conocido, lo dice en su nombre o en un comentario con el ID del hallazgo, por ejemplo "sin horario ese día: ofrece 08:00 a 20:00 (comportamiento actual, H-022)". Esas pruebas **deben seguir pasando** en LB-4 a LB-8; solo un RFC correctivo puede hacerlas fallar a propósito.
+
+**Dobles de prueba.** Frontend: las clases se crean con `new` y se les pasan objetos `jasmine.createSpyObj` en lugar de `HttpClient`, `Router` y `AuthService`; no se renderiza la plantilla ni se ejecuta `ngOnInit`. Backend: `@ExtendWith(MockitoExtension.class)` con `@Mock` de los repositorios. Ninguna prueba unitaria llama al backend real ni a la base de datos. (La prueba vieja `CentroValdiviezoApplicationTests.contextLoads` sí levanta el contexto de Spring y necesita MySQL: no es unitaria, pero `mvnw test` la ejecuta.)
+
+**Datos.** Las pruebas usan DNIs, IDs y claves inventados (`11112222`, `clave-prueba`…), no los de la base, salvo `MedicoServiceCaracterizacionTest`, cuyo DNI de ejemplo se arma con `"1000000" + id`.
+
+### Comandos exactos
+
+Frontend (desde `proyecto_valdiviezo/`, en Git Bash). Usa el Chromium que ya está en la caché de Playwright, en modo headless, y solo los archivos `*.caracterizacion.spec.ts`:
+
+```bash
+cd proyecto_valdiviezo
+export CHROME_BIN="$(cygpath -w ~/AppData/Local/ms-playwright/chromium-1217/chrome-win64/chrome.exe)"
+npx ng test --watch=false --browsers=ChromeHeadless --ts-config=tsconfig.caracterizacion.json --include='src/app/**/*.caracterizacion.spec.ts'
+```
+
+`--ts-config=tsconfig.caracterizacion.json` es necesario: el `tsconfig.spec.json` del proyecto compila **todos** los `.spec.ts`, y 4 de los specs viejos no compilan (ver "Estado de los specs viejos"); con ellos la compilación falla y no se ejecuta ninguna prueba, aunque `--include` filtre. En PowerShell: `$env:CHROME_BIN = "$env:LOCALAPPDATA\ms-playwright\chromium-1217\chrome-win64\chrome.exe"` y el mismo `npx ng test …`.
+
+Backend (desde `backend/backend/`; MySQL encendido por `contextLoads`):
+
+```bash
+cd backend/backend
+./mvnw test
+```
+
+### Lista
+
+| ID | Archivo | Qué comprueba | Tipo | Hallazgo |
+|---|---|---|---|---|
+| U01 | `FE/login-paciente/login-paciente.caracterizacion.spec.ts` | Login de paciente: guarda `userId`, `userName` ("nombres apellidos") y `userType`, navega a `/welcome` | Unitaria | — |
+| U02 | ídem | Usuario de otro rol: no guarda nada, "Este usuario no es un paciente. Use el login que le corresponde." | Unitaria | — |
+| U03 | ídem | Error 401: "Credenciales inválidas", no guarda nada | Unitaria | — |
+| U04 | ídem | Error de conexión (status 0): "No se pudo conectar con el servidor. Intente nuevamente.", no guarda nada | Unitaria | — |
+| U05 | ídem | Error 500: el mismo mensaje de conexión aunque el servidor respondió (comportamiento actual) | Unitaria | H-029 |
+| U06 | ídem | DNI inválido (7 dígitos, 9, con letra, vacío): mensaje de DNI y no llama a `AuthService.login` | Unitaria | — |
+| U07–U12 | `FE/login-medico/login-medico.caracterizacion.spec.ts` | Los mismos 6 casos para el médico; navega a `/medico-dashboard`; mensaje "Este usuario no es un médico…". U11 = error 500 | Unitaria | U11: H-029 |
+| U13–U18 | `FE/login-admin/login-admin.caracterizacion.spec.ts` | Los mismos 6 casos para el administrador; navega a `/admin`; guarda exactamente 3 claves; mensaje "Este usuario no es un administrador…". U17 = error 500 | Unitaria | U17: H-029 |
+| U19 | `FE/paciente/registrar-cita/registrar-cita.caracterizacion.spec.ts` | `generarSlots()` con horario del lunes 08:00–10:00: `08:00` a `09:40` cada 20 minutos | Unitaria | — |
+| U20 | ídem | Descarta las horas ocupadas (`08:20:00`, `09:40:00`) | Unitaria | — |
+| U21 | ídem | Sin horario ese día (sábado): 36 bloques de `08:00` a `19:40` (comportamiento actual) | Unitaria | H-022 |
+| U22 | ídem | Sin horario: el horario por defecto también descarta las ocupadas (comportamiento actual) | Unitaria | H-022 |
+| U23 | ídem | Con horario pero todo ocupado: cae al horario por defecto y ofrece `10:00` a `19:40` (comportamiento actual) | Unitaria | H-022 |
+| U24 | `FE/welcome/cerrar-sesion.caracterizacion.spec.ts` | Welcome: "Cerrar sesión" llama a `AuthService.logout` y navega a `/login-selection` | Unitaria | — |
+| U25 | ídem | Welcome: con el `AuthService` real, el localStorage queda vacío (también claves ajenas) | Unitaria | — |
+| U26 | ídem | Admin-dashboard: llama a `AuthService.logout` y navega a `/login-selection` | Unitaria | — |
+| U27 | ídem | Admin-dashboard: con el `AuthService` real, el localStorage queda vacío | Unitaria | — |
+| U28 | `FE/medico-dashboard/services/medico.service.caracterizacion.spec.ts` | `getCitasByStatus`: `GET http://localhost:8080/api/citas/medico/{userId}` con `params: { estado }` | Unitaria | — |
+| U29 | ídem | `updateCitaStatus`: `PUT …/medico/{userId}/{idCita}/estado` con `{ estado }` | Unitaria | — |
+| U30 | ídem | `getPacientes`: `GET …/medico/{userId}/pacientes` | Unitaria | — |
+| U31 | ídem | Lee el `userId` de la sesión en cada llamada (no lo guarda al crearse) | Unitaria | — |
+| U32 | ídem | Sin sesión: los 3 métodos fallan con "No hay sesión de médico." y no llaman a `HttpClient` | Unitaria | (la pantalla lo muestra como error de conexión: H-029) |
+| U33 | `BE/…/controller/AuthControllerCaracterizacionTest.java` | Login de paciente correcto: 200, `tipo: paciente`, id, nombres, apellidos, dni, sin `clave`; no consulta médico ni admin | Unitaria | — |
+| U34 | ídem | Login de médico correcto: 200, `tipo: medico`, `cmp`, sin `clave` | Unitaria | — |
+| U35 | ídem | Login de administrador correcto: 200, `tipo: administrador`, `rol`, sin `clave` | Unitaria | — |
+| U36 | ídem | Clave incorrecta: 401 `{"error":"Credenciales inválidas"}` | Unitaria | — |
+| U37 | ídem | DNI inexistente: 401 | Unitaria | — |
+| U38 | ídem | DNI faltante: 400 `{"error":"DNI y contraseña son requeridos"}`, no consulta repositorios | Unitaria | — |
+| U39 | ídem | Clave faltante: 400, no consulta repositorios | Unitaria | — |
+| U40 | ídem | Orden paciente → médico → admin: si la clave no es la del paciente con ese DNI, sigue y entra como médico | Unitaria | (estructura de H-019) |
+| U41 | ídem | Excepción del repositorio: 500 `{"error":"Error interno: …"}` (comportamiento actual) | Unitaria | H-029 (origen del 500) |
+| U42 | `BE/…/controller/CitaConsultaControllerCaracterizacionTest.java` | Cambio de estado de una cita de otro médico: 404, no guarda, no consulta estados | Unitaria | — |
+| U43 | ídem | Cita inexistente: 404, no guarda | Unitaria | — |
+| U44 | ídem | Estado inexistente ("Aprobada"): 400 `Estado de cita inexistente: Aprobada`, no guarda | Unitaria | — |
+| U45 | ídem | Cambio válido Pendiente → Confirmada: guarda `estado_cita = 2`, 200 con el DTO de `findCitaMedicoPorId` | Unitaria | — |
+| U46 | ídem (parametrizada, 4 casos) | Acepta cualquier cambio: Cancelada→Confirmada, Pendiente→Atendida, Atendida→Pendiente, Cancelada→Reprogramada (comportamiento actual) | Unitaria | **H-031** |
+| U47 | `BE/…/services/PacienteServiceCaracterizacionTest.java` | `listarPacientes` devuelve lo de `findAll` | Unitaria | — |
+| U48 | ídem | `listarPorId` devuelve el `Optional` del repositorio | Unitaria | — |
+| U49 | ídem | `crearPaciente` guarda la clave tal como llega, sin cifrar (comportamiento actual) | Unitaria | H-007 |
+| U50 | ídem | `eliminarPaciente` llama a `deleteById` y devuelve `true` siempre | Unitaria | — |
+| U51 | ídem | `existePaciente` consulta `existsById` | Unitaria | — |
+| U52 | ídem | `actualizarPaciente` copia nombres, apellidos, DNI, fecha, sexo, estado y ubigeo; **no** copia teléfono ni clave (comportamiento actual) | Unitaria | **H-032** |
+| U53 | ídem | `actualizarPaciente` con ID inexistente lanza `NoSuchElementException` y no guarda | Unitaria | — |
+| U54 | `BE/…/services/MedicoServiceCaracterizacionTest.java` | `listarMedicos` y `listarPorId` devuelven lo del repositorio | Unitaria | — |
+| U55 | ídem | `crearMedico` guarda; `eliminarMedico` llama a `deleteById` y devuelve `true` | Unitaria | — |
+| U56 | ídem | `actualizarMedico` copia nombres, apellidos, CMP y especialidad; no copia DNI ni clave | Unitaria | — |
+| U57 | ídem | `actualizarMedico` con ID inexistente lanza `NoSuchElementException` | Unitaria | — |
+| U58 | ídem | `buscaPorApellido`, `buscaporNombre`, `listarPorEspecialidad` delegan en el repositorio | Unitaria | — |
+| U59 | ídem | `getMedicosConEspecialidad` convierte cada fila `Object[]` en `MedicoEspecialidadDTO` | Unitaria | — |
+| U60 | `BE/…/services/CitaServiceCaracterizacionTest.java` | `obtenerCitasPorEstado` y `obtenerCitasPorEspecialidad` devuelven lo del repositorio | Unitaria | — |
+| U61 | ídem | `obtenerIngresosMensuales` convierte filas `[mesAno, total]` en DTO (total `BigDecimal` o `Integer`) | Unitaria | — |
+| U62 | ídem | `obtenerIngresosMensuales` sin filas devuelve lista vacía | Unitaria | — |
+
+(`BE/…` = `backend/backend/src/test/java/com/centro_valdiviezo/backend/`; `FE/` = `proyecto_valdiviezo/src/app/`.) `getResumenMedicoPorEspecialidad` (H-005) no se caracteriza aquí: con el repositorio simulado no se reproduce el error 500, que nace en la consulta; lo cubre P04.
+
+### Resultados de la tarea 9 (2026-10-21, sobre LB-3, sin cambios en el código de la aplicación)
+
+- Frontend (10:28:36–10:28:59): `Chrome Headless 147.0.0.0 (Windows 10): Executed 32 of 32 SUCCESS` · `TOTAL: 32 SUCCESS`. U01–U32 **pasan**.
+- Backend (10:31:08–10:31:28), `./mvnw test`: `Tests run: 37, Failures: 0, Errors: 0, Skipped: 0` · `BUILD SUCCESS`. Por clase: `AuthControllerCaracterizacionTest` 9, `CitaConsultaControllerCaracterizacionTest` 8 (U42–U45 + 4 casos de U46), `PacienteServiceCaracterizacionTest` 7, `MedicoServiceCaracterizacionTest` 6, `CitaServiceCaracterizacionTest` 3 → **33 nuevas, todas pasan**. Pruebas viejas: `CentroValdiviezoApplicationTests` 1, `AuthControllerTest` 1, `EspecialidadTest` 2 → **4 pasan**. La salida muestra una traza `java.lang.RuntimeException: BD caida` en `AuthController.login`: es el `e.printStackTrace()` de `AuthController.java:100` que provoca U41 a propósito, no un fallo.
+
+### Estado de los specs viejos del frontend (generados por Angular; no se modificaron)
+
+Con la configuración del proyecto (`ng test`, `tsconfig.spec.json`) **no se ejecuta ninguna prueba**: la compilación falla por 4 specs que importan nombres que no existen:
+
+| Spec | Error |
+|---|---|
+| `FE/features/usuario/components/components.spec.ts` | `TS2305: Module './components' has no exported member 'Components'` (la clase es `UsuariosComponent`) |
+| `FE/login/login.spec.ts` | `TS2305: … no exported member 'Login'` |
+| `FE/services/auth.spec.ts` | `TS2305: … no exported member 'Auth'` (la clase es `AuthService`) |
+| `FE/services/usuario.spec.ts` | `TS2305: … no exported member 'Usuario'` |
+
+Los otros 11 archivos (12 pruebas) se ejecutaron aparte (10:32:38–10:32:47) con un tsconfig temporal fuera del repositorio que excluye esos 4: `TOTAL: 9 FAILED, 3 SUCCESS`.
+- Fallan por `NG0201: No provider found for '_HttpClient'` (el TestBed no provee `HttpClient`): `CantEstadoCita should create`, `ServiceCita`, `ServiceMedico`, `ServicePaciente should be created`, `MainMedico should create`, `MainPaciente should create`.
+- Fallan por `NG0201: No provider found for 'NgbActiveModal'`: `DetalleMedico should create`, `DetallePaciente should create`.
+- Falla `App should render title`: `Expected undefined to contain 'Hello, proyecto_valdiviezo'` (la plantilla de `App` ya no tiene ese título).
+- Pasan: las otras 3 (`App should create` y las de `features/cita/cita.spec.ts` y `main-cita.spec.ts`, deducidas por descarte de la lista de fallos).
+
+Los specs viejos quedan fuera de la batería hasta que el usuario decida qué hacer con ellos (ver `docs/BITACORA.md`).
 
 ---
 

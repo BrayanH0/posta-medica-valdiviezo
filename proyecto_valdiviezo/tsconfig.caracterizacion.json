@@ -1,0 +1,14 @@
+/* Pruebas unitarias de caracterización (tarea 9). Compila solo los *.caracterizacion.spec.ts:
+   los .spec.ts viejos generados por Angular no compilan (ver docs/BITACORA.md) y tsconfig.spec.json los incluye a todos. */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/caracterizacion",
+    "types": [
+      "jasmine"
+    ]
+  },
+  "include": [
+    "src/**/*.caracterizacion.spec.ts"
+  ]
+}
