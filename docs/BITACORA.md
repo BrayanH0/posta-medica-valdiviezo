@@ -464,3 +464,7 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 
 ### [2026-10-21 entre 15:08 y 15:12] RFC-005: documentación y cierre
 - `PRUEBAS.md`: P25, resultados de LB-5, U63–U71, comando de las unitarias completas, columna "LB-5 DRY". `HALLAZGOS.md`: H-008, H-010 (con la precisión de que las anotaciones no tenían efecto) y H-030 → "Cerrado (RFC-005, LB-5)"; **H-036** nuevo (sesión con `nombres` vacío, Baja / Correctivo / Pendiente). `ELEMENTOS_CONFIGURACION.md`: EC-01, EC-02 (55 `.ts`), EC-07 (`tsconfig.unitarias.json`) y EC-18. RFC-005 cerrada a las 15:11.
+
+### [2026-10-21 15:12] Commit y tag de la línea base LB-5
+- Qué se hizo: commit de RFC-005 (13 controladores y 3 componentes modificados; `login-comun.ts`, su spec, `tsconfig.unitarias.json`, RFC-005 y evidencias agregados; 4 documentos actualizados) y tag anotado `LB-5` ("Linea base 5: R1 DRY").
+- Evidencia: commit `8effe51b566c00e8c769937029ccf99d539eaf28` (2026-10-21 15:12:22) — "RFC-005: R1 DRY, logica de login y CORS en un solo lugar". Esta entrada va en un commit posterior porque un commit no puede contener su propio hash.
