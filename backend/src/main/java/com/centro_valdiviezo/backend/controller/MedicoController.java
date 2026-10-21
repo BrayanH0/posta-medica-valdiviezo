@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 @RequestMapping("/api/medico")
-@CrossOrigin(origins = "*")
 public class MedicoController {
 
     @Autowired

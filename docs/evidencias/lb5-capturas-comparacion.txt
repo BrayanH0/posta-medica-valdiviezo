@@ -1,0 +1,38 @@
+Comparación de capturas antes (LB-4) / después (LB-5) de las pantallas de login. 2026-10-21.
+Herramientas (scratchpad de la sesión, fuera del repositorio): capturas.js (Playwright, ventana 1280x800, captura de página completa,
+sin foco, mouse en (0,0), animations 'disabled', caret 'hide') y comparar.js (compara los PNG píxel a píxel con el decodificador PNG de Playwright).
+Casos por rol: inicial, dni-invalido ("1234"), sin-clave, clave-incorrecta (401 del backend), otro-rol (usuario de otro rol, 200 del backend).
+
+1) Ruido del render (mismo código, varias corridas)
+- Primera corrida "antes" (14:48, sin animations 'disabled'): al repetirla, 2 de 15 capturas cambiaban (transiciones CSS de 0.3 s). Se ajustó el script y se volvió a tomar "antes" (14:50–14:52).
+- Con el script ajustado, 3 corridas sobre LB-4 (evidencias + control c1 + control c2): 14 de 15 idénticas en las 3. login-admin-otro-rol: 7 píxeles distintos en una columna (x 481, y 319-420), borde izquierdo de la caja del login de admin.
+- 3 corridas sobre LB-5 (evidencias + d1 + d2): mismo tipo de ruido, solo en el login de admin, en los bordes de la caja (x 481-487 o x 792-799):
+  clave-incorrecta: despues vs d1 18 px (x 481-799, y 330-436); d1 vs d2 10 px (x 481-487)
+  dni-invalido: despues vs d1 7 px (x 792-799, y 380-420); d1 vs d2 0
+  otro-rol: despues vs d1 7 px (x 481); d1 vs d2 14 px (x 481-799)
+
+2) Antes vs después (archivos lb5-antes-*.png vs lb5-despues-*.png de docs/evidencias)
+login-admin-clave-incorrecta.png: 18 píxeles distintos en el rectángulo x 481-799, y 330-436
+login-admin-dni-invalido.png: 7 píxeles distintos en el rectángulo x 792-799, y 380-420
+login-admin-inicial.png: 0 píxeles distintos (1280x800)
+login-admin-otro-rol.png: 7 píxeles distintos en el rectángulo x 481-481, y 319-420
+login-admin-sin-clave.png: 0 píxeles distintos (1280x800)
+login-medico-clave-incorrecta.png: 0 píxeles distintos (1280x800)
+login-medico-dni-invalido.png: 0 píxeles distintos (1280x800)
+login-medico-inicial.png: 0 píxeles distintos (1280x800)
+login-medico-otro-rol.png: 0 píxeles distintos (1280x800)
+login-medico-sin-clave.png: 0 píxeles distintos (1280x800)
+login-paciente-clave-incorrecta.png: 0 píxeles distintos (1280x800)
+login-paciente-dni-invalido.png: 0 píxeles distintos (1280x800)
+login-paciente-inicial.png: 0 píxeles distintos (1280x800)
+login-paciente-otro-rol.png: 0 píxeles distintos (1280x800)
+login-paciente-sin-clave.png: 0 píxeles distintos (1280x800)
+
+3) Para los 3 casos con diferencias se buscó un par LB-4 / LB-5 idéntico:
+login-admin-clave-incorrecta: control c1 (LB-4) vs d1 (LB-5) -> 0 píxeles distintos
+login-admin-dni-invalido: control c1 (LB-4) vs d1 (LB-5) -> 0 píxeles distintos
+login-admin-otro-rol: lb5-antes (LB-4) vs d1 (LB-5) -> 0; c1 (LB-4) vs lb5-despues (LB-5) -> 0; c2 (LB-4) vs lb5-despues (LB-5) -> 0
+
+Conclusión: las 15 pantallas se ven idénticas. Las únicas diferencias son de 7 a 18 píxeles en los bordes de la caja del login de admin,
+que también aparecen entre dos corridas del mismo código (LB-4 contra LB-4 y LB-5 contra LB-5), y para cada una existe un par
+LB-4 / LB-5 idéntico píxel a píxel. No hay cambio visual atribuible a la refactorización (además, RFC-005 no modificó plantillas ni CSS).

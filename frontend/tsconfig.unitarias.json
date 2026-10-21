@@ -1,0 +1,16 @@
+/* Pruebas unitarias completas (desde RFC-005): las de caracterización (tarea 9) más las de las
+   funciones extraídas en las refactorizaciones (*.unitaria.spec.ts). Igual que tsconfig.caracterizacion.json,
+   deja fuera los .spec.ts viejos generados por Angular, que no compilan (H-033). */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/unitarias",
+    "types": [
+      "jasmine"
+    ]
+  },
+  "include": [
+    "src/**/*.caracterizacion.spec.ts",
+    "src/**/*.unitaria.spec.ts"
+  ]
+}

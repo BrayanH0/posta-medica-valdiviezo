@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/cita")
-@CrossOrigin(origins = "*")
 public class CitaController {
 
     @Autowired

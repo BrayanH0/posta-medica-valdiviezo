@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 @RequestMapping("/api/especialidad")
-@CrossOrigin(origins = "*")
 public class EspecialidadController {
 
     @Autowired

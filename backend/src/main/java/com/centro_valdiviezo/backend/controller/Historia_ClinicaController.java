@@ -7,7 +7,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/historia_clinica")
-@CrossOrigin(origins = "*")
 public class Historia_ClinicaController {
 
     private final Historia_ClinicaRepository repository;

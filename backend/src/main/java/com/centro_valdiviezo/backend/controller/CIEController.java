@@ -8,7 +8,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/cie")
-@CrossOrigin(origins = "*")
 public class CIEController {
 
     private final CIERepository repository;

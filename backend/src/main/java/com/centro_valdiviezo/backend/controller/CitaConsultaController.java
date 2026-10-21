@@ -8,7 +8,6 @@ import com.centro_valdiviezo.backend.repository.CitaRepository;
 import com.centro_valdiviezo.backend.repository.Estado_CitaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -23,7 +22,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/citas")
-@CrossOrigin(origins = "*")
 public class CitaConsultaController {
 
     private final CitaRepository repository;

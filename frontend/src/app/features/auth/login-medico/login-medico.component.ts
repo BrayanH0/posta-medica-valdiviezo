@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth';
+import { LOGIN_MEDICO, guardarSesion, mensajeErrorLogin, resolverRespuestaLogin, validarDniPeruano, validarFormularioLogin } from '../login-comun';
 
 @Component({
   selector: 'app-login-medico',
@@ -24,53 +25,30 @@ export class LoginMedicoComponent {
   }
 
   validarDniPeruano(dni: string): boolean {
-    // DNI peruano: 8 dígitos numéricos
-    const dniRegex = /^\d{8}$/;
-    return dniRegex.test(dni);
+    return validarDniPeruano(dni);
   }
 
   login() {
-    this.error = '';
+    this.error = validarFormularioLogin(this.dni, this.clave);
+    if (this.error) return;
 
-    // Validar DNI
-    if (!this.validarDniPeruano(this.dni)) {
-      this.error = 'DNI inválido. Debe contener 8 dígitos numéricos.';
-      return;
-    }
-
-    if (!this.clave) {
-      this.error = 'Por favor ingrese su contraseña.';
-      return;
-    }
-
-    if (this.dni && this.clave) {
-        console.log('Intentando login medico:', this.dni);
-        this.authService.login(this.dni, this.clave).subscribe({
-            next: (res: any) => {
-                console.log('Login exitoso', res);
-                if (res && res.success) {
-                    // La sesión se guarda solo si el usuario es médico
-                    if (res.tipo === 'medico') {
-                        if (res.id) localStorage.setItem('userId', res.id.toString());
-                        if (res.nombres) localStorage.setItem('userName', `${res.nombres} ${res.apellidos}`);
-                        if (res.tipo) localStorage.setItem('userType', res.tipo);
-                        this.router.navigate(['/medico-dashboard']);
-                    } else {
-                        this.error = 'Este usuario no es un médico. Use el login que le corresponde.';
-                    }
-                } else {
-                    this.error = 'Respuesta inesperada del servidor';
-                }
-            },
-            error: (err: any) => {
-                console.error('Error login', err);
-                if (err.status === 401) {
-                    this.error = 'Credenciales inválidas';
-                } else {
-                    this.error = 'No se pudo conectar con el servidor. Intente nuevamente.';
-                }
+    console.log('Intentando login medico:', this.dni);
+    this.authService.login(this.dni, this.clave).subscribe({
+        next: (res: any) => {
+            console.log('Login exitoso', res);
+            const resultado = resolverRespuestaLogin(res, LOGIN_MEDICO);
+            if ('ruta' in resultado) {
+                // La sesión se guarda solo si el usuario es médico
+                guardarSesion(res, LOGIN_MEDICO);
+                this.router.navigate([resultado.ruta]);
+            } else {
+                this.error = resultado.error;
             }
-        });
-    }
+        },
+        error: (err: any) => {
+            console.error('Error login', err);
+            this.error = mensajeErrorLogin(err);
+        }
+    });
   }
 }

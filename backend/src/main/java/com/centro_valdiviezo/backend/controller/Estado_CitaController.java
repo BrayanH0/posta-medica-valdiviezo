@@ -7,7 +7,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/estado_cita")
-@CrossOrigin(origins = "*")
 public class Estado_CitaController {
 
     private final Estado_CitaRepository repository;

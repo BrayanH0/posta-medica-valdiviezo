@@ -7,7 +7,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/ubigeo")
-@CrossOrigin(origins = "*")
 public class UbigeoController {
 
     private final UbigeoRepository repository;
