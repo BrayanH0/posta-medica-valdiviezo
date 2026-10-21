@@ -265,3 +265,9 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Qué se hizo: evaluación post-implementación en RFC-002; H-028 pasó a "Cerrado (RFC-002, LB-2)"; la tabla de PRUEBAS.md recibió la columna "LB-2 RFC-002" y las siguientes se renumeraron (Reorganización → LB-3, DRY → LB-4, SRP → LB-5, OCP → LB-6, IoC → LB-7), igual que la regla del encabezado (LB-3 a LB-7). HALLAZGOS.md nombra los cambios por su nombre (R1 DRY, Reorganización…), no por número de línea base, así que no requirió renumeración; RFC-001 tampoco menciona esos números. La entrada de LB-1 de esta bitácora que dice "reorganización (LB-2)" se deja como estaba, porque registra lo planificado en ese momento.
 - Errores de registro corregidos en el momento: en el historial de RFC-002 se escribieron dos horas por adelantado ("En implementación" 09:30, cuando `date` dio 09:29:48; "Cerrado" 09:41, cuando `date` dio 09:39:36). Ambas se reemplazaron por la hora real antes del commit, aplicando la regla de CLAUDE.md.
 - Evidencia: `docs/rfc/RFC-002.md`, `docs/HALLAZGOS.md`, `docs/PRUEBAS.md`.
+
+### [2026-10-21 09:40] Commit y tag de la línea base LB-2
+- Qué se hizo: commit de RFC-002 (3 archivos de código, CLAUDE.md, documentación y 10 evidencias) y tag anotado `LB-2`.
+- Por qué: congelar el estado tras el segundo cambio correctivo; es la línea base contra la que se comparará la reorganización (LB-3).
+- Resultado: tag `LB-2` ("Linea base 2: RFC-002 aplicado") apunta al commit. La carpeta `.playwright-mcp/` (registros que genera la herramienta de pruebas) quedó fuera del commit; no se borró porque CLAUDE.md no permite borrar archivos con comandos de terminal.
+- Evidencia: commit `697447ffee775e3973e839faac4f7bb5cce60e36` (2026-10-21 09:40:29) — "RFC-002: login de paciente comprueba el rol (H-028)". Esta entrada se agregó en un commit posterior porque un commit no puede contener su propio hash.
