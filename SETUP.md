@@ -32,7 +32,7 @@
 Ejecuta en MySQL Workbench o línea de comandos:
 
 ```sql
-CREATE DATABASE sistema_citas_valdiviezo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE posta_medica_valdiviezo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
 #### 3. Configurar Credenciales (si es necesario)
@@ -40,7 +40,7 @@ Si usaste credenciales diferentes, actualiza:
 `backend\backend\src\main\resources\application.properties`
 
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/sistema_citas_valdiviezo
+spring.datasource.url=jdbc:mysql://localhost:3306/posta_medica_valdiviezo
 spring.datasource.username=root
 spring.datasource.password=TU_CONTRASEÑA_AQUI
 ```

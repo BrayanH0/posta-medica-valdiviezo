@@ -1,5 +1,5 @@
 -- =======================================================
--- Base de Datos: sistema_citas_valdiviezo
+-- Base de Datos: posta_medica_valdiviezo
 -- Motor: MySQL
 -- =======================================================
 SET FOREIGN_KEY_CHECKS = 0;
@@ -18,8 +18,8 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- DROP TABLE IF EXISTS Estado_Cita;
 -- DROP TABLE IF EXISTS CIE;
 
-CREATE DATABASE IF NOT EXISTS sistema_citas_valdiviezo;
-USE sistema_citas_valdiviezo;
+CREATE DATABASE IF NOT EXISTS posta_medica_valdiviezo;
+USE posta_medica_valdiviezo;
 
 -- =======================================================
 -- TABLA: Estado Cita
@@ -323,4 +323,4 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- COMANDO PARA ELIMINAR TODA LA BASE DE DATOS
 -- (Útil para reiniciar todo el entorno desde cero)
 -- =======================================================
--- DROP DATABASE IF EXISTS sistema_citas_valdiviezo;
+-- DROP DATABASE IF EXISTS posta_medica_valdiviezo;

@@ -58,7 +58,7 @@ proyecto_valdiviezo/
 El proyecto utiliza un **único script SQL** maestro ubicado en la raíz: `BDPostaMedica.sql`.
 
 1. **Motor:** MySQL
-2. **Base de Datos:** `sistema_citas_valdiviezo`
+2. **Base de Datos:** `posta_medica_valdiviezo`
 3. **Credenciales por defecto:**
    - Usuario: `root`
    - Contraseña: `admin`

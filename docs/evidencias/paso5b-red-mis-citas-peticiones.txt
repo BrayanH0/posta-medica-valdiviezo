@@ -1,0 +1,11 @@
+41. [GET] http://localhost:8080/api/cita => [200] 
+42. [GET] http://localhost:8080/api/medico/codigo/1 => [200] 
+43. [GET] http://localhost:8080/api/medico/codigo/6 => [200] 
+44. [GET] http://localhost:8080/api/medico/codigo/1 => [200] 
+45. [GET] http://localhost:8080/api/medico/codigo/1 => [200] 
+46. [GET] http://localhost:8080/api/especialidad/1 => [200] 
+47. [GET] http://localhost:8080/api/especialidad/1 => [200] 
+48. [GET] http://localhost:8080/api/especialidad/1 => [200] 
+49. [GET] http://localhost:8080/api/especialidad/1 => [200] 
+
+Note: 40 static requests not shown, run with "static" option to see them.
