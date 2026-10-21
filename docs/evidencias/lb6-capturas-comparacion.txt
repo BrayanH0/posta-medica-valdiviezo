@@ -1,0 +1,30 @@
+Comparación de capturas antes (LB-5) / después (LB-6) de la pantalla "Registrar Cita". 2026-10-21.
+Herramientas (scratchpad de la sesión): capturas.js (modo "cita") y comparar.js, las mismas de lb5-capturas-comparacion.txt.
+Cada caso: login de paciente 12345678, especialidad Medicina General, médico Jorge Santos Ruiz (horario lunes a viernes 08:00-20:00), fecha indicada.
+La BD se recargó antes de cada juego de capturas (15:13:30 antes; 15:21:42 después).
+
+Casos:
+- lunes-2026-10-26: día con horario, sin citas -> 36 horas (08:00-19:40)
+- sabado-2026-10-24: día sin horario -> horario por defecto, 36 horas (H-022, se conserva)
+- miercoles-2023-09-20-ocupada-1100: día con horario y la cita 14 a las 11:00 -> 35 horas, sin 11:00
+- sabado-2023-07-01-ocupada-0900: día sin horario y la cita 1 a las 09:00 -> horario por defecto, 35 horas, sin 09:00
+
+Antes (LB-5), 3 corridas (15:14:38-15:15:55): idénticas entre sí (mismo sha256):
+lb6-antes-registrar-cita-lunes-2026-10-26.png 7a13b3294f06f7cb695f8b4703faf1b0fe4cad8afa30b792b753717ccba9950f
+lb6-antes-registrar-cita-sabado-2026-10-24.png 38949f45ea58fe7e3504aa7e8d23a57fa3bdcbd65062c355f411cd270537a1e2
+lb6-antes-registrar-cita-miercoles-2023-09-20-ocupada-1100.png fb8e53c6efa28ea5ffec5abfb807743dba4e0cfa56511fbffd994b967c8fdd8a
+lb6-antes-registrar-cita-sabado-2023-07-01-ocupada-0900.png b57ef0a75e10eb9dbe91591eb6c7a43aef9643b53050fe0890ecb4759f5183ab
+
+Después (LB-6), 15:21:43-15:22:09: mismo sha256 en las 4 (ver arriba). Comparación píxel a píxel:
+registrar-cita-lunes-2026-10-26.png: 0 píxeles distintos (1280x800)
+registrar-cita-miercoles-2023-09-20-ocupada-1100.png: 0 píxeles distintos (1280x800)
+registrar-cita-sabado-2023-07-01-ocupada-0900.png: 0 píxeles distintos (1280x800)
+registrar-cita-sabado-2026-10-24.png: 0 píxeles distintos (1280x800)
+
+Listas de horas mostradas (iguales antes y después):
+lunes-2026-10-26: 36 horas 08:00 ... 19:40
+sabado-2026-10-24: 36 horas 08:00 ... 19:40
+miercoles-2023-09-20-ocupada-1100: 35 horas, ..., 10:40, 11:20, ... (sin 11:00)
+sabado-2023-07-01-ocupada-0900: 35 horas, 08:40, 09:20, ... (sin 09:00)
+
+Conclusión: la pantalla se ve idéntica en los 4 casos.

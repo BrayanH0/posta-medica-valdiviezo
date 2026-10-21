@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { calcularHorariosDisponibles, diaDeLaSemana, horaAMinutos, minutosAHora } from './horarios-cita';
 
 @Component({
   selector: 'app-registrar-cita',
@@ -68,56 +69,25 @@ export class RegistrarCitaComponent implements OnInit {
     }
   }
 
+  // La regla de horarios vive en horarios-cita.ts (RFC-006); aquí solo se muestra el resultado
   generarSlots(availability: any[], existingCitas: any[]) {
-      const date = new Date(this.cita.fecha_cita + 'T00:00:00'); // Force local time handling or ensure date part only
-      // Note: new Date('2025-11-25') in JS often defaults to UTC, which might be previous day in local.
-      // Append T00:00:00 to try to keep it local or use manual parsing.
-      const dayMap = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-      const dayName = dayMap[date.getDay()];
+      console.log('Checking availability for:', diaDeLaSemana(this.cita.fecha_cita));
 
-      console.log('Checking availability for:', dayName);
-
-      const rule = availability.find(a => a.dia_semana === dayName);
+      // Si el cálculo lanza un error, la lista queda vacía, como antes
       this.horariosDisponibles = [];
-
-      if (rule) {
-          let start = this.timeToMinutes(rule.hora_inicio);
-          let end = this.timeToMinutes(rule.hora_fin);
-
-          while (start + 20 <= end) {
-              const timeStr = this.minutesToTime(start);
-              if (!existingCitas.find(c => c.hora_cita.substring(0,5) === timeStr)) {
-                  this.horariosDisponibles.push(timeStr);
-              }
-              start += 20;
-          }
-      }
-
-      // Fallback if no specific rule or empty (Constraint: "any date is available")
-      if (this.horariosDisponibles.length === 0) {
+      const resultado = calcularHorariosDisponibles(this.cita.fecha_cita, availability, existingCitas);
+      if (resultado.porDefecto) {
           console.log('Using fallback availability.');
-          let start = 8 * 60; // 08:00
-          let end = 20 * 60;  // 20:00
-          while (start + 20 <= end) {
-              const timeStr = this.minutesToTime(start);
-              if (!existingCitas.find(c => c.hora_cita && c.hora_cita.substring(0,5) === timeStr)) {
-                  this.horariosDisponibles.push(timeStr);
-              }
-              start += 20;
-          }
       }
+      this.horariosDisponibles = resultado.horarios;
   }
 
   timeToMinutes(time: string): number {
-      if(!time) return 0;
-      const [h, m] = time.split(':').map(Number);
-      return h * 60 + m;
+      return horaAMinutos(time);
   }
 
   minutesToTime(mins: number): string {
-      const h = Math.floor(mins / 60);
-      const m = mins % 60;
-      return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+      return minutosAHora(mins);
   }
 
   isValid() {
