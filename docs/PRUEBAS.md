@@ -186,7 +186,7 @@ Las pruebas de navegador se hacen con Playwright, **una pestaña nueva por caso*
 
 ## Resultados de LB-1 (RFC-001)
 
-Ejecución del 2026-10-20, de 20:53 a 21:05, con la BD recargada (`DROP DATABASE` + `BDPostaMedica.sql`, 21 citas) y el frontend con los cambios de RFC-001. Objetivo: P07, P08, P10 y P17 deben pasar a PASA; el resto debe dar lo mismo que en LB-0.
+Ejecución del 2026-10-20, entre 20:46 y 20:57 *(hora corregida; antes decía "de 20:53 a 21:05", ver BITACORA.md)*, con la BD recargada (`DROP DATABASE` + `BDPostaMedica.sql`, 21 citas) y el frontend con los cambios de RFC-001. Objetivo: P07, P08, P10 y P17 deben pasar a PASA; el resto debe dar lo mismo que en LB-0.
 
 | ID | Obtenido en LB-1 | ¿Igual a LB-0? |
 |---|---|---|
