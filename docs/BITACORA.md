@@ -607,3 +607,8 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Verificación: un script de Node en el scratchpad (`columnas.js`, fuera del repositorio) cuenta las columnas de la tabla tratando `\|` como texto, igual que Markdown. Resultado: `filas 41`, todas con 10 columnas; 20 cerrados y 21 abiertos (los pendientes no cambian). Se usó un script porque los comandos `sed`/`perl`/`node -e` escritos en la línea de Git Bash daban resultados sin sentido con el carácter `|`.
 - Datos que siguen sin registro: la cantidad de integrantes del grupo (la guía pide ajustar los bloques de expositores).
 - Observación: el historial de RFC-001 no tiene un estado llamado "Informar al solicitante"; en la guía ese paso se asocia al estado "Cerrado" (evaluación post-implementación y reporte), y se dice así.
+
+### [2026-10-21 17:30] Commit y tag ENTREGA-T2 movido
+- Commit `5d3eb330935cb0637a0c971125cf6007f2e4918b` (2026-10-21 17:30:40), "Entrega: guia con los 12 puntos oficiales y correccion de hallazgos".
+- `git tag -a -f ENTREGA-T2 -m "Version entregada para la evaluacion T2"`: el hook no lo bloqueó; Git respondió `Updated tag 'ENTREGA-T2' (was 0a407e7)` (`0a407e7` era el objeto del tag anterior, que apuntaba al commit `50521a3`). `git rev-parse ENTREGA-T2^{commit}` → `5d3eb33…`.
+- Esta entrada va en un commit posterior porque un commit no puede contener su propio hash; por eso queda fuera del tag.
