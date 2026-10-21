@@ -37,7 +37,7 @@ CREATE DATABASE posta_medica_valdiviezo CHARACTER SET utf8mb4 COLLATE utf8mb4_un
 
 #### 3. Configurar Credenciales (si es necesario)
 Si usaste credenciales diferentes, actualiza:
-`backend\backend\src\main\resources\application.properties`
+`backend\src\main\resources\application.properties`
 
 ```properties
 spring.datasource.url=jdbc:mysql://localhost:3306/posta_medica_valdiviezo
@@ -51,14 +51,14 @@ spring.datasource.password=TU_CONTRASEÑA_AQUI
 
 ### Backend (Spring Boot)
 ```powershell
-cd "c:\Users\ORLANDO\Desktop\sitio web Jean Piier\proyecto_valdiviezo\backend\backend"
+cd "c:\Users\ORLANDO\Desktop\sitio web Jean Piier\proyecto_valdiviezo\backend"
 mvn spring-boot:run
 ```
 El backend estará disponible en: http://localhost:8080
 
 ### Frontend (Angular)
 ```powershell
-cd "c:\Users\ORLANDO\Desktop\sitio web Jean Piier\proyecto_valdiviezo\proyecto_valdiviezo"
+cd "c:\Users\ORLANDO\Desktop\sitio web Jean Piier\proyecto_valdiviezo\frontend"
 npm start
 ```
 El frontend estará disponible en: http://localhost:4200
@@ -84,13 +84,13 @@ npm run ng -- version
 
 ### Compilar Backend
 ```powershell
-cd "c:\Users\ORLANDO\Desktop\sitio web Jean Piier\proyecto_valdiviezo\backend\backend"
+cd "c:\Users\ORLANDO\Desktop\sitio web Jean Piier\proyecto_valdiviezo\backend"
 mvn clean package
 ```
 
 ### Compilar Frontend para Producción
 ```powershell
-cd "c:\Users\ORLANDO\Desktop\sitio web Jean Piier\proyecto_valdiviezo\proyecto_valdiviezo"
+cd "c:\Users\ORLANDO\Desktop\sitio web Jean Piier\proyecto_valdiviezo\frontend"
 npm run build
 ```
 
@@ -98,24 +98,29 @@ npm run build
 
 ## 📂 Estructura del Proyecto
 
+Desde LB-4 (RFC-004):
+
 ```
-proyecto_valdiviezo/
+(raíz del repositorio)
 ├── backend/
-│   └── backend/
-│       ├── src/
-│       │   ├── main/
-│       │   │   ├── java/
-│       │   │   └── resources/
-│       │   │       └── application.properties
-│       │   └── test/
-│       └── pom.xml
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/
+│   │   │   └── resources/
+│   │   │       └── application.properties
+│   │   └── test/
+│   └── pom.xml
 │
-└── proyecto_valdiviezo/
-    ├── src/
-    │   ├── app/
-    │   ├── index.html
-    │   └── main.ts
-    └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── app/      (core/, shared/models/, features/)
+│   │   ├── index.html
+│   │   └── main.ts
+│   └── package.json
+│
+├── database/BDPostaMedica.sql
+├── e2e/          (pruebas Playwright: tests/ y package.json)
+└── docs/
 ```
 
 ---

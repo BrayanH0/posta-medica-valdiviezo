@@ -31,41 +31,43 @@ El sistema permite la administración integral de un centro médico, facilitando
 
 ## 📂 Estructura del Proyecto
 
-El proyecto está organizado en dos directorios principales:
+Estructura desde la línea base LB-4 (RFC-004, `docs/rfc/RFC-004.md`):
 
 ```
-proyecto_valdiviezo/
+(raíz del repositorio)
 ├── backend/                # Código fuente del servidor (Spring Boot)
-│   └── backend/
-│       ├── src/main/java   # Controladores, Modelos, Servicios, Repositorios
-│       ├── src/main/resources # Configuración (application.properties)
-│       └── pom.xml         # Dependencias Maven
+│   ├── src/main/java       # Controladores, Modelos, Servicios, Repositorios
+│   ├── src/main/resources  # Configuración (application.properties)
+│   ├── src/test/java       # Pruebas unitarias (JUnit)
+│   └── pom.xml             # Dependencias Maven
 │
-├── proyecto_valdiviezo/    # Código fuente del cliente (Angular)
+├── frontend/               # Código fuente del cliente (Angular)
 │   ├── src/app/
-│   │   ├── admin/          # Módulos de administración (Dashboard, Pacientes, Médicos)
-│   │   ├── features/       # Lógica de negocio (Servicios)
-│   │   ├── login/          # Componentes de autenticación
-│   │   └── models/         # Interfaces TypeScript
+│   │   ├── core/           # Servicios usados por toda la app (auth, configuración, servicios de datos)
+│   │   ├── shared/models/  # Interfaces TypeScript
+│   │   └── features/       # auth/ (logins, registro), paciente/, medico/, admin/
 │   ├── angular.json        # Configuración de Angular
 │   └── package.json        # Dependencias NPM
 │
-└── BDPostaMedica.sql       # Script único de Base de Datos (Schema + Data)
+├── database/
+│   └── BDPostaMedica.sql   # Script único de Base de Datos (Schema + Data)
+├── e2e/                    # Pruebas Playwright (tests/) y su package.json
+└── docs/                   # Documentación de mantenimiento (bitácora, hallazgos, RFC, pruebas)
 ```
 
 ## ⚙️ Configuración de la Base de Datos
 
-El proyecto utiliza un **único script SQL** maestro ubicado en la raíz: `BDPostaMedica.sql`.
+El proyecto utiliza un **único script SQL** maestro: `database/BDPostaMedica.sql`.
 
 1. **Motor:** MySQL
 2. **Base de Datos:** `posta_medica_valdiviezo`
 3. **Credenciales por defecto:**
    - Usuario: `root`
    - Contraseña: `admin`
-   *(Configurable en `backend/backend/src/main/resources/application.properties`)*
+   *(Configurable en `backend/src/main/resources/application.properties`)*
 
 ### Instrucciones de BD:
-Ejecutar el script `BDPostaMedica.sql` en su totalidad. Este script:
+Ejecutar el script `database/BDPostaMedica.sql` en su totalidad. Este script:
 - Crea la base de datos y tablas.
 - Inserta datos semilla (usuarios, médicos, especialidades).
 - Configura claves foráneas con **CASCADE DELETE** para integridad referencial.
@@ -81,7 +83,7 @@ Ejecutar el script `BDPostaMedica.sql` en su totalidad. Este script:
 ### Paso 1: Iniciar el Backend
 1. Abrir una terminal en la carpeta del backend:
    ```bash
-   cd backend/backend
+   cd backend
    ```
 2. Ejecutar la aplicación con Maven Wrapper:
    ```bash
@@ -92,7 +94,7 @@ Ejecutar el script `BDPostaMedica.sql` en su totalidad. Este script:
 ### Paso 2: Iniciar el Frontend
 1. Abrir una nueva terminal en la carpeta del frontend:
    ```bash
-   cd proyecto_valdiviezo
+   cd frontend
    ```
 2. Instalar dependencias (solo la primera vez):
    ```bash
@@ -137,7 +139,7 @@ Ejecutar el script `BDPostaMedica.sql` en su totalidad. Este script:
 
 - El proyecto utiliza `Standalone Components` en Angular, eliminando la necesidad de `app.module.ts`.
 - La configuración de CORS está habilitada globalmente en el backend para permitir peticiones desde `localhost:4200`.
-- Para regenerar la base de datos, ejecutar siempre `BDPostaMedica.sql` completo; incluye sentencias `DROP DATABASE IF EXISTS` (comentadas por seguridad) y recreación de tablas.
+- Para regenerar la base de datos, ejecutar siempre `database/BDPostaMedica.sql` completo; incluye sentencias `DROP DATABASE IF EXISTS` (comentadas por seguridad) y recreación de tablas.
 
 ---
 **Desarrollado para el Centro Médico Valdiviezo**

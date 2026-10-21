@@ -19,7 +19,7 @@ process.stdin.on('end', () => {
   const esPrueba =
     /\.spec\.ts$/i.test(relativo) ||
     /(^|\/)tests\//i.test(relativo) ||
-    /^backend\/.*\/src\/test\//i.test(relativo);
+    /^backend\/(.*\/)?src\/test\//i.test(relativo);
 
   if (esPrueba && fs.existsSync(absoluto)) {
     console.log(JSON.stringify({

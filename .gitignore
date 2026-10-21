@@ -28,10 +28,14 @@ yarn-debug.log*
 yarn-error.log*
 
 # Exclusiones del proyecto (subcarpetas)
-backend/backend/target/
+backend/target/
 node_modules/
 dist/
 *.log
+
+# Resultados de Playwright y dependencias de e2e/ (igual que el package-lock.json de la raíz)
+test-results/
+e2e/package-lock.json
 
 # Registros de la herramienta de pruebas (Playwright MCP)
 .playwright-mcp/

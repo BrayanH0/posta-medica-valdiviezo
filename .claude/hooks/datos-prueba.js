@@ -1,6 +1,6 @@
 // Hook PreToolUse (Edit|Write|MultiEdit): pide confirmación si el texto nuevo de
 // un archivo que NO es de pruebas contiene DNIs o claves usados en las pruebas.
-// Excepciones: BDPostaMedica.sql, docs/ y .claude/.
+// Excepciones: database/BDPostaMedica.sql, docs/ y .claude/.
 const path = require('path');
 
 const DATOS_DE_PRUEBA = ['99999999', '12345678', '10000001', '87654321', '123456'];
@@ -21,9 +21,9 @@ process.stdin.on('end', () => {
   const esPrueba =
     /\.spec\.ts$/i.test(relativo) ||
     /(^|\/)tests\//i.test(relativo) ||
-    /^backend\/.*\/src\/test\//i.test(relativo);
+    /^backend\/(.*\/)?src\/test\//i.test(relativo);
   const esExcepcion =
-    relativo === 'BDPostaMedica.sql' ||
+    relativo === 'database/BDPostaMedica.sql' ||
     relativo.startsWith('docs/') ||
     relativo.startsWith('.claude/');
   if (esPrueba || esExcepcion) return;

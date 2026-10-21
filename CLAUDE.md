@@ -56,7 +56,7 @@ antes de cada herramienta (PreToolUse).
 
 1. **Pruebas protegidas** (`proteger-pruebas.js`, en Edit/Write/MultiEdit):
    si el archivo YA EXISTE y es de pruebas (`*.spec.ts`, carpeta
-   `tests/`, `backend/**/src/test/**`), pide confirmación al usuario
+   `tests/` —desde LB-4, `e2e/tests/`—, `backend/src/test/**`), pide confirmación al usuario
    con el motivo "Se intenta modificar una prueba existente". Crear
    archivos de prueba nuevos no pregunta.
 2. **Datos de prueba en el código** (`datos-prueba.js`, en
@@ -64,7 +64,7 @@ antes de cada herramienta (PreToolUse).
    nuevo contiene alguno de los DNIs o la clave usados en las pruebas
    (la lista está en `DATOS_DE_PRUEBA` dentro del script), pide
    confirmación con el motivo "El cambio incluye datos usados en las
-   pruebas". Excepciones: `BDPostaMedica.sql`, `docs/` y `.claude/`.
+   pruebas". Excepciones: `database/BDPostaMedica.sql`, `docs/` y `.claude/`.
 3. **Git destructivo** (`git-destructivo.js`, en Bash/PowerShell):
    bloquea push, reset --hard, borrado de tags (-d / --delete),
    checkout -- . y clean, con el motivo "Comando de Git bloqueado:
