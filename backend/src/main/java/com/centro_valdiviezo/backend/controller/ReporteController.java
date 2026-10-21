@@ -4,9 +4,8 @@ import com.centro_valdiviezo.backend.dto.CitaResumenDTO;
 import com.centro_valdiviezo.backend.dto.IngresosMensualesDTO;
 import com.centro_valdiviezo.backend.dto.ReporteDashboardDTO;
 import com.centro_valdiviezo.backend.repository.CitaRepository;
-import com.centro_valdiviezo.backend.services.CitaService;
+import com.centro_valdiviezo.backend.services.ICitaService;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,12 +19,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/reportes")
 public class ReporteController {
 
-    @Autowired
-    CitaService citaService;
+    private final ICitaService citaService;
 
     private final CitaRepository citaRepository;
 
-    public ReporteController(CitaRepository citaRepository) {
+    public ReporteController(ICitaService citaService, CitaRepository citaRepository) {
+        this.citaService = citaService;
         this.citaRepository = citaRepository;
     }
 

@@ -3,62 +3,46 @@ package com.centro_valdiviezo.backend.controller;
 import com.centro_valdiviezo.backend.dto.EspecialidadCitaCantDTO;
 import com.centro_valdiviezo.backend.dto.EstadoCitaCantDTO;
 import com.centro_valdiviezo.backend.model.Cita;
-import com.centro_valdiviezo.backend.repository.CitaRepository;
-import com.centro_valdiviezo.backend.services.CitaService;
+import com.centro_valdiviezo.backend.services.ICitaService;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/cita")
 public class CitaController {
 
-    @Autowired
-    CitaService citaService;
+    private final ICitaService citaService;
 
-    private final CitaRepository repository;
-
-    public CitaController(CitaRepository repository) {
-        this.repository = repository;
+    public CitaController(ICitaService citaService) {
+        this.citaService = citaService;
     }
 
     @GetMapping
     public List<Cita> obtenerTodos() {
-        return repository.findAll();
+        return citaService.listarCitas();
     }
 
     @PostMapping
     public Cita crear(@RequestBody Cita item) {
-        return repository.save(item);
+        return citaService.crearCita(item);
     }
 
     @GetMapping("/{id}")
     public Cita obtenerPorId(@PathVariable Integer id) {
-        return repository.findById(id).orElse(null);
+        return citaService.obtenerCitaPorId(id).orElse(null);
     }
 
     @PutMapping("/{id}")
     public Cita actualizar(@PathVariable Integer id, @RequestBody Cita nuevo) {
-        return repository.findById(id)
-                .map(e -> {
-                    e.setId_paciente(nuevo.getId_paciente());
-                    e.setId_medico(nuevo.getId_medico());
-                    e.setFecha_cita(nuevo.getFecha_cita());
-                    e.setHora_cita(nuevo.getHora_cita());
-                    e.setMotivo(nuevo.getMotivo());
-                    e.setEstado_cita(nuevo.getEstado_cita());
-                    return repository.save(e);
-                })
-                .orElse(null);
+        return citaService.actualizarCita(id, nuevo).orElse(null);
     }
 
     @DeleteMapping("/{id}")
     public void eliminar(@PathVariable Integer id) {
-        repository.deleteById(id);
+        citaService.eliminarCita(id);
     }
 
     @GetMapping("/porEstado")

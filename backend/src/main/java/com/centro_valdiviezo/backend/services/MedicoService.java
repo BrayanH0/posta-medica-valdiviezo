@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.centro_valdiviezo.backend.repository.MedicoRepository;
@@ -13,10 +12,13 @@ import com.centro_valdiviezo.backend.dto.ResumenMedico;
 import com.centro_valdiviezo.backend.model.Medico;
 
 @Service
-public class MedicoService {
+public class MedicoService implements IMedicoService {
 
-    @Autowired
-    MedicoRepository medicoRepository;
+    private final MedicoRepository medicoRepository;
+
+    public MedicoService(MedicoRepository medicoRepository) {
+        this.medicoRepository = medicoRepository;
+    }
 
     public ArrayList<Medico> listarMedicos() {
         return (ArrayList<Medico>) medicoRepository.findAll();

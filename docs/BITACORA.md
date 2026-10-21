@@ -535,3 +535,33 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 
 ### [2026-10-21 16:09] RFC-007 cerrada
 - `PRUEBAS.md`: resultados de LB-7, U80–U81, columna "LB-7 OCP", resumen. `HALLAZGOS.md`: H-019 → "Cerrado (RFC-007, LB-7)". `ELEMENTOS_CONFIGURACION.md`: EC-01 y EC-18. Commit y tag en la entrada siguiente.
+
+### [2026-10-21 16:10] Commit y tag de la línea base LB-7
+- Qué se hizo: commit de RFC-007 (4 archivos nuevos en `autenticacion/`, `AuthController`, 2 pruebas con la construcción adaptada, 2 pruebas nuevas, RFC-007 y 4 documentos) y tag anotado `LB-7` ("Linea base 7: R3 Abierto/Cerrado").
+- Evidencia: commit `267c00604f9c1d9f6293d99e3e59d767d0602104` (2026-10-21 16:10:09) — "RFC-007: R3 Abierto/Cerrado, autenticacion extensible por rol".
+
+### [2026-10-21 16:10] RFC-008 registrada y aprobada (H-015, H-020)
+- Qué se hizo: `docs/rfc/RFC-008.md` con el diseño, los diagramas antes/después y "Principio aplicado" (IoC y DIP, con la relación con el ejemplo del curso). Aprobada por el Comité (Brayan) según la tarea 12.
+- Por qué ocurren (antes de tocar código): H-020 — el código se escribió con el estilo de los tutoriales de Spring (`@Autowired` sobre el atributo), que no obliga a declarar las dependencias en el constructor; nunca se definieron interfaces porque cada servicio tenía una sola implementación. H-015 — `CitaController` y `CitaConsultaController` se escribieron directamente sobre el repositorio (el CRUD generado y, en RFC-003, los endpoints del médico) porque `CitaService` solo existía para los reportes; no había otro lugar para esa lógica.
+- Decisión de nombres: interfaz `ICitaService` (como pide la tarea) y la implementación conserva el nombre `CitaService`. Renombrarla a `CitaServiceImpl` habría obligado a cambiar la construcción en 3 pruebas de caracterización más (`@InjectMocks private CitaService service;` sobre una interfaz no funciona).
+- Alternativas descartadas: ver RFC-008 (renombrar a `…Impl`, servicio aparte para el médico, excepciones en el cambio de estado —`GlobalExceptionHandler` las convertiría en 500—, `ResponseEntity` en el servicio, mover también `ReporteController`/`EspecialidadController`, inyección por setter).
+
+### [2026-10-21 entre 16:10 y 16:14] RFC-008: implementación
+- Qué se hizo, con Write/Edit: `services/ICitaService.java`, `IMedicoService.java`, `IPacienteService.java`, `IUsuarioService.java` y `ResultadoCambioEstado.java` (nuevos); `CitaService` (constructor con `CitaRepository` y `Estado_CitaRepository`; métodos que vienen de los 2 controladores, con las mismas consultas en el mismo orden); `MedicoService`, `PacienteService`, `UsuarioService` y `UserDetailServiceImpl` por constructor con `final`; `CitaController` y `CitaConsultaController` reescritos sobre `ICitaService` (los códigos y mensajes HTTP se quedan en el controlador); `EspecialidadController` (quitado el `@Autowired` del campo, que ya tenía constructor), `MedicoController`, `PacienteController`, `ReporteController` y `UsuarioController` por constructor y sobre interfaces. Pruebas nuevas U82–U84.
+- Prueba existente: antes de editarla se escribió en el chat la ruta `backend/src/test/java/com/centro_valdiviezo/backend/controller/CitaConsultaControllerCaracterizacionTest.java`; se cambió solo la línea `new CitaConsultaController(...)` y se agregó un `import` (diff en RFC-008).
+- Hora exacta: sin registro (entre la RFC, 16:10:29, y la compilación, 16:14:54).
+- Hallazgo nuevo **H-039** (Baja / Preventivo): `ReporteController`, `EspecialidadController` y 7 controladores de catálogos siguen usando repositorios; fuera del alcance de la tarea.
+
+### [2026-10-21 entre 16:14 y 16:19] RFC-008: validación (5 pasos)
+1. `./mvnw -q compile` (16:14:54–16:15:02): sin errores; `grep -rn "@Autowired" src/main` → sin resultados.
+2. Backend detenido (pid 2624, 16:15:07); BD recargada (16:15:13); `./mvnw test` (16:15:14–16:15:30): `Tests run: 50, Failures: 0, Errors: 0, Skipped: 0` · `BUILD SUCCESS`. `CitaServiceCaracterizacionTest` (no modificada) 3/3; `contextLoads` 1/1 (Spring resuelve las 4 interfaces). Frontend (sin cambios): `TOTAL: 32 SUCCESS` (16:18:28–16:18:36) y `TOTAL: 49 SUCCESS` (hasta 16:18:42).
+3. Backend arrancado (16:15:49, pid 17596); P25 (16:15:50–16:15:55): `diff` con LB-7 vacío.
+4. Playwright (16:16:00–16:16:11): 6 passed.
+5. BD recargada (16:16:18); P01–P24 (16:16:19–16:17:54); P11/P18 con el backend apagado (16:18:02–16:18:18): `diff` contra LB-7 sin diferencias en ninguna salida. Backend reiniciado (16:18:37, pid 22092).
+- No cubierto por HTTP: `PUT`/`DELETE /api/cita/{id}` y `GET /api/cita/{id}` con ID inexistente (no están en la batería); los cubre U83.
+- Evidencia: `docs/PRUEBAS.md`, "Resultados de LB-8"; `docs/rfc/RFC-008.md`.
+
+### [2026-10-21 16:21] RFC-008 cerrada
+- `PRUEBAS.md`: resultados de LB-8, U82–U84, columna "LB-8 IoC", resumen. `HALLAZGOS.md`: H-015 y H-020 → "Cerrado (RFC-008, LB-8)"; H-039 nuevo. `ELEMENTOS_CONFIGURACION.md`: EC-01 y EC-18.
+- **Estado del entorno al cerrar:** backend (8080, pid 22092, desde `backend/`, iniciado en esta sesión) y frontend (4200, el mismo de antes de la sesión) corriendo; la BD tiene las citas 22 (Confirmada) y 23 (Cancelada) de la batería. Salidas de la batería y logs del backend en el scratchpad de esta sesión, fuera del repositorio.
+- Cumplimiento de CLAUDE.md en la tarea 12: archivos del repositorio creados y modificados solo con Write/Edit; pruebas existentes modificadas solo en su construcción, con autorización del usuario y sin tocar aserciones (diffs en RFC-007 y RFC-008); cada cambio validado con la batería completa. Excepciones a registrar: (1) los scripts y salidas de LB-6 se copiaron al scratchpad con `Copy-Item` (fuera del repositorio); (2) en RFC-007 escribí al principio dos horas sin medirlas (15:54–15:55 y 16:08) y las corregí antes del commit por "sin registro" y por la hora real de `date` (16:07); (3) el pedido de commit separado para las pruebas no se pudo cumplir (no compilan sin las clases nuevas) y se aplicó la alternativa que dio el usuario.

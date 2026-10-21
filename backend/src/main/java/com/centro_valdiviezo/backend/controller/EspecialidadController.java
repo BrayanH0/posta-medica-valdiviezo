@@ -3,7 +3,6 @@ package com.centro_valdiviezo.backend.controller;
 import com.centro_valdiviezo.backend.model.Especialidad;
 import com.centro_valdiviezo.backend.repository.EspecialidadRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,8 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RequestMapping("/api/especialidad")
 public class EspecialidadController {
 
-    @Autowired
-    EspecialidadRepository especialidadRepository;
+    private final EspecialidadRepository especialidadRepository;
 
     public EspecialidadController(EspecialidadRepository repository) {
         this.especialidadRepository = repository;

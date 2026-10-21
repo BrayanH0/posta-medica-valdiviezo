@@ -3,9 +3,8 @@ package com.centro_valdiviezo.backend.controller;
 import com.centro_valdiviezo.backend.dto.MedicoEspecialidadDTO;
 import com.centro_valdiviezo.backend.dto.ResumenMedico;
 import com.centro_valdiviezo.backend.model.Medico;
-import com.centro_valdiviezo.backend.services.MedicoService;
+import com.centro_valdiviezo.backend.services.IMedicoService;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,8 +17,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RequestMapping("/api/medico")
 public class MedicoController {
 
-    @Autowired
-    private MedicoService medicoService;
+    private final IMedicoService medicoService;
+
+    public MedicoController(IMedicoService medicoService) {
+        this.medicoService = medicoService;
+    }
 
     @GetMapping
     public ArrayList<Medico> listar() {

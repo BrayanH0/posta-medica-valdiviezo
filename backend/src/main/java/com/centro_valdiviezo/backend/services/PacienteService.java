@@ -3,17 +3,19 @@ package com.centro_valdiviezo.backend.services;
 import java.util.ArrayList;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.centro_valdiviezo.backend.model.Paciente;
 import com.centro_valdiviezo.backend.repository.PacienteRepository;
 
 @Service
-public class PacienteService {
+public class PacienteService implements IPacienteService {
 
-    @Autowired
-    PacienteRepository pacienteRepository;
+    private final PacienteRepository pacienteRepository;
+
+    public PacienteService(PacienteRepository pacienteRepository) {
+        this.pacienteRepository = pacienteRepository;
+    }
 
     public ArrayList<Paciente> listarPacientes() {
         return (ArrayList<Paciente>) pacienteRepository.findAll();

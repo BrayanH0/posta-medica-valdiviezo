@@ -2,7 +2,6 @@ package com.centro_valdiviezo.backend.seguridad;
 
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,11 +14,13 @@ import com.centro_valdiviezo.backend.repository.UsuarioRepository;
 
 @Service
 public class UserDetailServiceImpl implements UserDetailsService {
-    @Autowired
-    UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final PacienteRepository pacienteRepository;
 
-    @Autowired
-    PacienteRepository pacienteRepository;
+    public UserDetailServiceImpl(UsuarioRepository usuarioRepository, PacienteRepository pacienteRepository) {
+        this.usuarioRepository = usuarioRepository;
+        this.pacienteRepository = pacienteRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String dni) throws UsernameNotFoundException {

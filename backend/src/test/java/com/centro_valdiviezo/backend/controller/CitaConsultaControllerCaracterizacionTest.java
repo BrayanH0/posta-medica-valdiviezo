@@ -22,6 +22,7 @@ import com.centro_valdiviezo.backend.model.Cita;
 import com.centro_valdiviezo.backend.model.Estado_Cita;
 import com.centro_valdiviezo.backend.repository.CitaRepository;
 import com.centro_valdiviezo.backend.repository.Estado_CitaRepository;
+import com.centro_valdiviezo.backend.services.CitaService;
 
 // Pruebas unitarias de caracterización (tarea 9) de PUT /api/citas/medico/{idMedico}/{idCita}/estado.
 // Los repositorios son simulados con Mockito: no se usa la base de datos.
@@ -38,7 +39,7 @@ class CitaConsultaControllerCaracterizacionTest {
 
     @BeforeEach
     void crear() {
-        controller = new CitaConsultaController(citaRepository, estadoCitaRepository);
+        controller = new CitaConsultaController(new CitaService(citaRepository, estadoCitaRepository));
     }
 
     private static Cita cita(int idCita, int idMedico, int estado) {

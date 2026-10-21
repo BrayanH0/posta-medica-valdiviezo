@@ -2,11 +2,10 @@ package com.centro_valdiviezo.backend.controller;
 
 import java.util.ArrayList;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.centro_valdiviezo.backend.model.UsuarioModel;
-import com.centro_valdiviezo.backend.services.UsuarioService;
+import com.centro_valdiviezo.backend.services.IUsuarioService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,8 +17,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RestController
 @RequestMapping("/usuarios")
 public class UsuarioController {
-    @Autowired
-    private UsuarioService usuarioService;
+    private final IUsuarioService usuarioService;
+
+    public UsuarioController(IUsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
+    }
 
     @GetMapping
     public ArrayList <UsuarioModel>listar(){
