@@ -1,42 +1,36 @@
 import { test, expect } from '@playwright/test';
 
-test('Medico Dashboard - Pacientes View Formatting', async ({ page }) => {
-  // Mock Backend Login Response
-  await page.route('http://localhost:8080/login', async route => {
-      const json = {
-          success: true,
-          tipo: 'medico',
-          id: 123,
-          nombres: 'Doctor',
-          apellidos: 'Prueba'
-      };
-      await route.fulfill({ json });
-  });
+// RFC-003: formato de la tabla de pacientes con los datos reales del médico 1
+const API = 'http://localhost:8080';
+const ID_MEDICO = 1;
 
-  // 1. Go to Login Medico
+function fechaDDMMYYYY(iso: string): string {
+  const [anio, mes, dia] = iso.split('-');
+  return `${dia}/${mes}/${anio}`;
+}
+
+test('Medico Dashboard - Pacientes View Formatting', async ({ page, request }) => {
+  const pacientes = await (await request.get(`${API}/api/citas/medico/${ID_MEDICO}/pacientes`)).json();
+  expect(pacientes.length).toBeGreaterThan(0);
+
+  // 1. Login real del médico 1
   await page.goto('http://localhost:4200/login-medico');
-
-  // 2. Login
-  await page.fill('input[name="dni"]', '87654321');
-  await page.fill('input[name="clave"]', 'password123');
+  await page.fill('input[name="dni"]', '10000001');
+  await page.fill('input[name="clave"]', '123456');
   await page.click('button:has-text("Iniciar Sesión")');
   await expect(page).toHaveURL(/\/medico-dashboard/);
 
-  // 3. Navigate to Pacientes
+  // 2. Navigate to Pacientes
   await page.click('a:has-text("Pacientes")');
   await expect(page).toHaveURL(/\/medico-dashboard\/pacientes/);
 
-  // 4. Verify Date Format (10/05/1990)
-  // Juan Perez born 1990-05-10
-  await expect(page.locator('td:has-text("10/05/1990")')).toBeVisible();
-
-  // 5. Verify Sex Format (Masculino/Femenino)
-  // Juan is M -> Masculino
-  await expect(page.locator('tr:has-text("Juan") >> td:has-text("Masculino")')).toBeVisible();
-  // Maria is F -> Femenino
-  await expect(page.locator('tr:has-text("Maria") >> td:has-text("Femenino")')).toBeVisible();
-
-  // 6. Verify Ubigeo Format (String)
-  await expect(page.locator('td:has-text("Lima - San Juan de Lurigancho")')).toBeVisible();
-  await expect(page.locator('td:has-text("Cusco - Cusco")')).toBeVisible();
+  // 3. Cada paciente del servidor aparece con fecha dd/MM/yyyy, sexo en palabras y ubigeo "departamento - distrito"
+  await expect(page.locator('tbody tr:has(button.btn-resumen)')).toHaveCount(pacientes.length);
+  for (const p of pacientes) {
+    const fila = page.locator(`tr:has(td:text-is("${p.dni}"))`);
+    await expect(fila).toContainText(fechaDDMMYYYY(p.fechaNacimiento));
+    await expect(fila).toContainText(p.sexo === 'M' ? 'Masculino' : 'Femenino');
+    await expect(fila).toContainText(`${p.departamento} - ${p.distrito}`);
+    await expect(fila).toContainText(p.estadoPaciente);
+  }
 });

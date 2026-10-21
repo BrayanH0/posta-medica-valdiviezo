@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MedicoService, Cita } from '../services/medico.service';
-import { Observable } from 'rxjs';
+import { MedicoService, Cita, MENSAJE_SIN_CONEXION } from '../services/medico.service';
 
 @Component({
   selector: 'app-medico-citas-canceladas',
@@ -11,11 +10,15 @@ import { Observable } from 'rxjs';
   styleUrls: ['./medico-citas-canceladas.component.css']
 })
 export class MedicoCitasCanceladasComponent implements OnInit {
-  citas$: Observable<Cita[]> | undefined;
+  citas: Cita[] | null = null;
+  error = '';
 
   constructor(private medicoService: MedicoService) {}
 
   ngOnInit() {
-    this.citas$ = this.medicoService.getCitasByStatus('Cancelada');
+    this.medicoService.getCitasByStatus('Cancelada').subscribe({
+      next: (citas) => this.citas = citas,
+      error: () => this.error = MENSAJE_SIN_CONEXION
+    });
   }
 }

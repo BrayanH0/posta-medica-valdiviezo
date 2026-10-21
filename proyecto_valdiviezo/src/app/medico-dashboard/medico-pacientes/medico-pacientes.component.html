@@ -1,7 +1,9 @@
 <div class="pacientes-container">
     <h2>Gestión de Pacientes</h2>
 
-    <div class="table-container">
+    <div *ngIf="error" class="error-message">{{ error }}</div>
+
+    <div class="table-container" *ngIf="pacientes">
         <table>
             <thead>
                 <tr>
@@ -18,17 +20,20 @@
             </thead>
             <tbody>
                 <tr *ngFor="let paciente of pacientes">
-                    <td>{{ paciente.id }}</td>
+                    <td>{{ paciente.idPaciente }}</td>
                     <td>{{ paciente.nombres }}</td>
                     <td>{{ paciente.apellidos }}</td>
                     <td>{{ paciente.dni }}</td>
                     <td>{{ paciente.fechaNacimiento | date:'dd/MM/yyyy' }}</td>
                     <td>{{ paciente.sexo === 'M' ? 'Masculino' : 'Femenino' }}</td>
-                    <td>{{ paciente.estado }}</td>
-                    <td>{{ paciente.ubigeo }}</td>
+                    <td>{{ paciente.estadoPaciente }}</td>
+                    <td>{{ paciente.departamento }} - {{ paciente.distrito }}</td>
                     <td>
                         <button class="btn-resumen" (click)="openModal(paciente)">Resumen</button>
                     </td>
+                </tr>
+                <tr *ngIf="pacientes.length === 0">
+                    <td colspan="9" class="empty-message">No hay pacientes con citas.</td>
                 </tr>
             </tbody>
         </table>
@@ -52,24 +57,12 @@
                 <div class="column">
                     <p><strong>Fecha de Nacimiento:</strong> {{ selectedPaciente.fechaNacimiento | date:'dd/MM/yyyy' }}</p>
                     <p><strong>Sexo:</strong> {{ selectedPaciente.sexo === 'M' ? 'Masculino' : 'Femenino' }}</p>
-                    <p><strong>Estado:</strong> {{ selectedPaciente.estado }}</p>
+                    <p><strong>Estado:</strong> {{ selectedPaciente.estadoPaciente }}</p>
                 </div>
                 <div class="column">
-                    <p><strong>Ubigeo:</strong> {{ selectedPaciente.ubigeo }}</p>
-                    <p><strong>Dirección:</strong> {{ selectedPaciente.direccion }}</p>
+                    <p><strong>Ubigeo:</strong> {{ selectedPaciente.departamento }} - {{ selectedPaciente.distrito }}</p>
                     <p><strong>Teléfono:</strong> {{ selectedPaciente.telefono }}</p>
-                    <p><strong>Email:</strong> {{ selectedPaciente.email }}</p>
                 </div>
-            </div>
-
-            <div class="patient-history">
-                <h4>Historial Reciente (Mock)</h4>
-                <ul>
-                    <li *ngFor="let item of selectedPaciente.historial">
-                        {{ item.titulo }} - {{ item.fecha }} - {{ item.estado }}
-                    </li>
-                    <li *ngIf="selectedPaciente.historial.length === 0">No hay historial reciente.</li>
-                </ul>
             </div>
         </div>
         <div class="modal-footer">

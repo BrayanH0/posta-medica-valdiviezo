@@ -53,6 +53,18 @@ tr:hover {
     background-color: #3949ab;
 }
 
+.empty-message {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+}
+
+.error-message {
+    color: #f44336;
+    text-align: center;
+    padding: 20px;
+}
+
 /* Modal Styles */
 .modal-overlay {
     position: fixed;
@@ -136,29 +148,6 @@ tr:hover {
 .column p {
     margin: 8px 0;
     color: #444;
-}
-
-.patient-history {
-    border-top: 1px solid #eee;
-    padding-top: 15px;
-}
-
-.patient-history h4 {
-    margin-top: 0;
-    color: #555;
-}
-
-.patient-history ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-.patient-history li {
-    background-color: #f5f5f5;
-    padding: 10px;
-    margin-bottom: 5px;
-    border-radius: 4px;
-    border-left: 3px solid #ccc;
 }
 
 .modal-footer {

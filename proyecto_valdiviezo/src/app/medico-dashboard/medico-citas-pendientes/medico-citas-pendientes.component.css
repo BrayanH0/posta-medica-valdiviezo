@@ -44,6 +44,12 @@ tr:hover {
     padding: 20px;
 }
 
+.error-message {
+    color: #f44336;
+    text-align: center;
+    padding: 20px;
+}
+
 .actions-cell {
     display: flex;
     gap: 10px;

@@ -29,6 +29,11 @@
   ni se escriben por adelantado.
 - No reportes "funciona" sin pegar la evidencia real.
 - Donde no haya dato real, escribe "Sin registro"; nunca lo inventes.
+- Todo lo que incluyas en el reporte final del chat debe estar
+  también escrito en docs/ (bitácora o hallazgos): problemas
+  encontrados, decisiones, fallos propios, estado del entorno y
+  cualquier cosa que el usuario deba saber. El reporte del chat es
+  solo un resumen de lo que ya está en el repositorio.
 
 ## Pruebas
 - Cada cambio se valida con la batería completa de docs/PRUEBAS.md

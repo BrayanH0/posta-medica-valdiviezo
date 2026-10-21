@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MedicoService, Cita } from '../services/medico.service';
-import { Observable } from 'rxjs';
+import { MedicoService, Cita, MENSAJE_SIN_CONEXION } from '../services/medico.service';
 
+// Citas en estado "Confirmada" (la ruta y el archivo conservan el nombre "aprobadas"; ver RFC-003)
 @Component({
   selector: 'app-medico-citas-aprobadas',
   standalone: true,
@@ -11,11 +11,15 @@ import { Observable } from 'rxjs';
   styleUrls: ['./medico-citas-aprobadas.component.css']
 })
 export class MedicoCitasAprobadasComponent implements OnInit {
-  citas$: Observable<Cita[]> | undefined;
+  citas: Cita[] | null = null;
+  error = '';
 
   constructor(private medicoService: MedicoService) {}
 
   ngOnInit() {
-    this.citas$ = this.medicoService.getCitasByStatus('Aprobada');
+    this.medicoService.getCitasByStatus('Confirmada').subscribe({
+      next: (citas) => this.citas = citas,
+      error: () => this.error = MENSAJE_SIN_CONEXION
+    });
   }
 }

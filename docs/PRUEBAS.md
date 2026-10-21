@@ -1,8 +1,8 @@
 # Batería oficial de pruebas (auditoría)
 
-> **Regla:** Cada cambio se compara con la línea base anterior. En los cambios correctivos (RFC) los resultados pueden cambiar a propósito. En la reorganización y en las refactorizaciones (LB-3 a LB-7) el resultado debe ser IGUAL al de la línea base anterior.
+> **Regla:** Cada cambio se compara con la línea base anterior. En los cambios correctivos (RFC) los resultados pueden cambiar a propósito. En la reorganización y en las refactorizaciones (LB-4 a LB-8) el resultado debe ser IGUAL al de la línea base anterior.
 >
-> Una refactorización no cambia el comportamiento externo: si en LB-3 a LB-7 un resultado cambia, ese cambio introdujo un error. Esto incluye las pruebas que hoy FALLAN por hallazgos correctivos sin RFC (por ejemplo P13, doble reserva, H-012): deben seguir fallando igual.
+> Una refactorización no cambia el comportamiento externo: si en LB-4 a LB-8 un resultado cambia, ese cambio introdujo un error. Esto incluye las pruebas que hoy FALLAN por hallazgos correctivos sin RFC (por ejemplo P13, doble reserva, H-012): deben seguir fallando igual.
 
 > **Regresión:** correr la batería completa (todas las pruebas, P01 en adelante) en cada línea base nueva es la **prueba de regresión** del proyecto. Su objetivo es comprobar que un cambio no rompió nada de lo que ya funcionaba y que lo que fallaba sigue fallando igual, salvo lo que el cambio corrige a propósito.
 
@@ -271,34 +271,130 @@ Ejecución del 2026-10-21, entre 09:30 y 09:37 (hora real: `date` antes y despu�
 
 ---
 
+### P20 — El médico 1 ve exactamente sus citas pendientes
+- Tipo: Sistema/E2E (navegador de punta a punta)
+- Qué se hace: después de P12 y P13 (que dejan las citas 22 y 23 pendientes para el médico 1), login por formulario como médico `10000001`; abrir "Citas Pendientes"; comparar las filas con `SELECT c.idCita, paciente, dni, fecha, hora, motivo FROM Cita c JOIN Paciente p … JOIN Estado_Cita e … WHERE c.id_medico=1 AND e.nombre_estado='Pendiente'`.
+- Esperado: la pantalla muestra las mismas citas que el SELECT, con nombre y DNI del paciente, obtenidas del servidor.
+- Creada en: LB-3 (RFC-003).
+- Obtenido (LB-3): red `200 GET /api/citas/medico/1?estado=Pendiente`. Pantalla y SELECT, lado a lado:
+
+  | Pantalla | SELECT |
+  |---|---|
+  | `22 \| Juan Perez Gomez \| 12345678 \| 2026-10-26 \| 10:00:00 \| Prueba LB-0: control general` | `22 \| Juan Perez Gomez \| 12345678 \| 2026-10-26 \| 10:00:00 \| Prueba LB-0: control general` |
+  | `23 \| Juan Perez Gomez \| 12345678 \| 2026-10-26 \| 10:00:00 \| Prueba LB-0: doble reserva (pestana B)` | `23 \| Juan Perez Gomez \| 12345678 \| 2026-10-26 \| 10:00:00 \| Prueba LB-0: doble reserva (pestana B)` |
+- Evidencia: `docs/evidencias/lb3-medico-citas-pendientes.png`
+- Resultado (LB-3): **PASA**
+
+### P21 — Confirmar una cita
+- Tipo: Sistema/E2E (navegador de punta a punta) y Aceptación
+- Qué se hace: en "Citas Pendientes" del médico 1, pulsar "Aceptar" en la cita 22 y confirmar; `SELECT` de la cita; abrir "Citas Confirmadas" y recargar la página.
+- Esperado: la cita deja la lista de pendientes, queda en la base con el estado "Confirmada" y sigue en "Citas Confirmadas" después de recargar.
+- Creada en: LB-3 (RFC-003).
+- Obtenido (LB-3): modal "Aceptar Cita … Paciente: Juan Perez Gomez … Motivo: Prueba LB-0: control general"; red `200 PUT /api/citas/medico/1/22/estado {"estado":"Confirmada"}`; pendientes tras confirmar: solo la 23. Base: `22 | 1 | 2 | Confirmada | Prueba LB-0: control general`. "Citas Confirmadas" tras recargar: `22 | Juan Perez Gomez | 12345678 | 2026-10-26 | 10:00:00 | Prueba LB-0: control general | Confirmada`.
+- Evidencia: `docs/evidencias/lb3-medico-citas-confirmadas.png`
+- Resultado (LB-3): **PASA**
+
+### P22 — Cancelar una cita
+- Tipo: Sistema/E2E (navegador de punta a punta) y Aceptación
+- Qué se hace: en "Citas Pendientes" del médico 1, pulsar "Cancelar" en la cita 23 y confirmar; `SELECT` de la cita; abrir "Citas Canceladas" y recargar la página.
+- Esperado: la cita deja la lista de pendientes, queda en la base con el estado "Cancelada" y sigue en "Citas Canceladas" después de recargar.
+- Creada en: LB-3 (RFC-003).
+- Obtenido (LB-3): modal "Cancelar Cita … Motivo: Prueba LB-0: doble reserva (pestana B)"; red `200 PUT /api/citas/medico/1/23/estado {"estado":"Cancelada"}`; pendientes: "No hay citas pendientes.". Base: `23 | 1 | 3 | Cancelada | Prueba LB-0: doble reserva (pestana B)`. "Citas Canceladas" tras recargar: `23 | Juan Perez Gomez | 12345678 | 2026-10-26 | 10:00:00 | Prueba LB-0: doble reserva (pestana B) | Cancelada`.
+- Evidencia: `docs/evidencias/lb3-medico-citas-canceladas.png`
+- Resultado (LB-3): **PASA**
+
+### P23 — El endpoint de citas del médico devuelve solo citas de ese médico
+- Tipo: Integración (API + base de datos)
+- Qué se hace: para los médicos 1, 2, 3, 6 y 10 y los estados Pendiente, Confirmada, Cancelada y Atendida, comparar `GET /api/citas/medico/{id}?estado={nombre}` (cantidad e IDs) con `SELECT COUNT(*), GROUP_CONCAT(idCita) … WHERE id_medico={id} AND nombre_estado='{nombre}'`. También `GET /api/citas/medico/1/pacientes` contra los pacientes con citas del médico 1.
+- Esperado: misma cantidad y mismos IDs en los 20 casos; los pacientes coinciden.
+- Creada en: LB-3 (RFC-003).
+- Obtenido (LB-3), después de P21 y P22: 20/20 iguales. Ejemplos: médico 1 Confirmada: API 1 (22), BD 1 (22); médico 1 Cancelada: API 1 (23), BD 1 (23); médico 1 Atendida: API 4 (1, 9, 14, 18), BD 4 (1, 9, 14, 18); médico 6 Pendiente: API 1 (6), BD 1 (6); médico 10 Pendiente: API 1 (8), BD 1 (8). Pacientes del médico 1: API 7, 6, 1, 11 (orden por apellido); BD 1, 6, 7, 11.
+- Resultado (LB-3): **PASA**
+
+### P24 — La respuesta del endpoint del médico no incluye la contraseña
+- Tipo: Integración (API + base de datos)
+- Qué se hace: listar los campos de `GET /api/citas/medico/1?estado=Atendida` y `GET /api/citas/medico/1/pacientes`; buscar campos `clave`/`password`/`contraseña` y el valor `"123456"`.
+- Esperado: ningún campo de contraseña.
+- Creada en: LB-3 (RFC-003).
+- Obtenido (LB-3): citas → `idCita, fecha, hora, motivo, estado, idPaciente, pacienteNombres, pacienteApellidos, pacienteDni`; pacientes → `idPaciente, nombres, apellidos, dni, fechaNacimiento, sexo, telefono, estadoPaciente, departamento, distrito`. "contiene clave: false" y "texto 123456 en respuesta: false" en ambos.
+- Resultado (LB-3): **PASA**
+
+---
+
+## Resultados de LB-3 (RFC-003)
+
+Ejecución del 2026-10-21, entre 10:04 y 10:13 (hora real: `date` antes y después), con la BD recargada a las 10:04:37 (21 citas) y backend y frontend con los cambios de RFC-003. Objetivo: P11 pasa a PASA; P20–P24 (nuevas) pasan; el resto igual que en LB-2.
+
+| ID | Obtenido en LB-3 | ¿Igual a LB-2? |
+|---|---|---|
+| P01 | 200 en los 14; mismos tamaños (cie 291 B, cita 2811 B, …, usuarios 99 B) | Igual |
+| P02 | 200 en los 6 | Igual |
+| P03 | 11/11 en 200; `/api/paciente/codigo/1` sigue devolviendo `"clave":"123456"` | Igual |
+| P04 | `500 Cannot instantiate query result type …ResumenMedico…` | Igual |
+| P05 | `/welcome`; localStorage `{"userId":"1","userName":"Juan Perez Gomez","userType":"paciente"}` | Igual |
+| P06 | `/medico-dashboard`; localStorage `{"userId":"1","userName":"Jorge Santos Ruiz","userType":"medico"}` | Igual |
+| P07 | `/admin/inicio`; localStorage `{"userId":"1","userName":"Admin Principal","userType":"administrador"}` | Igual |
+| P08 | Los 3 roles: 401, se quedan en su login, localStorage `{}`, "Credenciales inválidas" | Igual |
+| P09 | 200 ×3 con los datos del rol; `401 {"error":"Credenciales inválidas"}` | Igual |
+| P10 | DNI `99999999`: 401, `/login-paciente`, localStorage `{}`, "Credenciales inválidas" | Igual |
+| P11 | Backend encendido: la pantalla pide `GET /api/citas/medico/1?estado=Pendiente` y muestra los datos de la base. Backend apagado (pid 18516, 10:12:14): "Citas Pendientes", "Citas Confirmadas", "Citas Canceladas" y "Pacientes" muestran "No se pudo conectar con el servidor. Intente nuevamente." con 0 filas y sin tabla | **Cambió: FALLA → PASA** (objetivo) |
+| P12 | `POST /api/cita` 200; cita `idCita = 22`, `estado_cita = 1`; "Mis Citas" la muestra | Igual |
+| P13 | Pestaña nueva: `10:00` no aparece. `POST` duplicado → `HTTP 200`, `idCita = 23`; `COUNT(*) = 2` | Igual |
+| P14 | `/api/cita`: total 23, paciente 1: 4, 13 pacientes distintos | Igual |
+| P15 | `/api/historia_clinica`: total 5, paciente 1: 1 | Igual |
+| P16 | Navegador: 23 registros recibidos, 4 del paciente 1; 9 peticiones | Igual |
+| P17 | Los 3 roles: tras "Cerrar Sesión", `/login-selection`, localStorage `{}`; paciente: `/paciente/mis-citas` redirige a `/login-paciente` | Igual |
+| P18 | Backend apagado: `/login-paciente`, localStorage `{}`, mensaje de conexión | Igual |
+| P19 | 6/6 combinaciones no entran, localStorage `{}`, mensaje unificado | Igual |
+| P20 | Ver P20: pantalla = SELECT (citas 22 y 23) | **Nueva: PASA** |
+| P21 | Ver P21: cita 22 Confirmada en la base y en pantalla tras recargar | **Nueva: PASA** |
+| P22 | Ver P22: cita 23 Cancelada en la base y en pantalla tras recargar | **Nueva: PASA** |
+| P23 | Ver P23: 20/20 combinaciones médico/estado iguales a la base | **Nueva: PASA** |
+| P24 | Ver P24: sin campos de contraseña | **Nueva: PASA** |
+
+**Pruebas de Playwright de `tests/`** (`npx playwright test tests/ --workers=1`, `@playwright/test` 1.64.1): primera corrida a las 10:02 con 5/6 (fallo de `admin-reportes.spec.ts` por tiempo de espera: el servidor de desarrollo mostraba el cartel de un error de compilación intermedio de mis ediciones, ya corregido); tras reiniciar el frontend, corrida de 10:03:55 a 10:04:03: **6/6 pasan** (`admin-reportes`, `medico-citas-pendientes`, `medico-dashboard`, `medico-flow`, `medico-pacientes-formatting`, `medico-pacientes`). Las pruebas que confirman o cancelan crean sus propias citas por la API y las borran al terminar; después de la corrida quedaban 0 citas con motivo "Playwright…".
+
+**Evidencias LB-3:** `lb3-medico-citas-pendientes.png`, `lb3-medico-citas-confirmadas.png`, `lb3-medico-citas-canceladas.png`, `lb3-medico-pacientes.png`, `lb3-medico-pacientes-resumen.png`, `lb3-P11-medico-backend-apagado-error.png`, `lb3-P12-mis-citas-con-cita-nueva.png` (todas en `docs/evidencias/`).
+
+**Notas de método LB-3:** mismas que en LB-2. En P21 y P22 los botones "Aceptar"/"Cancelar" y los de confirmación se activaron con `element.click()`. En el script de P11 quedó por error una navegación previa a una ruta inexistente del módulo; no afecta el resultado.
+
+---
+
 ## Tabla de resultados
 
-| ID | Prueba | LB-0 | LB-1 RFC-001 | LB-2 RFC-002 | LB-3 Reorg | LB-4 DRY | LB-5 SRP | LB-6 OCP | LB-7 IoC |
-|---|---|---|---|---|---|---|---|---|---|
-| P01 | Endpoints GET de catálogos y listados | PASA (14/14 en 200) | PASA (igual) | PASA (igual) |  |  |  |  |  |
-| P02 | Endpoints de reportes y consultas agregadas | PASA (6/6 en 200) | PASA (igual) | PASA (igual) |  |  |  |  |  |
-| P03 | Endpoints por ID | PASA (11/11 en 200; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) |  |  |  |  |  |
-| P04 | `/api/medico/resumenMedico` | FALLA (500, H-005) | FALLA (igual, H-005) | FALLA (igual, H-005) |  |  |  |  |  |
-| P05 | Login por formulario: paciente | PASA (`/welcome`; `userId`, `userName`, `userType`) | PASA (igual) | PASA (igual) |  |  |  |  |  |
-| P06 | Login por formulario: médico | PASA (`/medico-dashboard`; `userId`, `userName`, `userType`) | PASA (igual) | PASA (igual) |  |  |  |  |  |
-| P07 | Login por formulario: admin | FALLA (`/admin/inicio`; claves `userTipo`, `userNombre`… distintas, H-002) | **PASA** (cambió: claves iguales a los otros roles) | PASA (igual) |  |  |  |  |  |
-| P08 | Login con contraseña incorrecta (3 roles) | PASA en seguridad (401, no entra); FALLA en mensaje distinto en admin (H-003) | **PASA** (cambió: mismo mensaje en los 3 roles) | PASA (igual) |  |  |  |  |  |
-| P09 | Login directo a la API | PASA (200 ×3, 401 inválido) | PASA (igual) | PASA (igual) |  |  |  |  |  |
-| P10 | Login paciente con DNI inexistente + `123456` | FALLA (entra como paciente 1, H-001) | **PASA** (cambió: no entra, localStorage vacío) | PASA (igual) |  |  |  |  |  |
-| P11 | Módulo médico con backend apagado | FALLA (datos simulados, sin error, H-004) | FALLA (igual, H-004) | FALLA (igual, H-004) |  |  |  |  |  |
-| P12 | Registrar cita desde el formulario | PASA (cita 22 guardada, `estado_cita = 1`) | PASA (igual) | PASA (igual) |  |  |  |  |  |
-| P13 | Doble reserva | FALLA (citas 22 y 23 a la misma hora, H-012) | FALLA (igual, H-012) | FALLA (igual, H-012) |  |  |  |  |  |
-| P14 | Alcance de `/api/cita` | FALLA (23 devueltas / 4 del paciente 1, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) |  |  |  |  |  |
-| P15 | Alcance de `/api/historia_clinica` | FALLA (5 devueltas / 1 del paciente 1, H-013) | FALLA (igual, 5 / 1, H-013) | FALLA (igual, 5 / 1, H-013) |  |  |  |  |  |
-| P16 | Registros en "Mis Citas" (red) | FALLA (23 recibidas / 4 mostradas, H-013) | FALLA (igual, 23 recibidas / 4 mostradas, H-013) | FALLA (igual, 23 / 4, H-013) |  |  |  |  |  |
-| P17 | Cerrar sesión como paciente | FALLA (localStorage queda intacto, H-002) | **PASA** (cambió: localStorage vacío en los 3 roles) | PASA (igual) |  |  |  |  |  |
-| P18 | Login paciente con backend apagado + `123456` | No ejecutada (creada en LB-1) | **PASA** (nueva) | PASA (igual) |  |  |  |  |  |
-| P19 | Matriz de roles cruzados (6 combinaciones) | No ejecutada (creada en LB-2) | No ejecutada (creada en LB-2) | **PASA** (nueva: 6/6 no entran, mensaje unificado) |  |  |  |  |  |
+| ID | Prueba | LB-0 | LB-1 RFC-001 | LB-2 RFC-002 | LB-3 RFC-003 | LB-4 Reorg | LB-5 DRY | LB-6 SRP | LB-7 OCP | LB-8 IoC |
+|---|---|---|---|---|---|---|---|---|---|---|
+| P01 | Endpoints GET de catálogos y listados | PASA (14/14 en 200) | PASA (igual) | PASA (igual) | PASA (igual) |  |  |  |  |  |
+| P02 | Endpoints de reportes y consultas agregadas | PASA (6/6 en 200) | PASA (igual) | PASA (igual) | PASA (igual) |  |  |  |  |  |
+| P03 | Endpoints por ID | PASA (11/11 en 200; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) |  |  |  |  |  |
+| P04 | `/api/medico/resumenMedico` | FALLA (500, H-005) | FALLA (igual, H-005) | FALLA (igual, H-005) | FALLA (igual, H-005) |  |  |  |  |  |
+| P05 | Login por formulario: paciente | PASA (`/welcome`; `userId`, `userName`, `userType`) | PASA (igual) | PASA (igual) | PASA (igual) |  |  |  |  |  |
+| P06 | Login por formulario: médico | PASA (`/medico-dashboard`; `userId`, `userName`, `userType`) | PASA (igual) | PASA (igual) | PASA (igual) |  |  |  |  |  |
+| P07 | Login por formulario: admin | FALLA (`/admin/inicio`; claves `userTipo`, `userNombre`… distintas, H-002) | **PASA** (cambió: claves iguales a los otros roles) | PASA (igual) | PASA (igual) |  |  |  |  |  |
+| P08 | Login con contraseña incorrecta (3 roles) | PASA en seguridad (401, no entra); FALLA en mensaje distinto en admin (H-003) | **PASA** (cambió: mismo mensaje en los 3 roles) | PASA (igual) | PASA (igual) |  |  |  |  |  |
+| P09 | Login directo a la API | PASA (200 ×3, 401 inválido) | PASA (igual) | PASA (igual) | PASA (igual) |  |  |  |  |  |
+| P10 | Login paciente con DNI inexistente + `123456` | FALLA (entra como paciente 1, H-001) | **PASA** (cambió: no entra, localStorage vacío) | PASA (igual) | PASA (igual) |  |  |  |  |  |
+| P11 | Módulo médico con backend apagado | FALLA (datos simulados, sin error, H-004) | FALLA (igual, H-004) | FALLA (igual, H-004) | **PASA** (cambió: datos de la base; sin backend, error y sin datos) |  |  |  |  |  |
+| P12 | Registrar cita desde el formulario | PASA (cita 22 guardada, `estado_cita = 1`) | PASA (igual) | PASA (igual) | PASA (igual) |  |  |  |  |  |
+| P13 | Doble reserva | FALLA (citas 22 y 23 a la misma hora, H-012) | FALLA (igual, H-012) | FALLA (igual, H-012) | FALLA (igual, H-012) |  |  |  |  |  |
+| P14 | Alcance de `/api/cita` | FALLA (23 devueltas / 4 del paciente 1, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) |  |  |  |  |  |
+| P15 | Alcance de `/api/historia_clinica` | FALLA (5 devueltas / 1 del paciente 1, H-013) | FALLA (igual, 5 / 1, H-013) | FALLA (igual, 5 / 1, H-013) | FALLA (igual, 5 / 1, H-013) |  |  |  |  |  |
+| P16 | Registros en "Mis Citas" (red) | FALLA (23 recibidas / 4 mostradas, H-013) | FALLA (igual, 23 recibidas / 4 mostradas, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) |  |  |  |  |  |
+| P17 | Cerrar sesión como paciente | FALLA (localStorage queda intacto, H-002) | **PASA** (cambió: localStorage vacío en los 3 roles) | PASA (igual) | PASA (igual) |  |  |  |  |  |
+| P18 | Login paciente con backend apagado + `123456` | No ejecutada (creada en LB-1) | **PASA** (nueva) | PASA (igual) | PASA (igual) |  |  |  |  |  |
+| P19 | Matriz de roles cruzados (6 combinaciones) | No ejecutada (creada en LB-2) | No ejecutada (creada en LB-2) | **PASA** (nueva: 6/6 no entran, mensaje unificado) | PASA (igual) |  |  |  |  |  |
+| P20 | El médico 1 ve exactamente sus citas pendientes | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | **PASA** (nueva: pantalla = SELECT) |  |  |  |  |  |
+| P21 | Confirmar una cita (persiste) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | **PASA** (nueva: Confirmada en BD y tras recargar) |  |  |  |  |  |
+| P22 | Cancelar una cita (persiste) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | **PASA** (nueva: Cancelada en BD y tras recargar) |  |  |  |  |  |
+| P23 | Endpoint del médico: solo sus citas | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | **PASA** (nueva: 20/20 = SELECT) |  |  |  |  |  |
+| P24 | Endpoint del médico sin contraseña | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | **PASA** (nueva) |  |  |  |  |  |
 
 **Resumen LB-0:** 7 PASA · 9 FALLA · 1 mixta (P08).
 
 **Resumen LB-1:** 12 PASA · 6 FALLA. Cambiaron solo P07, P08, P10 y P17 (objetivo de RFC-001) y se agregó P18. Las otras 13 pruebas dieron lo mismo que en LB-0.
 
 **Resumen LB-2:** 13 PASA · 6 FALLA. Se agregó P19 (objetivo de RFC-002), que pasa. Las 18 pruebas anteriores dieron lo mismo que en LB-1. Sin efectos no deseados.
+
+**Resumen LB-3:** 19 PASA · 5 FALLA. Cambió solo P11 (FALLA → PASA, objetivo de RFC-003) y se agregaron P20–P24, que pasan. Las otras 18 pruebas dieron lo mismo que en LB-2. Sin efectos no deseados.
 
 > **Atención al repetir P12 y P13:** cada ejecución agrega citas a la BD. Antes de correr la batería en cada línea base nueva, recargar la base (`DROP DATABASE posta_medica_valdiviezo;` y volver a ejecutar `BDPostaMedica.sql`, porque el script usa `CREATE TABLE` sin `DROP`) o borrar las citas de prueba con `DELETE FROM Cita WHERE motivo LIKE 'Prueba LB-0%';` para partir del mismo estado.

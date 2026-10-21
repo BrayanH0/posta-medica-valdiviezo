@@ -1,7 +1,9 @@
 <div class="citas-container">
     <h2>Gestión de Citas Pendientes</h2>
 
-    <div class="table-container">
+    <div *ngIf="error" class="error-message">{{ error }}</div>
+
+    <div class="table-container" *ngIf="citas">
         <table>
             <thead>
                 <tr>
@@ -15,10 +17,10 @@
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let cita of citas$ | async">
-                    <td>{{ cita.id }}</td>
-                    <td>{{ cita.paciente }}</td>
-                    <td>{{ cita.dni }}</td>
+                <tr *ngFor="let cita of citas">
+                    <td>{{ cita.idCita }}</td>
+                    <td>{{ cita.pacienteNombres }} {{ cita.pacienteApellidos }}</td>
+                    <td>{{ cita.pacienteDni }}</td>
                     <td>{{ cita.fecha }}</td>
                     <td>{{ cita.hora }}</td>
                     <td>{{ cita.motivo }}</td>
@@ -27,7 +29,7 @@
                         <button class="btn-action btn-cancel" (click)="confirmAction(cita, 'cancelar')">Cancelar</button>
                     </td>
                 </tr>
-                <tr *ngIf="(citas$ | async)?.length === 0">
+                <tr *ngIf="citas.length === 0">
                     <td colspan="7" class="empty-message">No hay citas pendientes.</td>
                 </tr>
             </tbody>
@@ -45,7 +47,7 @@
         <div class="modal-body">
             <p>¿Estás seguro que deseas <strong>{{ actionType === 'aceptar' ? 'aceptar' : 'cancelar' }}</strong> la siguiente cita?</p>
             <div class="cita-summary">
-                <p><strong>Paciente:</strong> {{ selectedCita.paciente }}</p>
+                <p><strong>Paciente:</strong> {{ selectedCita.pacienteNombres }} {{ selectedCita.pacienteApellidos }}</p>
                 <p><strong>Fecha:</strong> {{ selectedCita.fecha }} - {{ selectedCita.hora }}</p>
                 <p><strong>Motivo:</strong> {{ selectedCita.motivo }}</p>
             </div>

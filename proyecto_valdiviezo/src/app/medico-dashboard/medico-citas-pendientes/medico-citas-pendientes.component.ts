@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MedicoService, Cita } from '../services/medico.service';
-import { Observable } from 'rxjs';
+import { MedicoService, Cita, MENSAJE_SIN_CONEXION } from '../services/medico.service';
 
 @Component({
   selector: 'app-medico-citas-pendientes',
@@ -12,14 +11,28 @@ import { Observable } from 'rxjs';
 })
 export class MedicoCitasPendientesComponent implements OnInit {
 
-  citas$: Observable<Cita[]> | undefined;
+  citas: Cita[] | null = null;
+  error = '';
   selectedCita: Cita | null = null;
   actionType: 'aceptar' | 'cancelar' | null = null;
 
   constructor(private medicoService: MedicoService) {}
 
   ngOnInit() {
-    this.citas$ = this.medicoService.getCitasByStatus('Pendiente');
+    this.cargarCitas();
+  }
+
+  cargarCitas() {
+    this.medicoService.getCitasByStatus('Pendiente').subscribe({
+      next: (citas) => {
+        this.citas = citas;
+        this.error = '';
+      },
+      error: () => {
+        this.citas = null;
+        this.error = MENSAJE_SIN_CONEXION;
+      }
+    });
   }
 
   confirmAction(cita: Cita, action: 'aceptar' | 'cancelar') {
@@ -34,9 +47,18 @@ export class MedicoCitasPendientesComponent implements OnInit {
 
   executeAction() {
     if (this.selectedCita && this.actionType) {
-      const newStatus = this.actionType === 'aceptar' ? 'Aprobada' : 'Cancelada';
-      this.medicoService.updateCitaStatus(this.selectedCita.id, newStatus);
-      this.closeModal();
+      const nuevoEstado = this.actionType === 'aceptar' ? 'Confirmada' : 'Cancelada';
+      this.medicoService.updateCitaStatus(this.selectedCita.idCita, nuevoEstado).subscribe({
+        next: () => {
+          this.closeModal();
+          this.cargarCitas();
+        },
+        error: () => {
+          this.closeModal();
+          this.citas = null;
+          this.error = MENSAJE_SIN_CONEXION;
+        }
+      });
     }
   }
 }
