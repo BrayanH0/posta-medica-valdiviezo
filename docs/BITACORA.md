@@ -169,3 +169,9 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Por qué: cerrar formalmente el cambio.
 - Resultado: RFC-001 en estado "Cerrado". No se usó el plan de back-out.
 - Evidencia: `docs/rfc/RFC-001.md`, `docs/HALLAZGOS.md`.
+
+### [2026-10-20 21:12] Commit y tag de la línea base LB-1
+- Qué se hizo: commit de RFC-001 (6 archivos de código, documentación y 11 evidencias) y tag anotado `LB-1`.
+- Por qué: congelar el estado tras el primer cambio correctivo; es la línea base contra la que se comparará la reorganización (LB-2).
+- Resultado: tag `LB-1` ("Linea base 1: RFC-001 aplicado") apunta al commit.
+- Evidencia: commit `ff04e3911447c1373ea1be6cac124af869010cc0` — "RFC-001: corrige login, sesion y mensajes (H-001, H-002, H-003)". Esta entrada se agregó en un commit posterior porque un commit no puede contener su propio hash.
