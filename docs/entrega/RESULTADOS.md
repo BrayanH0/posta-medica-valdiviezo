@@ -30,7 +30,7 @@ xychart-beta
 
 ## 2. Hallazgos
 
-39 hallazgos registrados al cerrar LB-8 (H-001 a H-039); las tablas de abajo cuentan esos 39. Durante esta tarea se agregaron H-040 y H-041 (Baja, Preventivo, abiertos), que son errores de redacción de `HALLAZGOS.md`, no del sistema. Conteo hecho sobre la tabla de `docs/HALLAZGOS.md` con `awk` (columnas Gravedad, Tipo y Estado). Nota: la fila de H-027 tiene un `|` dentro de una celda y `awk` la lee desplazada; se contó a mano como "Cerrado (RFC-004, LB-4)", que es lo que dice la fila.
+39 hallazgos registrados al cerrar LB-8 (H-001 a H-039); las tablas de abajo cuentan esos 39. En la tarea 13 se agregaron H-040 y H-041 (Baja, Preventivo), que eran errores de redacción de `HALLAZGOS.md`, no del sistema; ya están "Cerrado (corrección de documentación)". Con ellos el total es 41, con 20 cerrados y 21 pendientes (los pendientes no cambian). Conteo hecho sobre la tabla de `docs/HALLAZGOS.md` con `awk` (columnas Gravedad, Tipo y Estado). Nota: al hacer este conteo, la fila de H-027 tenía un `|` sin escapar y `awk` la leía desplazada; se contó a mano como "Cerrado (RFC-004, LB-4)". Ese error (H-040) ya se corrigió.
 
 ### Por gravedad
 
