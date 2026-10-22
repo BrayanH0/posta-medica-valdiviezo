@@ -669,3 +669,9 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
   6. Comprobar en GitHub que `application.properties` dice `${DB_PASSWORD}` y que los 11 tags están.
 - Recomendaciones: no subir nunca la carpeta `Proyecto_respaldo_antes_RFC009` (tiene la clave vieja en su historial); borrarla cuando el repositorio nuevo esté comprobado. La clave vieja ya no sirve para MySQL porque el usuario la cambió.
 - Cumplimiento de CLAUDE.md en la tarea 15: la clave no se escribió en el chat, en `docs/` ni en ningún comando (siempre se leyó de un archivo o variable); archivos del repositorio modificados solo con Write/Edit; batería completa en LB-9 igual a LB-8. Excepciones registradas: la copia del respaldo con `cp -a`, la copia de los scripts al scratchpad con `cp`, el archivo de reemplazo creado con `printf` y borrado con `rm` (todo fuera del repositorio), y la instalación de Python y git-filter-repo (autorizada por el usuario).
+
+### [2026-10-21 20:20] Commit final de la tarea 15 y tag ENTREGA-T2 movido
+- Commit `606d3de1d15d658116349f970874b854afa9528b` (2026-10-21 20:20:55), "Tarea 15: historial sin contrasena y hashes actualizados en docs".
+- `git tag -a -f ENTREGA-T2 -m "Version entregada para la evaluacion T2"` → `Updated tag 'ENTREGA-T2' (was d261999)`; `git rev-parse --short ENTREGA-T2^{commit}` → `606d3de`. El hook no lo bloqueó.
+- Verificación después del commit: la clave vieja aparece **0** veces en `git log -p --all`; 11 tags; backend (8080) respondiendo con `DB_PASSWORD`.
+- Esta entrada va en un commit posterior porque un commit no puede contener su propio hash; por eso queda fuera del tag.
