@@ -126,7 +126,7 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Qué se hizo: commit de todos los archivos modificados (incluido `application.properties`, porque el repositorio es local y no se publica) y tag anotado `LB-0`.
 - Por qué: congelar el estado inicial documentado contra el que se van a comparar las refactorizaciones R1–R4.
 - Resultado: 16 archivos en el commit: `BDPostaMedica.sql`, `README.md`, `SETUP.md`, `application.properties`, `package-lock.json`, los 4 documentos de `docs/`, 6 evidencias y `docs/refactorizaciones/.gitkeep`.
-- Evidencia: commit `744c84b7219efe0d4444d2549bd62e2c88ffa4aa` — "Linea base LB-0: entorno verificado y documentado". Tag anotado `LB-0` ("Linea base 0: estado inicial antes de refactorizar") apunta a ese commit. Esta entrada se agregó en un commit posterior porque un commit no puede contener su propio hash.
+- Evidencia: commit `1a5df63c0963dfc50ec40c08d7d335bbde43f302` — "Linea base LB-0: entorno verificado y documentado". Tag anotado `LB-0` ("Linea base 0: estado inicial antes de refactorizar") apunta a ese commit. Esta entrada se agregó en un commit posterior porque un commit no puede contener su propio hash.
 
 ### [2026-10-20 entre 20:12 y 20:37] Hallazgos completos y matriz de trazabilidad *(hora corregida; ver entrada "Corrección de horas")*
 - Qué se hizo: (1) H-002 pasó a Correctivo tras verificar que cerrar sesión como paciente deja los datos en el navegador (nueva prueba P17). (2) H-013 quedó limitado a "el frontend descarga los datos de todos los pacientes y filtra en el navegador"; la falta de autenticación de la API pasó a H-016. (3) Se corrigió la relación de H-012 con las refactorizaciones: es Correctivo y ninguna refactorización lo corrige; P13 debe seguir fallando igual que en LB-0. (4) Se registraron 11 hallazgos nuevos, H-016 a H-026, cada uno verificado en el código con su archivo:línea. (5) Se agregó a `HALLAZGOS.md` la columna "Cambio que lo atiende". (6) La tabla de `PRUEBAS.md` pasó a las columnas LB-0 a LB-6, con la regla de comparación contra la línea base anterior.
@@ -174,11 +174,11 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Qué se hizo: commit de RFC-001 (6 archivos de código, documentación y 11 evidencias) y tag anotado `LB-1`.
 - Por qué: congelar el estado tras el primer cambio correctivo; es la línea base contra la que se comparará la reorganización (LB-2).
 - Resultado: tag `LB-1` ("Linea base 1: RFC-001 aplicado") apunta al commit.
-- Evidencia: commit `ff04e3911447c1373ea1be6cac124af869010cc0` — "RFC-001: corrige login, sesion y mensajes (H-001, H-002, H-003)". Esta entrada se agregó en un commit posterior porque un commit no puede contener su propio hash.
+- Evidencia: commit `0659becb99be0f657a0c3abd090208979173aea7` — "RFC-001: corrige login, sesion y mensajes (H-001, H-002, H-003)". Esta entrada se agregó en un commit posterior porque un commit no puede contener su propio hash.
 
 ### [2026-10-21 entre 09:14 y 09:15] Corrección de horas
 - Qué se hizo: se revisaron todas las horas de `docs/BITACORA.md`, `docs/rfc/RFC-001.md` y `docs/PRUEBAS.md` contra fuentes reales y se corrigieron las que no correspondían. Cada línea corregida quedó marcada con "*(hora corregida; ver entrada "Corrección de horas")*".
-- Por qué: varias horas **se estimaron al escribir la documentación en vez de registrarse en el momento**. El caso más claro: la RFC-001 y la bitácora decían que la batería terminó a las 21:05, que la RFC se cerró a las 21:10 y que el commit de LB-1 fue a las 21:12, cuando `git log` registra el commit `ff04e39` a las **20:57:32**. Eran horas posteriores al hecho que dicen documentar.
+- Por qué: varias horas **se estimaron al escribir la documentación en vez de registrarse en el momento**. El caso más claro: la RFC-001 y la bitácora decían que la batería terminó a las 21:05, que la RFC se cerró a las 21:10 y que el commit de LB-1 fue a las 21:12, cuando `git log` registra el commit `0659bec` a las **20:57:32**. Eran horas posteriores al hecho que dicen documentar.
 - Fuentes usadas para la hora real: `git log --format='%h %ad %s' --date=iso`; la fecha de modificación de cada archivo de `docs/evidencias/`; la marca de tiempo que imprime `ng build` (en UTC: `00:13:27Z` = 19:13:27 y `01:46:36Z` = 20:46:36, hora de Perú UTC-5); las marcas UTC de las respuestas de error del backend (`00:17:42Z`–`00:17:57Z` = 19:17:42–19:17:57); los nombres de los archivos de registro de Playwright (UTC); el log de arranque del backend (`19:17:32`); y los `date` ejecutados en la sesión (20:00 y 20:44).
 - Correcciones en `BITACORA.md`:
 
@@ -193,13 +193,13 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
   | Completar el renombrado en la documentación | 19:24 | entre 19:19 y 19:26 | Entre el registro de Playwright `00-19-31Z` y el `00-26-11Z` |
   | Reinicio del backend | 19:28 | entre 19:27 y 19:29 | Entre la captura del paso 3b (19:27:31) y el registro `00-29-12Z` |
   | Redacción de HALLAZGOS, PRUEBAS y EC | 20:00 | entre 20:00 y 20:07 | Entre el `date` (20:00) y la primera evidencia de P12 (20:07:28) |
-  | Hallazgos completos y trazabilidad | 20:35 | entre 20:12 y 20:37 | Entre el commit `000eacb` (20:12:00) y el commit `6b3b6bc` (20:37:14) |
+  | Hallazgos completos y trazabilidad | 20:35 | entre 20:12 y 20:37 | Entre el commit `7c266a9` (20:12:00) y el commit `06e3c11` (20:37:14) |
   | RFC-001: flujo de aprobación | 20:46–20:49 | entre 20:44 y 20:46 | Entre el `date` de registro (20:44) y `ng build` (20:46:36); la aprobación fue antes de tocar código |
   | RFC-001: implementación | 20:50 | entre 20:44 y 20:46 | La implementación terminó antes de `ng build` (20:46:36) |
   | RFC-001: compilación | 20:52 | 20:46 | `ng build`: `2026-10-21T01:46:36Z` |
   | RFC-001: batería de regresión | 20:53–21:05 | entre 20:46 y 20:57 | Evidencias LB-1 entre 20:49:35 y 20:53:52; la verificación de H-028 fue antes del commit (20:57:32) |
   | RFC-001 cerrada | 21:10 | entre 20:54 y 20:57 | Después de la última evidencia (20:53:52) y antes del commit (20:57:32) |
-  | Commit y tag de LB-1 | 21:12 | 20:57 | Commit `ff04e39`: 20:57:32 |
+  | Commit y tag de LB-1 | 21:12 | 20:57 | Commit `0659bec`: 20:57:32 |
 
 - Correcciones en `RFC-001.md` (historial de estados): "¿Solicitud completa?" 20:46, "Investigación preliminar" 20:47, "¿Es correcta?" 20:48, "Aprobado" 20:49, "Asignado" 20:49 y "En implementación" 20:50 → **entre 20:44 y 20:46**; "En pruebas" 20:52 → **20:46**; "En pruebas → resultados" 21:05 → **entre 20:53 y 20:57**; "Cerrado" 21:10 → **entre 20:54 y 20:57**. "Fecha de recepción" y "Registrado" (20:44) no cambian: salen de un `date`.
 - Corrección en `PRUEBAS.md`: "Ejecución del 2026-10-20, de 20:53 a 21:05" → **entre 20:46 y 20:57**.
@@ -270,7 +270,7 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Qué se hizo: commit de RFC-002 (3 archivos de código, CLAUDE.md, documentación y 10 evidencias) y tag anotado `LB-2`.
 - Por qué: congelar el estado tras el segundo cambio correctivo; es la línea base contra la que se comparará la reorganización (LB-3).
 - Resultado: tag `LB-2` ("Linea base 2: RFC-002 aplicado") apunta al commit. La carpeta `.playwright-mcp/` (registros que genera la herramienta de pruebas) quedó fuera del commit; no se borró porque CLAUDE.md no permite borrar archivos con comandos de terminal.
-- Evidencia: commit `697447ffee775e3973e839faac4f7bb5cce60e36` (2026-10-21 09:40:29) — "RFC-002: login de paciente comprueba el rol (H-028)". Esta entrada se agregó en un commit posterior porque un commit no puede contener su propio hash.
+- Evidencia: commit `6588eaff865a467502a32443174d99cdd40b95d0` (2026-10-21 09:40:29) — "RFC-002: login de paciente comprueba el rol (H-028)". Esta entrada se agregó en un commit posterior porque un commit no puede contener su propio hash.
 
 ### [2026-10-21 09:48] Regla nueva en CLAUDE.md: el reporte del chat resume lo que ya está en docs/
 - Qué se hizo: se agregó en la sección "Documentación" de `CLAUDE.md` la regla de que todo lo que se incluya en el reporte final del chat (problemas, decisiones, fallos propios, estado del entorno) debe estar también escrito en `docs/`.
@@ -335,10 +335,10 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Qué se hizo: commit de RFC-003 (39 archivos: backend, frontend del módulo médico, 5 pruebas de Playwright, documentación, 7 evidencias; incluye también `CLAUDE.md` y `.gitignore` de las entradas de las 09:48 y 09:49) y tag anotado `LB-3`.
 - Por qué: congelar el estado tras el tercer cambio correctivo; es la línea base contra la que se comparará la reorganización (LB-4).
 - Resultado: tag `LB-3` ("Linea base 3: RFC-003 aplicado") apunta al commit.
-- Evidencia: commit `335f0cf44964723312871c14cce70d70819aae86` (2026-10-21 10:16:04) — "RFC-003: modulo medico conectado a la base de datos (H-004)". Esta entrada se agregó en un commit posterior porque un commit no puede contener su propio hash.
+- Evidencia: commit `4fb12a6b1c54e21dd5a83876f5b8f32d0ac1ed69` (2026-10-21 10:16:04) — "RFC-003: modulo medico conectado a la base de datos (H-004)". Esta entrada se agregó en un commit posterior porque un commit no puede contener su propio hash.
 
 ### [2026-10-21 10:25] Tarea 9: inicio de sesión de trabajo y estado del entorno
-- Qué se hizo: lectura de `CLAUDE.md`, de las últimas entradas de esta bitácora y de la columna "Cambio que lo atiende" de `HALLAZGOS.md`; `git log --oneline -5` (último commit `edec356`) y `git tag` (`LB-0` a `LB-3`).
+- Qué se hizo: lectura de `CLAUDE.md`, de las últimas entradas de esta bitácora y de la columna "Cambio que lo atiende" de `HALLAZGOS.md`; `git log --oneline -5` (último commit `dd1f3a0`) y `git tag` (`LB-0` a `LB-3`).
 - Estado del entorno (10:25:15): backend respondiendo en 8080 (`GET /` → 404, la ruta no existe; el servidor está arriba) y frontend en 4200 (`GET /` → 200). No hubo que levantarlos. Árbol de trabajo limpio.
 - Parte A, puntos 1 y 2: **ya estaban hechos** desde las entradas de las 09:48 y 09:49 (la regla del reporte del chat está en `CLAUDE.md`, "Documentación"; `.playwright-mcp/` está en `.gitignore`) y entraron en el commit de LB-3. No se volvieron a editar.
 
@@ -380,10 +380,10 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 
 ### [2026-10-21 10:35] Commit de la tarea 9 (sin tag)
 - Qué se hizo: commit de las 11 pruebas nuevas (6 del frontend, 5 del backend), `tsconfig.caracterizacion.json` y la documentación. Sin tag: no cambia la aplicación, solo agrega pruebas.
-- Evidencia: commit `d9c6375a30d2c2bc7ca26358f419d82229b3dc1d` (2026-10-21 10:35:50) — "Pruebas unitarias de caracterizacion (frontend y backend)". Esta entrada se agregó en un commit posterior porque un commit no puede contener su propio hash.
+- Evidencia: commit `cb8ee8da9b105e885380de98ef085a59081e2054` (2026-10-21 10:35:50) — "Pruebas unitarias de caracterizacion (frontend y backend)". Esta entrada se agregó en un commit posterior porque un commit no puede contener su propio hash.
 
 ### [2026-10-21 10:49] Tarea 10: inicio de sesión de trabajo y estado del entorno
-- Qué se hizo: lectura de `CLAUDE.md`, de las últimas entradas de esta bitácora y de la columna "Cambio que lo atiende" de `HALLAZGOS.md`; `git log --oneline -5` (último commit `d3fc0c3`) y `git tag` (`LB-0` a `LB-3`). `date` 10:49:28.
+- Qué se hizo: lectura de `CLAUDE.md`, de las últimas entradas de esta bitácora y de la columna "Cambio que lo atiende" de `HALLAZGOS.md`; `git log --oneline -5` (último commit `0512fef`) y `git tag` (`LB-0` a `LB-3`). `date` 10:49:28.
 - Estado del entorno: backend en 8080 (`GET /` → 404: el servidor responde y la ruta no existe) y frontend en 4200 (`GET /` → 200), corriendo desde la sesión anterior (pids 18544 y 5456). Árbol de trabajo limpio.
 - **Excepción a CLAUDE.md autorizada por el usuario solo para esta tarea:** mover y eliminar archivos con `git mv` y `git rm`.
 
@@ -433,10 +433,10 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 ### [2026-10-21 11:27] Commit y tag de la línea base LB-4
 - Qué se hizo: commit de RFC-004 (228 renombrados, 16 eliminados —14 archivos de código, `test-results/.last-run.json` y la ruta vieja de `app.routes.ts`—, 11 modificados y 10 agregados: RFC-004, 8 evidencias y la ruta nueva de `app.routes.ts`) y tag anotado `LB-4` ("Linea base 4: estructura reorganizada").
 - Por qué: congelar la estructura reorganizada; es la línea base contra la que se comparará la refactorización DRY (LB-5).
-- Evidencia: commit `31f5826054389a16b51cd58f8ac249f4abcfab4d` (2026-10-21 11:27:58) — "RFC-004: reorganizacion de la estructura de carpetas". Esta entrada se agregó en un commit posterior porque un commit no puede contener su propio hash.
+- Evidencia: commit `e7829cb916e1d9a97173225269150af7fcf9872a` (2026-10-21 11:27:58) — "RFC-004: reorganizacion de la estructura de carpetas". Esta entrada se agregó en un commit posterior porque un commit no puede contener su propio hash.
 
 ### [2026-10-21 14:44] Tarea 11: inicio de sesión de trabajo y estado del entorno
-- Qué se hizo: lectura de `CLAUDE.md`, de las últimas entradas de esta bitácora y de la columna "Cambio que lo atiende" de `HALLAZGOS.md`; `git log --oneline -5` (último commit `3f8aaac`) y `git tag` (`LB-0` a `LB-4`). `date` 14:43:28 y 14:44:44.
+- Qué se hizo: lectura de `CLAUDE.md`, de las últimas entradas de esta bitácora y de la columna "Cambio que lo atiende" de `HALLAZGOS.md`; `git log --oneline -5` (último commit `f68ca7b`) y `git tag` (`LB-0` a `LB-4`). `date` 14:43:28 y 14:44:44.
 - Estado del entorno: backend en 8080 (`GET /` → 404: responde y la ruta no existe; pid 26952) y frontend en 4200 (`GET /` → 200; pid 19224), corriendo desde antes de la sesión. Árbol de trabajo limpio.
 - Tarea: R1 DRY (RFC-005: H-008, H-010, H-030) y después R2 SRP (RFC-006: H-018). Mantenimiento preventivo: no cambia el comportamiento.
 
@@ -467,7 +467,7 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 
 ### [2026-10-21 15:12] Commit y tag de la línea base LB-5
 - Qué se hizo: commit de RFC-005 (13 controladores y 3 componentes modificados; `login-comun.ts`, su spec, `tsconfig.unitarias.json`, RFC-005 y evidencias agregados; 4 documentos actualizados) y tag anotado `LB-5` ("Linea base 5: R1 DRY").
-- Evidencia: commit `8effe51b566c00e8c769937029ccf99d539eaf28` (2026-10-21 15:12:22) — "RFC-005: R1 DRY, logica de login y CORS en un solo lugar". Esta entrada va en un commit posterior porque un commit no puede contener su propio hash.
+- Evidencia: commit `bc282c34b0a52a26eba9367e7bf324b34b600b6d` (2026-10-21 15:12:22) — "RFC-005: R1 DRY, logica de login y CORS en un solo lugar". Esta entrada va en un commit posterior porque un commit no puede contener su propio hash.
 
 ### [2026-10-21 entre 15:12 y 15:16] RFC-006: investigación, capturas "antes" y registro
 - Por qué ocurre el problema (H-018, antes de tocar código): la regla de horarios se escribió directamente dentro del componente de la pantalla, en el mismo método que recibe la respuesta HTTP, porque no había otro lugar donde ponerla (no existe un servicio ni un módulo de reglas de citas). Así, la pantalla tiene dos razones para cambiar: el formulario y la regla.
@@ -494,11 +494,11 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 
 ### [2026-10-21 15:27] Commit y tag de la línea base LB-6
 - Qué se hizo: commit de RFC-006 (`registrar-cita.component.ts` modificado; `horarios-cita.ts`, su spec, RFC-006 y evidencias agregados; 4 documentos actualizados) y tag anotado `LB-6` ("Linea base 6: R2 Responsabilidad Unica").
-- Evidencia: commit `83fc3645916972b78d2672ad31da5e0c0fe86a50` (2026-10-21 15:27:59) — "RFC-006: R2 SRP, regla de horarios separada de la pantalla". Esta entrada va en un commit posterior porque un commit no puede contener su propio hash.
+- Evidencia: commit `8d17c2814f714b3e851ac5fcdc5a7ae45643227e` (2026-10-21 15:27:59) — "RFC-006: R2 SRP, regla de horarios separada de la pantalla". Esta entrada va en un commit posterior porque un commit no puede contener su propio hash.
 - Cumplimiento de CLAUDE.md en la tarea 11: archivos del repositorio creados y modificados solo con Write/Edit; ninguna prueba existente modificada; hooks sin preguntas (no se editó ningún archivo de pruebas existente). Excepciones a registrar: (1) los archivos de evidencia `.png` los generó Playwright desde scripts (como en las líneas base anteriores), no Write; (2) los scripts del scratchpad se copiaron con `sed` (fuera del repositorio); (3) en el experimento de H-038 modifiqué el código a propósito (quitar y volver a poner un `import`) para confirmar la causa, y lo dejé igual.
 
 ### [2026-10-21 15:44] Tarea 12: inicio de sesión de trabajo y estado del entorno
-- Qué se hizo: lectura de `CLAUDE.md`, de las últimas entradas de esta bitácora y de la columna "Cambio que lo atiende" de `HALLAZGOS.md`; `git log --oneline -5` (último commit `25fd9df`) y `git tag` (`LB-0` a `LB-6`). `date` 15:44:18.
+- Qué se hizo: lectura de `CLAUDE.md`, de las últimas entradas de esta bitácora y de la columna "Cambio que lo atiende" de `HALLAZGOS.md`; `git log --oneline -5` (último commit `4780beb`) y `git tag` (`LB-0` a `LB-6`). `date` 15:44:18.
 - Estado del entorno: backend (8080) y frontend (4200) responden (`Test-NetConnection` → `True` en ambos), corriendo desde la sesión anterior; no hubo que levantarlos. Árbol de trabajo limpio.
 - Tarea: R3 Abierto/Cerrado (RFC-007, H-019) y después R4 IoC (RFC-008, H-015, H-020). Condición de la tarea: si una refactorización obliga a cambiar cómo una prueba `*CaracterizacionTest.java` construye la clase, detenerse y consultar al usuario.
 
@@ -538,7 +538,7 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 
 ### [2026-10-21 16:10] Commit y tag de la línea base LB-7
 - Qué se hizo: commit de RFC-007 (4 archivos nuevos en `autenticacion/`, `AuthController`, 2 pruebas con la construcción adaptada, 2 pruebas nuevas, RFC-007 y 4 documentos) y tag anotado `LB-7` ("Linea base 7: R3 Abierto/Cerrado").
-- Evidencia: commit `267c00604f9c1d9f6293d99e3e59d767d0602104` (2026-10-21 16:10:09) — "RFC-007: R3 Abierto/Cerrado, autenticacion extensible por rol".
+- Evidencia: commit `df9748003106ab2152aba0aa6af4fb7ab0933e55` (2026-10-21 16:10:09) — "RFC-007: R3 Abierto/Cerrado, autenticacion extensible por rol".
 
 ### [2026-10-21 16:10] RFC-008 registrada y aprobada (H-015, H-020)
 - Qué se hizo: `docs/rfc/RFC-008.md` con el diseño, los diagramas antes/después y "Principio aplicado" (IoC y DIP, con la relación con el ejemplo del curso). Aprobada por el Comité (Brayan) según la tarea 12.
@@ -568,10 +568,10 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 
 ### [2026-10-21 16:21] Commit y tag de la línea base LB-8
 - Qué se hizo: commit de RFC-008 (9 clases modificadas y 5 nuevas en el backend, 1 prueba con la construcción adaptada, 3 pruebas nuevas, RFC-008 y 4 documentos) y tag anotado `LB-8` ("Linea base 8: R4 Inversion de Control").
-- Evidencia: commit `5033c1b9388b005c4056ae6be3fc9fa8fd266109` (2026-10-21 16:21:20) — "RFC-008: R4 IoC, inyeccion por constructor e interfaces de servicio". Esta entrada va en un commit posterior porque un commit no puede contener su propio hash.
+- Evidencia: commit `679ba053a6e5fc52d3584f9d9ef56ce11229ec41` (2026-10-21 16:21:20) — "RFC-008: R4 IoC, inyeccion por constructor e interfaces de servicio". Esta entrada va en un commit posterior porque un commit no puede contener su propio hash.
 
 ### [2026-10-21 16:35] Tarea 13: inicio de sesión de trabajo y estado del entorno
-- Qué se hizo: lectura de `CLAUDE.md` y de las últimas entradas de esta bitácora; `git log --oneline -5` (último commit `face512`) y `git tag` (`LB-0` a `LB-8`). `date` 16:35:05.
+- Qué se hizo: lectura de `CLAUDE.md` y de las últimas entradas de esta bitácora; `git log --oneline -5` (último commit `faddfef`) y `git tag` (`LB-0` a `LB-8`). `date` 16:35:05.
 - Estado del entorno: backend (8080) responde (`curl` → 404 en la raíz, que no tiene ruta; el servidor está arriba) y frontend (4200) → 200. Ambos corriendo desde la sesión anterior. Árbol de trabajo limpio.
 - Tarea: paquete de documentación para el grupo en `docs/entrega/`. Sin cambios en el código de la aplicación.
 
@@ -595,7 +595,7 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 
 ### [2026-10-21 16:45] Commit y tag ENTREGA-T2
 - Qué se hizo: commit de `docs/entrega/` (4 documentos y 18 capturas), `BITACORA.md` y `HALLAZGOS.md` (H-040, H-041), y tag anotado `ENTREGA-T2` ("Version entregada para la evaluacion T2").
-- Evidencia: commit `50521a358743959ec767d116609456e5b364c3f5` (2026-10-21 16:45:25) — "Entrega: paquete de documentacion para el grupo". Esta entrada va en un commit posterior porque un commit no puede contener su propio hash; por eso queda fuera del tag.
+- Evidencia: commit `da6654d3d88c9995900058b20814c7ce717f8ab3` (2026-10-21 16:45:25) — "Entrega: paquete de documentacion para el grupo". Esta entrada va en un commit posterior porque un commit no puede contener su propio hash; por eso queda fuera del tag.
 - Nota: la fila nueva de H-040 tiene pipes escapados (`\|`) en su evidencia; en Markdown se ven bien, pero un `awk -F'|'` sin más la cuenta con 12 columnas. Para contar hallazgos con `awk`, revisar a mano las filas H-027 y H-040.
 - Cumplimiento de CLAUDE.md en la tarea 13: sin cambios en el código de la aplicación ni en pruebas; documentos creados y modificados solo con Write/Edit; las capturas (binarios) las escribió la herramienta de Playwright, como las evidencias de tareas anteriores; horas tomadas de `date`, `ls -la` y `git log`; donde no hubo dato (títulos de 9 puntos de la presentación, resultado de las pruebas en LB-0 de la carpeta `tests/`) se escribió "Sin registro". No se corrió la batería de `PRUEBAS.md` porque no hubo cambio de código.
 
@@ -609,18 +609,18 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Observación: el historial de RFC-001 no tiene un estado llamado "Informar al solicitante"; en la guía ese paso se asocia al estado "Cerrado" (evaluación post-implementación y reporte), y se dice así.
 
 ### [2026-10-21 17:30] Commit y tag ENTREGA-T2 movido
-- Commit `5d3eb330935cb0637a0c971125cf6007f2e4918b` (2026-10-21 17:30:40), "Entrega: guia con los 12 puntos oficiales y correccion de hallazgos".
-- `git tag -a -f ENTREGA-T2 -m "Version entregada para la evaluacion T2"`: el hook no lo bloqueó; Git respondió `Updated tag 'ENTREGA-T2' (was 0a407e7)` (`0a407e7` era el objeto del tag anterior, que apuntaba al commit `50521a3`). `git rev-parse ENTREGA-T2^{commit}` → `5d3eb33…`.
+- Commit `652f5675dacd88fef843fc52fcb83b560251656b` (2026-10-21 17:30:40), "Entrega: guia con los 12 puntos oficiales y correccion de hallazgos".
+- `git tag -a -f ENTREGA-T2 -m "Version entregada para la evaluacion T2"`: el hook no lo bloqueó; Git respondió `Updated tag 'ENTREGA-T2' (was 0a407e7)` (`0a407e7` era el objeto del tag anterior, que apuntaba al commit `da6654d`). `git rev-parse ENTREGA-T2^{commit}` → `652f567…`.
 - Esta entrada va en un commit posterior porque un commit no puede contener su propio hash; por eso queda fuera del tag.
 
 ### [2026-10-21 19:57] Tarea 15: inicio de sesión de trabajo y estado del entorno
-- Qué se hizo: lectura de `CLAUDE.md`; `git log --oneline -3` (último `960a944`), `git tag` (LB-0 a LB-8, ENTREGA-T2), `git remote -v` → `origin https://github.com/BrayanH0/posta-medica-valdiviezo.git`. `date` 19:57:20. Árbol de trabajo limpio.
+- Qué se hizo: lectura de `CLAUDE.md`; `git log --oneline -3` (último `df05e56`), `git tag` (LB-0 a LB-8, ENTREGA-T2), `git remote -v` → `origin https://github.com/BrayanH0/posta-medica-valdiviezo.git`. `date` 19:57:20. Árbol de trabajo limpio.
 - Contexto dado por el usuario: el repositorio estuvo público en GitHub con la contraseña de MySQL en el historial; el usuario ya lo pasó a privado y cambió la contraseña de MySQL.
 - Comprobación sin mostrar la clave: la clave de `application.properties` ya no abre MySQL (`ERROR 1045`). El backend en marcha respondía porque arrancó antes del cambio.
 
 ### [2026-10-21 19:57–19:58] Tarea 15, Parte A: respaldo (plan de back-out)
 - Qué se hizo: `cp -a Proyecto Proyecto_respaldo_antes_RFC009` (19:57:42–19:58:43), carpeta hermana fuera del repositorio.
-- Verificación: en las dos carpetas, la lista de tags con sus objetos da el mismo `md5sum`; `HEAD` = `960a944da1f29b85c307184925969a5065cae85a` en ambas; `git fsck` igual (solo un blob suelto que ya existía); `application.properties` idéntico (`cmp`).
+- Verificación: en las dos carpetas, la lista de tags con sus objetos da el mismo `md5sum`; `HEAD` = `df05e56e245896add98c8484afab703287f03865` en ambas; `git fsck` igual (solo un blob suelto que ya existía); `application.properties` idéntico (`cmp`).
 - Excepción a CLAUDE.md: la copia se hizo con un comando de terminal, no con Edit/Write, porque la tarea la pide así y es una copia completa (binarios y `.git`) fuera del repositorio; no crea ni modifica archivos del repositorio.
 
 ### [2026-10-21 19:59–20:09] Tarea 15, Parte B: RFC-009 (H-006) y validación
@@ -634,3 +634,38 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Observación: H-006 está clasificado como Preventivo en la tabla, pero la tarea 15 define RFC-009 como Correctivo. No se cambió la columna; queda anotado en la fila. Decide el usuario.
 - Scripts de la batería: los de LB-8 se copiaron con `cp` al scratchpad de esta sesión (fuera del repositorio; misma excepción que en tareas anteriores) y se ajustaron con Edit (clave desde `DB_PASSWORD`, carpeta de salida).
 - Alternativas descartadas: ver RFC-009 (valor por defecto en `${DB_PASSWORD:…}`, archivo local ignorado, no reescribir el historial, `filter-branch`/BFG).
+
+### [2026-10-21 20:10] Commit y tag de la línea base LB-9
+- Commit "RFC-009: credenciales de MySQL en variables de entorno (H-006)" a las 20:10:31 y tag anotado `LB-9` ("Linea base 9: RFC-009 credenciales fuera del codigo"). Tras reescribir el historial (entrada siguiente) ese commit es `bf107d3`.
+
+### [2026-10-21 20:11–20:15] Tarea 15, Parte C: herramienta no disponible; decisión del usuario
+- `pip install git-filter-repo` no se pudo ejecutar: el equipo no tenía Python (solo el alias de Microsoft Store, que no funciona). Se detuvo el trabajo antes de instalar software y se ofrecieron 3 opciones. El usuario autorizó la opción 1: instalar Python con winget en modo usuario.
+- `winget install -e --id Python.Python.3.12 --scope user` (20:15:22–20:16:02) → Python 3.12.10 en `C:\Users\braya\AppData\Local\Programs\Python\Python312`; `python.exe -m pip install git-filter-repo` → `git-filter-repo.exe` en `Scripts\` (versión `a40bce548d2c`). Como la terminal de esta sesión no ve el PATH nuevo, se usaron las rutas completas.
+
+### [2026-10-21 20:16–20:17] Tarea 15, Parte C: contraseña borrada del historial
+- Antes: los 11 tags y sus commits se guardaron en el scratchpad (`tags-antes.txt`); 27 commits; la clave vieja (leída del respaldo, sin mostrarla) aparecía 2 veces en `git log -p --all` (alta en LB-0 y baja en LB-9) y estaba en el contenido de 25 de los 27 commits.
+- Archivo de reemplazo en el scratchpad, fuera del repositorio, con una línea `<clave>==>***REMOVED***`, escrito con `printf` desde una variable (la clave no apareció en ningún comando ni salida) y con permisos solo para el usuario.
+- `git filter-repo --replace-text <archivo> --force` (20:16:38–20:16:41): `Parsed 27 commits`, `HEAD is now at bf107d3`, `Completely finished after 2.20 seconds`. La herramienta quitó el remoto `origin` (`https://github.com/BrayanH0/posta-medica-valdiviezo.git`) para evitar que se suba por error.
+- Verificación (solo conteos): `git log -p --all | grep -cF` → **0**; `git grep -F -l` en los 27 commits → **0**; búsqueda en todos los objetos guardados en `.git` (`git cat-file --batch-all-objects --batch`) → **0**; el comando de la tarea en PowerShell, `git log -p --all | Select-String -SimpleMatch $k` con `$k` leída del respaldo → **0 resultados**. En su lugar quedó `spring.datasource.password=***REMOVED***` en el historial de `application.properties`.
+- Tags: los **11** tags (LB-0 a LB-9 y ENTREGA-T2; la tarea decía 10, pero son 11) siguen existiendo y cada uno apunta al commit que `.git/filter-repo/commit-map` asigna a su commit anterior, con el mismo mensaje: LB-0 `1a5df63`, LB-1 `0659bec`, LB-2 `6588eaf`, LB-3 `4fb12a6`, LB-4 `e7829cb`, LB-5 `bc282c3`, LB-6 `8d17c28`, LB-7 `df97480`, LB-8 `679ba05`, LB-9 `bf107d3`, ENTREGA-T2 `652f567`.
+- El archivo de reemplazo se borró con `rm` (20:17:22). Excepción a CLAUDE.md: es un archivo del scratchpad, fuera del repositorio, y Write no puede borrar archivos.
+- Por qué cambiaron los hashes: el hash de un commit depende de su contenido y del hash de su padre. Al cambiar el texto de `application.properties`, cambió el contenido de 25 commits y, en cadena, el de todos sus descendientes. El commit inicial `17e2118` no cambió porque todavía no tenía la clave real (se puso en LB-0).
+
+### [2026-10-21 20:17–20:20] Tarea 15, Parte D: hashes actualizados en docs/
+- Un script de solo lectura en el scratchpad (`hashes.js`) buscó en `docs/` todos los textos hexadecimales de 7 a 40 caracteres que fueran prefijo de un commit viejo de `commit-map`: **63 referencias** en 13 archivos (`BITACORA.md` 25, `entrega/RESULTADOS.md` 21, las RFC 15, `GUIA_PRESENTACION.md` 1, `PANTALLAS.md` 1).
+- Se reemplazaron con Edit (primero los hashes largos y después los cortos, para no pisar parte de un hash largo), con la misma longitud que tenían. El gitGraph de `RESULTADOS.md` se rehízo con los hashes nuevos y se le agregaron los commits posteriores a LB-8 hasta LB-9.
+- Verificación: el mismo script sobre `docs/`, `README.md`, `SETUP.md` y `CLAUDE.md` → `total 0`.
+- Aviso: en estas entradas las referencias históricas a hashes (por ejemplo "HEAD del respaldo") ya muestran el hash nuevo equivalente. La carpeta `Proyecto_respaldo_antes_RFC009` conserva el historial viejo con los hashes viejos, **y con la clave vieja**; la equivalencia está en `.git/filter-repo/commit-map` del repositorio.
+- ENTREGA-T2 se mueve al commit de esta entrada (siguiente).
+
+### [2026-10-21 20:20] Tarea 15, Parte E: remoto
+- El remoto `origin` ya no existe en el repositorio local (lo quitó `git filter-repo`). En GitHub sigue el repositorio viejo, privado, con la clave vieja en su historial.
+- Según lo indicado por el usuario: **no se hace force push**. El usuario va a borrar el repositorio de GitHub y crear uno nuevo y vacío, porque GitHub puede conservar commits viejos (por ejemplo, referencias de pull requests o cachés) aunque se reescriba la rama. Pasos para subir al repositorio nuevo, que ejecuta el usuario (el hook bloquea `git push` para Claude Code):
+  1. En GitHub: Settings → Danger Zone → Delete this repository (el viejo).
+  2. Crear un repositorio nuevo **vacío** (sin README, sin .gitignore, sin licencia).
+  3. En la carpeta del proyecto: `git remote add origin https://github.com/<usuario>/<repo-nuevo>.git`
+  4. `git push -u origin master`
+  5. `git push origin --tags`
+  6. Comprobar en GitHub que `application.properties` dice `${DB_PASSWORD}` y que los 11 tags están.
+- Recomendaciones: no subir nunca la carpeta `Proyecto_respaldo_antes_RFC009` (tiene la clave vieja en su historial); borrarla cuando el repositorio nuevo esté comprobado. La clave vieja ya no sirve para MySQL porque el usuario la cambió.
+- Cumplimiento de CLAUDE.md en la tarea 15: la clave no se escribió en el chat, en `docs/` ni en ningún comando (siempre se leyó de un archivo o variable); archivos del repositorio modificados solo con Write/Edit; batería completa en LB-9 igual a LB-8. Excepciones registradas: la copia del respaldo con `cp -a`, la copia de los scripts al scratchpad con `cp`, el archivo de reemplazo creado con `printf` y borrado con `rm` (todo fuera del repositorio), y la instalación de Python y git-filter-repo (autorizada por el usuario).

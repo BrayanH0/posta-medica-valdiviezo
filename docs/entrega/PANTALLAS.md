@@ -1,6 +1,6 @@
 # Pantallas del sistema en LB-8 (punto 12)
 
-Capturas tomadas el 2026-10-21 entre 16:37 y 16:41 con Playwright (ventana 1280×800, página completa), sobre el código de LB-8 (commit `5033c1b`). Antes se recargó la base de datos (`DROP DATABASE` + `database/BDPostaMedica.sql`, 16:37:02: 12 tablas, 21 citas), así que todos los datos que se ven son los del script, sin datos de pruebas anteriores. No se registró ninguna cita nueva.
+Capturas tomadas el 2026-10-21 entre 16:37 y 16:41 con Playwright (ventana 1280×800, página completa), sobre el código de LB-8 (commit `679ba05`). Antes se recargó la base de datos (`DROP DATABASE` + `database/BDPostaMedica.sql`, 16:37:02: 12 tablas, 21 citas), así que todos los datos que se ven son los del script, sin datos de pruebas anteriores. No se registró ninguna cita nueva.
 
 Usuarios usados: paciente 1 (Juan Perez Gomez), médico 1 (Jorge Santos Ruiz) y el administrador. Para las 3 listas de citas del médico se entró con otros médicos de la base, porque en el script el médico 1 solo tiene citas **atendidas** y sus listas salían vacías: pendientes → médico 6 (Roberto Gomez Bolaños), confirmadas → médico 2 (Carla Paredes Luna), canceladas → médico 4 (Lucia Flores Huaman). Son los únicos médicos con citas en esos estados (`SELECT ... FROM Cita WHERE estado_cita IN (1,2,3)`).
 

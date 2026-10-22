@@ -132,30 +132,36 @@ git ls-tree -r --name-only LB-8 -- frontend/src | wc -l             # 133
 
 ## 5. Grafo de evolución de las líneas base
 
-Generado a partir de `git log --oneline --reverse --decorate=short`. Una sola rama (`master`); cada línea base es un tag anotado. Los commits "Bitacora: registrar hash..." registran el hash del commit anterior (un commit no puede contener su propio hash).
+Generado a partir de `git log --oneline --reverse --decorate=short`. Una sola rama (`master`); cada línea base es un tag anotado. Los commits "Bitacora: registrar hash..." registran el hash del commit anterior (un commit no puede contener su propio hash). Los hashes son los del historial reescrito en la tarea 15 (RFC-009: se borró la contraseña de MySQL de todos los commits con `git filter-repo`, y por eso cambiaron todos los hashes salvo el del commit inicial).
 
 ```mermaid
 gitGraph
     commit id: "17e2118 Commit inicial"
-    commit id: "744c84b Linea base" tag: "LB-0"
-    commit id: "000eacb Bitacora"
-    commit id: "6b3b6bc Hallazgos"
-    commit id: "ff04e39 RFC-001" tag: "LB-1"
-    commit id: "7e84cbb Bitacora"
-    commit id: "c0bba33 CLAUDE.md y hooks"
-    commit id: "697447f RFC-002" tag: "LB-2"
-    commit id: "2fc4ec7 Bitacora"
-    commit id: "335f0cf RFC-003" tag: "LB-3"
-    commit id: "edec356 Bitacora"
-    commit id: "d9c6375 Pruebas unitarias"
-    commit id: "d3fc0c3 Bitacora"
-    commit id: "31f5826 RFC-004 Reorg" tag: "LB-4"
-    commit id: "3f8aaac Bitacora"
-    commit id: "8effe51 RFC-005 DRY" tag: "LB-5"
-    commit id: "8843667 Bitacora"
-    commit id: "83fc364 RFC-006 SRP" tag: "LB-6"
-    commit id: "25fd9df Bitacora"
-    commit id: "267c006 RFC-007 OCP" tag: "LB-7"
-    commit id: "5033c1b RFC-008 IoC" tag: "LB-8"
-    commit id: "face512 Bitacora"
+    commit id: "1a5df63 Linea base" tag: "LB-0"
+    commit id: "7c266a9 Bitacora"
+    commit id: "06e3c11 Hallazgos"
+    commit id: "0659bec RFC-001" tag: "LB-1"
+    commit id: "1c7219a Bitacora"
+    commit id: "1c82e85 CLAUDE.md y hooks"
+    commit id: "6588eaf RFC-002" tag: "LB-2"
+    commit id: "c1875fc Bitacora"
+    commit id: "4fb12a6 RFC-003" tag: "LB-3"
+    commit id: "dd1f3a0 Bitacora"
+    commit id: "cb8ee8d Pruebas unitarias"
+    commit id: "0512fef Bitacora"
+    commit id: "e7829cb RFC-004 Reorg" tag: "LB-4"
+    commit id: "f68ca7b Bitacora"
+    commit id: "bc282c3 RFC-005 DRY" tag: "LB-5"
+    commit id: "5690131 Bitacora"
+    commit id: "8d17c28 RFC-006 SRP" tag: "LB-6"
+    commit id: "4780beb Bitacora"
+    commit id: "df97480 RFC-007 OCP" tag: "LB-7"
+    commit id: "679ba05 RFC-008 IoC" tag: "LB-8"
+    commit id: "faddfef Bitacora"
+    commit id: "da6654d Entrega"
+    commit id: "87fce6c Bitacora"
+    commit id: "652f567 Guia 12 puntos"
+    commit id: "df05e56 Bitacora"
+    commit id: "bf107d3 RFC-009" tag: "LB-9"
 ```
+El tag ENTREGA-T2 se mueve al commit final de la tarea 15 (ver `docs/BITACORA.md`).

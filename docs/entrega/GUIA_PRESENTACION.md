@@ -60,7 +60,7 @@ flowchart TD
     E -- "No" --> R["Rechazada:<br/>se informa al solicitante"]
     E -- "Sí: aprobada por el gestor<br/>(cambio de emergencia)" --> A["Asignar ingeniero<br/>Claude Code"]
     A --> P["Planificar, diseñar, probar, finalizar<br/>En implementación → En pruebas (20:46)<br/>→ resultados (entre 20:53 y 20:57)"]
-    P --> F["Informar al solicitante<br/>Cerrado: evaluación post-implementación,<br/>commit ff04e39 y tag LB-1"]
+    P --> F["Informar al solicitante<br/>Cerrado: evaluación post-implementación,<br/>commit 0659bec y tag LB-1"]
 ```
 
 | Paso del flujo del curso | Estado en el historial de RFC-001 | Hora registrada |
