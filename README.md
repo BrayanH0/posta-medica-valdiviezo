@@ -61,10 +61,19 @@ El proyecto utiliza un **único script SQL** maestro: `database/BDPostaMedica.sq
 
 1. **Motor:** MySQL
 2. **Base de Datos:** `posta_medica_valdiviezo`
-3. **Credenciales por defecto:**
-   - Usuario: `root`
-   - Contraseña: `admin`
-   *(Configurable en `backend/src/main/resources/application.properties`)*
+3. **Credenciales (variables de entorno):** la contraseña no está en el código. `application.properties` usa `${DB_USER:root}` y `${DB_PASSWORD}`.
+   - `DB_PASSWORD` es obligatoria (sin valor por defecto: sin ella el backend no arranca).
+   - `DB_USER` es opcional (por defecto `root`).
+
+   En PowerShell, para la sesión actual:
+   ```powershell
+   $env:DB_PASSWORD = "tu_clave"
+   ```
+   De forma permanente (para tu usuario de Windows; abre una terminal nueva después):
+   ```powershell
+   [Environment]::SetEnvironmentVariable("DB_PASSWORD","tu_clave","User")
+   ```
+   Detalle en `SETUP.md`.
 
 ### Instrucciones de BD:
 Ejecutar el script `database/BDPostaMedica.sql` en su totalidad. Este script:

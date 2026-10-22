@@ -612,3 +612,25 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Commit `5d3eb330935cb0637a0c971125cf6007f2e4918b` (2026-10-21 17:30:40), "Entrega: guia con los 12 puntos oficiales y correccion de hallazgos".
 - `git tag -a -f ENTREGA-T2 -m "Version entregada para la evaluacion T2"`: el hook no lo bloqueó; Git respondió `Updated tag 'ENTREGA-T2' (was 0a407e7)` (`0a407e7` era el objeto del tag anterior, que apuntaba al commit `50521a3`). `git rev-parse ENTREGA-T2^{commit}` → `5d3eb33…`.
 - Esta entrada va en un commit posterior porque un commit no puede contener su propio hash; por eso queda fuera del tag.
+
+### [2026-10-21 19:57] Tarea 15: inicio de sesión de trabajo y estado del entorno
+- Qué se hizo: lectura de `CLAUDE.md`; `git log --oneline -3` (último `960a944`), `git tag` (LB-0 a LB-8, ENTREGA-T2), `git remote -v` → `origin https://github.com/BrayanH0/posta-medica-valdiviezo.git`. `date` 19:57:20. Árbol de trabajo limpio.
+- Contexto dado por el usuario: el repositorio estuvo público en GitHub con la contraseña de MySQL en el historial; el usuario ya lo pasó a privado y cambió la contraseña de MySQL.
+- Comprobación sin mostrar la clave: la clave de `application.properties` ya no abre MySQL (`ERROR 1045`). El backend en marcha respondía porque arrancó antes del cambio.
+
+### [2026-10-21 19:57–19:58] Tarea 15, Parte A: respaldo (plan de back-out)
+- Qué se hizo: `cp -a Proyecto Proyecto_respaldo_antes_RFC009` (19:57:42–19:58:43), carpeta hermana fuera del repositorio.
+- Verificación: en las dos carpetas, la lista de tags con sus objetos da el mismo `md5sum`; `HEAD` = `960a944da1f29b85c307184925969a5065cae85a` en ambas; `git fsck` igual (solo un blob suelto que ya existía); `application.properties` idéntico (`cmp`).
+- Excepción a CLAUDE.md: la copia se hizo con un comando de terminal, no con Edit/Write, porque la tarea la pide así y es una copia completa (binarios y `.git`) fuera del repositorio; no crea ni modifica archivos del repositorio.
+
+### [2026-10-21 19:59–20:09] Tarea 15, Parte B: RFC-009 (H-006) y validación
+- Por qué ocurre H-006 (antes de tocar el archivo): la configuración se escribió con valores fijos; las credenciales, que cambian en cada equipo, quedaron en un archivo versionado y por eso en todo el historial.
+- Qué se hizo, con Write/Edit: `docs/rfc/RFC-009.md`; `application.properties` líneas 2 y 3 → `${DB_USER:root}` y `${DB_PASSWORD}` (para no ver la clave, se leyeron solo las líneas 4 a 7 y se reescribió el archivo completo); `SETUP.md` y `README.md` con los comandos de PowerShell para la sesión y permanente.
+- Comprobación previa a la Parte C: la clave vieja (leída del respaldo, sin mostrarla) aparece solo en `application.properties`, en sus 2 ubicaciones (`backend/backend/…` 12 commits, `backend/…` 13 commits), y en ningún otro archivo del historial ni del árbol de trabajo. El reemplazo no afecta otro texto.
+- Cambio respecto del pedido: el punto 4 decía definir la variable leyendo la clave del archivo. No era posible (clave vieja, ya no válida). El usuario definió `DB_PASSWORD` con la clave nueva como variable de usuario de Windows con `Read-Host -AsSecureString` en su terminal; la clave no pasó por el chat. Cada comando la leyó con `[Environment]::GetEnvironmentVariable('DB_PASSWORD','User')` sin mostrarla. Conexión comprobada a las 20:03:32.
+- Sin la variable (20:03:50): el backend no arranca. El mensaje real es `Access denied … (using password: YES)` (Spring usa el texto `${DB_PASSWORD}` sin reemplazar), no `Could not resolve placeholder` como se había escrito en `SETUP.md`; se corrigió.
+- Validación (detalle en `docs/PRUEBAS.md`, "Resultados de LB-9"): compilación sin errores; backend 50/50; frontend 32/32 y 49/49; P25 igual; Playwright 6 passed; P01–P24 y P11/P18 iguales a LB-8 con `diff` (salvo la línea `P04 codigo: 500`, consultada aparte como en LB-7 y LB-8).
+- Documentación: `HALLAZGOS.md` (H-006 → Cerrado (RFC-009, LB-9)); `ELEMENTOS_CONFIGURACION.md` (EC-04); `PRUEBAS.md` (columna LB-9, resultados y resumen).
+- Observación: H-006 está clasificado como Preventivo en la tabla, pero la tarea 15 define RFC-009 como Correctivo. No se cambió la columna; queda anotado en la fila. Decide el usuario.
+- Scripts de la batería: los de LB-8 se copiaron con `cp` al scratchpad de esta sesión (fuera del repositorio; misma excepción que en tareas anteriores) y se ajustaron con Edit (clave desde `DB_PASSWORD`, carpeta de salida).
+- Alternativas descartadas: ver RFC-009 (valor por defecto en `${DB_PASSWORD:…}`, archivo local ignorado, no reescribir el historial, `filter-branch`/BFG).

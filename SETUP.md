@@ -35,15 +35,30 @@ Ejecuta en MySQL Workbench o línea de comandos:
 CREATE DATABASE posta_medica_valdiviezo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-#### 3. Configurar Credenciales (si es necesario)
-Si usaste credenciales diferentes, actualiza:
-`backend\src\main\resources\application.properties`
+#### 3. Configurar Credenciales (variables de entorno)
+La contraseña de MySQL **no se escribe en ningún archivo del proyecto**. `backend\src\main\resources\application.properties` la toma de variables de entorno:
 
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/posta_medica_valdiviezo
-spring.datasource.username=root
-spring.datasource.password=TU_CONTRASEÑA_AQUI
+spring.datasource.username=${DB_USER:root}
+spring.datasource.password=${DB_PASSWORD}
 ```
+
+- `DB_PASSWORD` (obligatoria): contraseña de tu MySQL. **No tiene valor por defecto**: si no está definida, el backend no arranca.
+- `DB_USER` (opcional): usuario de MySQL; si no se define, se usa `root`.
+
+En PowerShell, **solo para la sesión actual** (se pierde al cerrar la terminal):
+
+```powershell
+$env:DB_PASSWORD = "tu_clave"
+```
+
+**De forma permanente** para tu usuario de Windows (abre una terminal nueva después; VS Code también debe reiniciarse para verla):
+
+```powershell
+[Environment]::SetEnvironmentVariable("DB_PASSWORD","tu_clave","User")
+```
+
+Para el usuario, igual con `DB_USER` si no usas `root`. La misma variable la necesita `./mvnw test`, porque una de las pruebas levanta la aplicación completa.
 
 ---
 
@@ -135,7 +150,7 @@ Si después de instalar Java/Maven aún no se reconocen:
 
 ### Error de Conexión a MySQL
 - Verifica que MySQL esté ejecutándose
-- Comprueba las credenciales en `application.properties`
+- Comprueba que la variable `DB_PASSWORD` esté definida en la terminal que arranca el backend (`echo $env:DB_PASSWORD` en PowerShell). Si falta, el arranque falla con `Access denied for user 'root'@'localhost' (using password: YES)`: Spring envía el texto `${DB_PASSWORD}` sin reemplazar y MySQL lo rechaza
 - Verifica que la base de datos existe: `SHOW DATABASES;`
 
 ### Puerto en Uso

@@ -536,6 +536,21 @@ Ejecución del 2026-10-21 (hora real: `date` en cada script). Cambió solo el ba
 
 ---
 
+## Resultados de LB-9 (RFC-009, contraseña de MySQL en variable de entorno)
+
+Ejecución del 2026-10-21. Cambió solo `application.properties` (`${DB_USER:root}`, `${DB_PASSWORD}`) y la documentación de instalación. Es un cambio correctivo de configuración que **no debe cambiar el comportamiento**: todas las pruebas deben dar igual que en LB-8. La clave nueva la definió el usuario como variable de usuario de Windows; cada comando la leyó de ahí sin mostrarla.
+
+0. Sin la variable (20:03:50–20:04:00): el backend no arranca (`Access denied for user 'root'@'localhost' (using password: YES)`, código de salida 1, 8080 sin respuesta). Es lo esperado: no hay clave escrita en el código.
+1. `./mvnw -q compile` (20:04:23): sin errores.
+2. BD recargada (20:04:28, 21 citas); `./mvnw test` (20:04:29–20:04:44): `Tests run: 50, Failures: 0, Errors: 0, Skipped: 0` · `BUILD SUCCESS`, igual que LB-8 (incluye `contextLoads`, que se conecta a MySQL con la variable). Frontend: `TOTAL: 32 SUCCESS` (20:04:58–20:05:05) y `TOTAL: 49 SUCCESS` (hasta 20:05:12).
+3. Backend arrancado con la variable (`Started CentroValdiviezoApplication` 20:05:01, pid 28520); P25 (20:05:22): `diff` con LB-8 vacío.
+4. Playwright (20:05:28–20:05:39): **6 passed**.
+5. BD recargada (20:05:50); P01–P24 (20:05:50–20:07:24) y P11/P18 con el backend apagado (pid 28520 detenido 20:07:45; 20:07:50–20:08:01). `diff` contra las salidas de LB-8 sin las líneas de hora: idénticas, salvo la línea `P04 codigo: 500`, que en LB-8 se agregó con una consulta aparte; aquí se consultó igual y dio `500` (el cuerpo de P04 es el mismo). Backend reiniciado con la variable después.
+
+**Evidencias LB-9:** salidas de los scripts en el scratchpad de la sesión (fuera del repositorio). Los scripts de LB-8 se copiaron allí y se cambió con Edit solo la fuente de la clave (`DB_PASSWORD` en lugar de leer `application.properties`) y la carpeta de salida.
+
+---
+
 ## Pruebas unitarias
 
 **Qué son.** Son pruebas de **caracterización**: comprueban el comportamiento **actual** del código, aunque sea incorrecto. Su función es servir de red de seguridad para la reorganización y las refactorizaciones: si una refactorización cambia el comportamiento, una prueba falla. No dicen cómo *debería* funcionar el sistema (eso lo dicen el "Esperado" de P01–P24 y las RFC).
@@ -691,33 +706,33 @@ Los specs viejos quedan fuera de la batería hasta que el usuario decida qué ha
 
 ## Tabla de resultados
 
-| ID | Prueba | LB-0 | LB-1 RFC-001 | LB-2 RFC-002 | LB-3 RFC-003 | LB-4 Reorg | LB-5 DRY | LB-6 SRP | LB-7 OCP | LB-8 IoC |
-|---|---|---|---|---|---|---|---|---|---|---|
-| P01 | Endpoints GET de catálogos y listados | PASA (14/14 en 200) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
-| P02 | Endpoints de reportes y consultas agregadas | PASA (6/6 en 200) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
-| P03 | Endpoints por ID | PASA (11/11 en 200; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) |
-| P04 | `/api/medico/resumenMedico` | FALLA (500, H-005) | FALLA (igual, H-005) | FALLA (igual, H-005) | FALLA (igual, H-005) | FALLA (igual, H-005) | FALLA (igual, H-005) | FALLA (igual, H-005) | FALLA (igual, H-005) | FALLA (igual, H-005) |
-| P05 | Login por formulario: paciente | PASA (`/welcome`; `userId`, `userName`, `userType`) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
-| P06 | Login por formulario: médico | PASA (`/medico-dashboard`; `userId`, `userName`, `userType`) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
-| P07 | Login por formulario: admin | FALLA (`/admin/inicio`; claves `userTipo`, `userNombre`… distintas, H-002) | **PASA** (cambió: claves iguales a los otros roles) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
-| P08 | Login con contraseña incorrecta (3 roles) | PASA en seguridad (401, no entra); FALLA en mensaje distinto en admin (H-003) | **PASA** (cambió: mismo mensaje en los 3 roles) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
-| P09 | Login directo a la API | PASA (200 ×3, 401 inválido) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
-| P10 | Login paciente con DNI inexistente + `123456` | FALLA (entra como paciente 1, H-001) | **PASA** (cambió: no entra, localStorage vacío) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
-| P11 | Módulo médico con backend apagado | FALLA (datos simulados, sin error, H-004) | FALLA (igual, H-004) | FALLA (igual, H-004) | **PASA** (cambió: datos de la base; sin backend, error y sin datos) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
-| P12 | Registrar cita desde el formulario | PASA (cita 22 guardada, `estado_cita = 1`) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
-| P13 | Doble reserva | FALLA (citas 22 y 23 a la misma hora, H-012) | FALLA (igual, H-012) | FALLA (igual, H-012) | FALLA (igual, H-012) | FALLA (igual, H-012) | FALLA (igual, H-012) | FALLA (igual, H-012) | FALLA (igual, H-012) | FALLA (igual, H-012) |
-| P14 | Alcance de `/api/cita` | FALLA (23 devueltas / 4 del paciente 1, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) |
-| P15 | Alcance de `/api/historia_clinica` | FALLA (5 devueltas / 1 del paciente 1, H-013) | FALLA (igual, 5 / 1, H-013) | FALLA (igual, 5 / 1, H-013) | FALLA (igual, 5 / 1, H-013) | FALLA (igual, 5 / 1, H-013) | FALLA (igual, 5 / 1, H-013) | FALLA (igual, 5 / 1, H-013) | FALLA (igual, 5 / 1, H-013) | FALLA (igual, 5 / 1, H-013) |
-| P16 | Registros en "Mis Citas" (red) | FALLA (23 recibidas / 4 mostradas, H-013) | FALLA (igual, 23 recibidas / 4 mostradas, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) |
-| P17 | Cerrar sesión como paciente | FALLA (localStorage queda intacto, H-002) | **PASA** (cambió: localStorage vacío en los 3 roles) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
-| P18 | Login paciente con backend apagado + `123456` | No ejecutada (creada en LB-1) | **PASA** (nueva) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
-| P19 | Matriz de roles cruzados (6 combinaciones) | No ejecutada (creada en LB-2) | No ejecutada (creada en LB-2) | **PASA** (nueva: 6/6 no entran, mensaje unificado) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
-| P20 | El médico 1 ve exactamente sus citas pendientes | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | **PASA** (nueva: pantalla = SELECT) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
-| P21 | Confirmar una cita (persiste) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | **PASA** (nueva: Confirmada en BD y tras recargar) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
-| P22 | Cancelar una cita (persiste) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | **PASA** (nueva: Cancelada en BD y tras recargar) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
-| P23 | Endpoint del médico: solo sus citas | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | **PASA** (nueva: 20/20 = SELECT) | PASA (igual, 20/20) | PASA (igual, 20/20) | PASA (igual, 20/20) | PASA (igual, 20/20) | PASA (igual, 20/20) |
-| P24 | Endpoint del médico sin contraseña | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | **PASA** (nueva) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
-| P25 | CORS: preflight de `localhost:4200` aceptado, de origen ajeno rechazado | No ejecutada (creada en LB-5) | No ejecutada (creada en LB-5) | No ejecutada (creada en LB-5) | No ejecutada (creada en LB-5) | **PASA** (medida sobre LB-4 antes de RFC-005: 200 / 403) | PASA (igual, salida idéntica byte a byte) | PASA (igual, salida idéntica byte a byte) | PASA (igual, salida idéntica) | PASA (igual, salida idéntica) |
+| ID | Prueba | LB-0 | LB-1 RFC-001 | LB-2 RFC-002 | LB-3 RFC-003 | LB-4 Reorg | LB-5 DRY | LB-6 SRP | LB-7 OCP | LB-8 IoC | LB-9 RFC-009 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| P01 | Endpoints GET de catálogos y listados | PASA (14/14 en 200) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
+| P02 | Endpoints de reportes y consultas agregadas | PASA (6/6 en 200) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
+| P03 | Endpoints por ID | PASA (11/11 en 200; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) | PASA (igual; expone `clave`, H-007) |
+| P04 | `/api/medico/resumenMedico` | FALLA (500, H-005) | FALLA (igual, H-005) | FALLA (igual, H-005) | FALLA (igual, H-005) | FALLA (igual, H-005) | FALLA (igual, H-005) | FALLA (igual, H-005) | FALLA (igual, H-005) | FALLA (igual, H-005) | FALLA (igual, H-005) |
+| P05 | Login por formulario: paciente | PASA (`/welcome`; `userId`, `userName`, `userType`) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
+| P06 | Login por formulario: médico | PASA (`/medico-dashboard`; `userId`, `userName`, `userType`) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
+| P07 | Login por formulario: admin | FALLA (`/admin/inicio`; claves `userTipo`, `userNombre`… distintas, H-002) | **PASA** (cambió: claves iguales a los otros roles) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
+| P08 | Login con contraseña incorrecta (3 roles) | PASA en seguridad (401, no entra); FALLA en mensaje distinto en admin (H-003) | **PASA** (cambió: mismo mensaje en los 3 roles) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
+| P09 | Login directo a la API | PASA (200 ×3, 401 inválido) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
+| P10 | Login paciente con DNI inexistente + `123456` | FALLA (entra como paciente 1, H-001) | **PASA** (cambió: no entra, localStorage vacío) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
+| P11 | Módulo médico con backend apagado | FALLA (datos simulados, sin error, H-004) | FALLA (igual, H-004) | FALLA (igual, H-004) | **PASA** (cambió: datos de la base; sin backend, error y sin datos) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
+| P12 | Registrar cita desde el formulario | PASA (cita 22 guardada, `estado_cita = 1`) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
+| P13 | Doble reserva | FALLA (citas 22 y 23 a la misma hora, H-012) | FALLA (igual, H-012) | FALLA (igual, H-012) | FALLA (igual, H-012) | FALLA (igual, H-012) | FALLA (igual, H-012) | FALLA (igual, H-012) | FALLA (igual, H-012) | FALLA (igual, H-012) | FALLA (igual, H-012) |
+| P14 | Alcance de `/api/cita` | FALLA (23 devueltas / 4 del paciente 1, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) |
+| P15 | Alcance de `/api/historia_clinica` | FALLA (5 devueltas / 1 del paciente 1, H-013) | FALLA (igual, 5 / 1, H-013) | FALLA (igual, 5 / 1, H-013) | FALLA (igual, 5 / 1, H-013) | FALLA (igual, 5 / 1, H-013) | FALLA (igual, 5 / 1, H-013) | FALLA (igual, 5 / 1, H-013) | FALLA (igual, 5 / 1, H-013) | FALLA (igual, 5 / 1, H-013) | FALLA (igual, 5 / 1, H-013) |
+| P16 | Registros en "Mis Citas" (red) | FALLA (23 recibidas / 4 mostradas, H-013) | FALLA (igual, 23 recibidas / 4 mostradas, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) | FALLA (igual, 23 / 4, H-013) |
+| P17 | Cerrar sesión como paciente | FALLA (localStorage queda intacto, H-002) | **PASA** (cambió: localStorage vacío en los 3 roles) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
+| P18 | Login paciente con backend apagado + `123456` | No ejecutada (creada en LB-1) | **PASA** (nueva) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
+| P19 | Matriz de roles cruzados (6 combinaciones) | No ejecutada (creada en LB-2) | No ejecutada (creada en LB-2) | **PASA** (nueva: 6/6 no entran, mensaje unificado) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
+| P20 | El médico 1 ve exactamente sus citas pendientes | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | **PASA** (nueva: pantalla = SELECT) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
+| P21 | Confirmar una cita (persiste) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | **PASA** (nueva: Confirmada en BD y tras recargar) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
+| P22 | Cancelar una cita (persiste) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | **PASA** (nueva: Cancelada en BD y tras recargar) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
+| P23 | Endpoint del médico: solo sus citas | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | **PASA** (nueva: 20/20 = SELECT) | PASA (igual, 20/20) | PASA (igual, 20/20) | PASA (igual, 20/20) | PASA (igual, 20/20) | PASA (igual, 20/20) | PASA (igual, 20/20) |
+| P24 | Endpoint del médico sin contraseña | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | No ejecutada (creada en LB-3) | **PASA** (nueva) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) | PASA (igual) |
+| P25 | CORS: preflight de `localhost:4200` aceptado, de origen ajeno rechazado | No ejecutada (creada en LB-5) | No ejecutada (creada en LB-5) | No ejecutada (creada en LB-5) | No ejecutada (creada en LB-5) | **PASA** (medida sobre LB-4 antes de RFC-005: 200 / 403) | PASA (igual, salida idéntica byte a byte) | PASA (igual, salida idéntica byte a byte) | PASA (igual, salida idéntica) | PASA (igual, salida idéntica) | PASA (igual, salida idéntica) |
 
 **Resumen LB-0:** 7 PASA · 9 FALLA · 1 mixta (P08).
 
@@ -736,5 +751,7 @@ Los specs viejos quedan fuera de la batería hasta que el usuario decida qué ha
 **Resumen LB-7:** 20 PASA · 5 FALLA (P04, P13, P14, P15, P16). **Las 25 pruebas dieron lo mismo que en LB-6** (salidas idénticas con `diff`). Backend 39/39 (37 + U80, U81); frontend 32/32 y 49/49; Playwright 6/6. Sin efectos no deseados.
 
 **Resumen LB-8:** 20 PASA · 5 FALLA (P04, P13, P14, P15, P16). **Las 25 pruebas dieron lo mismo que en LB-7** (salidas idénticas con `diff`). Backend 50/50 (39 + U82–U84); frontend 32/32 y 49/49; Playwright 6/6. Sin efectos no deseados.
+
+**Resumen LB-9:** 20 PASA · 5 FALLA (P04, P13, P14, P15, P16). RFC-009 solo cambia de dónde sale la contraseña de MySQL (variable `DB_PASSWORD`), así que **las 25 pruebas dieron lo mismo que en LB-8** (salidas idénticas con `diff`). Backend 50/50; frontend 32/32 y 49/49; Playwright 6/6. Sin efectos no deseados. Detalle en "Resultados de LB-9".
 
 > **Atención al repetir P12 y P13:** cada ejecución agrega citas a la BD. Antes de correr la batería en cada línea base nueva, recargar la base (`DROP DATABASE posta_medica_valdiviezo;` y volver a ejecutar `database/BDPostaMedica.sql`, porque el script usa `CREATE TABLE` sin `DROP`) o borrar las citas de prueba con `DELETE FROM Cita WHERE motivo LIKE 'Prueba LB-0%';` para partir del mismo estado.
