@@ -675,3 +675,34 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - `git tag -a -f ENTREGA-T2 -m "Version entregada para la evaluacion T2"` → `Updated tag 'ENTREGA-T2' (was d261999)`; `git rev-parse --short ENTREGA-T2^{commit}` → `606d3de`. El hook no lo bloqueó.
 - Verificación después del commit: la clave vieja aparece **0** veces en `git log -p --all`; 11 tags; backend (8080) respondiendo con `DB_PASSWORD`.
 - Esta entrada va en un commit posterior porque un commit no puede contener su propio hash; por eso queda fuera del tag.
+
+### [2026-10-21 20:38] Tarea 16: verificación inicial
+- `git log --oneline -3` → `865eed9`, `606d3de`, `bf107d3`. `git tag` → 11 tags (ENTREGA-T2, LB-0 a LB-9). `git remote -v` → `origin https://github.com/BrayanH0/posta-medica-valdiviezo.git`. `gh auth status` → sesión iniciada como `BrayanH0` (scopes `repo`, `workflow`, `gist`, `read:org`). El repositorio no tenía issues; ya existía la etiqueta `bug` (de GitHub por defecto). Sin cambios de código en esta tarea.
+
+### [2026-10-21 20:39] Tarea 16, paso 0: H-006 pasa a Correctivo
+- Qué: en `docs/HALLAZGOS.md`, el tipo de H-006 cambia de Preventivo a Correctivo y su columna "Cambio que lo atiende" lo explica. Estado comprobado: "Cerrado (RFC-009, LB-9)".
+- Por qué: la contraseña de MySQL llegó a publicarse en GitHub (tarea 15), así que el problema ocurrió; ya no es solo un riesgo de mantenibilidad. Consecuencia: el issue #6 lleva la etiqueta `bug`.
+- Descartado: dejar la clasificación original con una nota (era lo que había); el usuario pidió el cambio.
+
+### [2026-10-21 20:40–20:42] Tarea 16, pasos 1–3: etiquetas y 41 issues
+- Script de un solo uso en el scratchpad (`issues.js`, fuera del repositorio): lee las 41 filas de la tabla de `HALLAZGOS.md` (separando por `|` no escapado), arma el cuerpo de cada issue con descripción, ubicación, gravedad, tipo, estado, evidencia y cambio que lo atiende, y llama a `gh`. Se detiene si una fila no tiene 8 columnas, si el orden se rompe o si el número de issue no coincide con el del hallazgo. Primero se ejecutó en modo de prueba (sin llamar a GitHub) y se revisó la lista de títulos, etiquetas y cierres.
+- Etiquetas creadas con `gh label create --force`: `refactor`, `mejora`, `critica`, `alta`, `media`, `baja` (`bug` ya existía y se reutilizó).
+- Clasificación: `bug` = tipo Correctivo; `refactor` = H-008, H-010, H-015, H-018, H-019, H-020, H-030; `mejora` = el resto de los Preventivos. Los títulos cortos ("H-0XX: resumen") se escribieron a mano en el script, sin tildes.
+- Cierre de los "Cerrado" con `gh issue close --comment "Resuelto en RFC-00X, commit <hash>, línea base LB-X"`. Hashes actuales (posteriores a la tarea 15) = commit de cada RFC, que es el mismo al que apunta su tag: RFC-001 `0659bec` LB-1, RFC-002 `6588eaf` LB-2, RFC-003 `4fb12a6` LB-3, RFC-004 `e7829cb` LB-4, RFC-005 `bc282c3` LB-5, RFC-006 `8d17c28` LB-6, RFC-007 `df97480` LB-7, RFC-008 `679ba05` LB-8, RFC-009 `bf107d3` LB-9.
+- **Desvío del texto pedido:** H-040 y H-041 están "Cerrado (corrección de documentación)", sin RFC ni línea base propia, así que la plantilla no se aplica. Su comentario dice: "Resuelto en la corrección de documentación de la tarea 13 (sin RFC), commit da6654d, sin línea base propia (es posterior a LB-8 y anterior a LB-9)". `da6654d` es el commit que agregó H-040 (`git log -S"H-040" -- docs/HALLAZGOS.md`); su posición se comprobó con `git merge-base --is-ancestor`.
+- Ejecución: 20:40:08–20:42:02, sin errores; cada hallazgo quedó con su mismo número (H-001 → #1 … H-041 → #41).
+
+### [2026-10-21 20:42] Tarea 16, paso 4: verificación
+- `gh issue list --state all --limit 100` → **41** issues; **OPEN 20, CLOSED 21**.
+- `HALLAZGOS.md`: 21 filas "Cerrado" y 20 "Abierto" (incluye H-023, "Abierto (parcial…)", que quedó abierto). Los 21 cerrados en GitHub son exactamente los 21 "Cerrado" de la tabla y cada uno tiene 1 comentario con su RFC, commit y línea base.
+- Fallo propio: en el resumen del modo de prueba conté a ojo "23 cerrados"; el conteo con `grep` dio 21, igual a GitHub. No afectó a los issues.
+- Un primer intento de comparar estados con un script de una línea falló por un error de sintaxis mío en la expresión regular; la comparación se hizo con la lista de cerrados de `gh` contra la tabla.
+
+### [2026-10-21 20:42–20:43] Tarea 16, paso 5: capturas
+- Con Playwright (sin iniciar sesión: el repositorio es público), página completa a 1400 px de ancho, en `docs/entrega/github/`: `issues-abiertos.png` (Open 20 / Closed 21), `issues-cerrados.png` y `issue-H-001.png` (detalle con el comentario de cierre). Se revisó `issues-abiertos.png`: muestra los 20 abiertos con sus etiquetas.
+
+### [2026-10-21 20:43] Tarea 16, paso 6: números de issue en HALLAZGOS
+- Se agregó al final de `docs/HALLAZGOS.md` la sección "Issues de GitHub" con una tabla hallazgo → issue (enlace), estado y etiquetas, generada desde `gh issue list`.
+- Descartado: agregar una columna a la tabla principal; cambiaría las 41 filas y el conteo de 10 columnas que cita la evidencia de H-040.
+- Aviso: los issues son una copia del estado de hoy; si un hallazgo cambia de estado, hay que actualizar su issue a mano.
+- El commit lo hace Claude Code; el `git push` lo ejecuta el usuario (el hook lo bloquea).
