@@ -762,3 +762,54 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Fallos propios: (1) en la entrada de la parte A anoté al principio una hora estimada ("16:55–16:59") y la corregí con las marcas reales. (2) La hora de lanzamiento de la segunda ola se había escrito como "~17:36"; se reemplazó por el rango real entre dos `date`.
 - Commit: solo `docs/auditoria/` y `.claude/agents/`, como pide la tarea. **Esta bitácora queda modificada sin commit**, porque el pedido no la incluye en el commit; queda para el usuario.
 - Cumplimiento de CLAUDE.md: los archivos se crearon o modificaron solo con Write/Edit; no se tocó código de la aplicación; las fechas se tomaron de `date`; donde no hay dato se escribió "sin registro"; no se modificó ninguna prueba; no hubo push ni comandos destructivos de Git. Excepción registrada: los agentes escribieron scripts temporales con Bash en el scratchpad, fuera del repositorio.
+
+### [2026-11-10 15:25–16:00] Tarea 18: GitFlow, RFC-010..018, hallazgos H-042+, issues y fichas (sin tocar código)
+**Lectura previa:** CLAUDE.md, `docs/auditoria/INFORME_AUDITORIA.md`, `docs/HALLAZGOS.md` y los apartados de los 9 informes AUD citados por cada paquete.
+
+**Parte A — rama.** 15:25:50: `git branch develop master` + `git switch develop` (los dos en `08b4d99`). Sin push. GitHub a las 15:25:40: 41 issues (#1–#41) y 0 PR, por eso H-042…H-047 deberían quedar como #42…#47 si se crean en orden antes de cualquier PR.
+
+**Parte B — hallazgos.**
+- Se actualizaron, sin duplicarlos, los 4 hallazgos con la misma causa: H-007 (→ RFC-010), H-012 (→ RFC-012), H-013 y H-016 (→ RFC-011), con sus AUD-xxx.
+- Nuevos: H-042 (datos semilla, RFC-017), H-043 (P1, RFC-014), H-044 (P3, RFC-015), H-045 (P4, RFC-013), H-046 (P5, RFC-016) y H-047 (P2, RFC-018).
+- **Decisión:** un hallazgo por paquete y no uno por cada AUD. El paquete es la unidad de trabajo (una RFC, un issue, un PR con "Closes #N"); cada fila nombra todos sus AUD.
+- **Alternativa descartada:** un hallazgo por AUD. Hubiera dado 13 issues para 4 PR y varios "Closes" por PR.
+- H-032: evidencia corregida según AUD-LOG-12. La ruta real es `PUT /api/paciente/actualizar/{id}`, usada desde "Gestión de Pacientes" del admin; el texto anterior quedó tachado.
+- Comprobado con un script: las 47 filas tienen las mismas columnas que antes (9 barras sin escapar en la tabla principal y 5 en la de issues).
+
+**Parte C — RFC.** `docs/rfc/RFC-010.md` a `RFC-018.md`, todas en estado "Registrado" (15:54). Cada una incluye la causa, las alternativas, el impacto en las pruebas existentes y el plan de vuelta atrás. Decisiones y avisos que quedan escritos en ellas:
+- **RFC-010:** las pruebas U33–U41, `AuthControllerTest` y U81 **no compilarán**, porque construyen los autenticadores sin `PasswordEncoder`. Hay que cambiarlas y lo decide el usuario. La migración de las claves usa un `ApplicationRunner` activado por propiedad, porque MySQL no tiene BCrypt.
+- **RFC-011:** las E2E `medico-citas-pendientes` y `medico-flow` crean citas con `request.post` sin token y van a fallar con 401. Hay que modificarlas, con autorización del usuario.
+- **RFC-012:** queda pendiente una decisión del usuario sobre las citas canceladas. Con la UNIQUE simple (opción A, la pedida) una cita Cancelada ocupa el horario; la opción B es una columna generada. RFC-012 depende de la versión de `GlobalExceptionHandler` que deje P1.
+- **RFC-016:** `SHOW_SQL` queda en `true` por defecto para no alterar el entorno de desarrollo (decisión que el usuario puede cambiar).
+- Las pruebas unitarias nuevas tienen numeración propuesta (U85 P1, U86 P3, U87 P5). `docs/PRUEBAS.md` no se modificó, porque esas pruebas todavía no están en el repositorio.
+
+**Parte D.** `docs/entrega/ISSUES_T3.md`: 6 issues (título, cuerpo y etiquetas; las 4 etiquetas usadas existen, comprobado con `gh label list` a las 15:59) y los comentarios para los issues existentes #7, #12, #13 y #16. **No se creó ningún issue en GitHub.**
+
+**Parte E — fichas y verificación** (evidencia completa en `docs/evidencias/t18-verificacion-fichas.txt`):
+- 15:29:41: 5 copias de `develop` en el scratchpad con `git archive` (base, p1, p3, p4, p5) y enlaces a los `node_modules` del repo. Los cambios se aplicaron en las copias con Edit; las pruebas nuevas se crearon con Write.
+- 15:33–15:35: `ng build` sin errores en las 4 copias, con las mismas 2 advertencias que base. `mvnw test`: base 50, p1 51, p5 52. Unitarias del frontend: base 32/49, p1 32/49, p3 32/54, p4 32/49.
+- 15:36–15:44: backend y `ng serve` levantados desde cada copia; Playwright 6/6 en las 5 copias.
+  - BASE reprodujo los hallazgos: clave y DNI en la consola, 2 PUT con doble clic, desborde a 360 px.
+  - P1: la consola queda limpia y aparecen 3 líneas de error en el log, con los mismos cuerpos 500.
+  - P3: 1 PUT y el mensaje "Cita 35 confirmada.".
+  - P4: a 360 px, sin desborde y la tabla pasa de 10 a 290 px; a 1280 px, capturas idénticas byte a byte.
+  - P5: sin variables, P25 idéntico; con variables, puerto 8081, Vercel 200, origen ajeno 403 y 0 líneas `Hibernate:`.
+- 15:49:47: `docs/entrega/fichas/verificar-ficha.cjs` sobre las 4 fichas → **0 fallos**. Cada ANTES aparece exactamente 1 vez en `develop` o es igual al archivo completo, y "develop + DESPUÉS" es igual a la copia compilada y probada. Además, `diff -rq` muestra que cada copia difiere de base solo en los archivos de su ficha.
+- 15:50:13: copias descartadas. Primero se quitaron los enlaces (solo el enlace; el `node_modules` real sigue con 375 carpetas) y luego se borraron las carpetas de las copias con `Remove-Item` en el scratchpad. **Excepción a CLAUDE.md:** ese borrado se hizo por terminal porque Edit/Write no pueden borrar carpetas y la tarea pedía descartar las copias. Los archivos estaban fuera del repositorio, donde no aplican los hooks. Los logs de la verificación quedan en el scratchpad.
+- **Decisión de forma:** en los archivos con varios cambios o cortos (GlobalExceptionHandler, los 2 de P3, `application.properties` y `WebSecurityConfig`) la ficha pide reemplazar el **archivo completo** (Ctrl+A y pegar). Para alguien sin experiencia es menos propenso a errores que 3 o 4 bloques sueltos. El ANTES completo queda plegado para que se pueda comprobar el archivo.
+
+**Cosas que el usuario debe saber:**
+- Después de las 15:35:16 (fin de las unitarias; la hora exacta de la denegación no tiene registro) **se denegó** la recarga de la BD (`DROP DATABASE` + `BDPostaMedica.sql`), por el permiso de acciones destructivas. No se intentó por otra vía. La verificación se hizo sobre la BD tal como estaba (recargada el 2026-11-09 a las 18:04). Foto antes y después: 21 citas, estados `424341414444444444444`, 15 pacientes, 15 médicos, **igual al terminar** (15:44:36). Las citas temporales de las E2E y de los scripts se crearon y se borraron por la API.
+- Batería P01–P24 de `docs/PRUEBAS.md`: **no se ejecutó**, porque esta tarea no cambia código del repositorio (solo `docs/`). Sí se corrieron las pruebas relacionadas con cada paquete (arriba) y P25.
+- Entorno al terminar: backend y frontend **detenidos**, igual que al empezar (a las 15:25 solo escuchaba MySQL en 3306). Las notificaciones de "fallo" de las tareas de fondo corresponden a esas detenciones intencionales.
+- Observación sin número (anotada en HALLAZGOS, decide el usuario): las especialidades se ven como "Pediatr├¡a" en `/admin/reportes`. Viene de los datos de la BD; causa no verificada.
+- Antes de pasar las fichas: los integrantes necesitan permiso de escritura en el repo, `develop` tiene que estar publicada en GitHub y los issues #42–#46 creados. "Closes #N" cierra el issue solo cuando el cambio llega a `master`.
+
+**Fallos propios:**
+1. `mklink` desde Git Bash falló por las comillas (15:29); los enlaces se crearon con PowerShell.
+2. La primera corrida del verificador marcó 4 falsos fallos en P1, porque las copias de `git archive` tienen CRLF (`core.autocrlf=true`) y `develop` tiene LF. Se normalizó solo el fin de línea al comparar.
+3. El texto del log en P1 tenía una tilde ("petición") y se cambió a "Error no controlado en la API" para evitar caracteres dañados en la consola de Windows. Se hizo antes de compilar, así que lo probado es lo que está en la ficha.
+4. Al redactar las RFC escribí 2 afirmaciones que no había comprobado: en RFC-014, que el builder no permite quitar `console`; en RFC-016, el recorte de espacios en `CORS_ORIGINS`. Se cambiaron a "no verificado" o se citó el código de Spring.
+5. En H-032 escribí al principio "Se probó: el admin ve…", pero la auditoría lo probó por API; se corrigió a "en pantalla no se probó".
+
+**Commit:** en `develop`, solo `docs/`, con el mensaje "T3: RFC-010..018, hallazgos H-042+, issues y fichas". Sin push. El hash se agrega al final de esta entrada después del commit.

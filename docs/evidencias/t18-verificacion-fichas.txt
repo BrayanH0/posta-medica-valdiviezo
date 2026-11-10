@@ -1,0 +1,67 @@
+Tarea 18 - Verificación de las fichas P1, P3, P4 y P5 (2026-11-10, 15:29-15:50, hora del sistema).
+Rama develop = master = 08b4d99. Nada de esto quedó en el repositorio: se hizo en copias temporales.
+
+COPIAS
+- 15:29:41: 5 copias de develop con `git archive develop | tar -x` en el scratchpad de la sesión (base, p1, p3, p4, p5),
+  con enlaces (junction) a frontend/node_modules y e2e/node_modules del repo. Los cambios se aplicaron con Edit.
+- Las copias quedaron con CRLF (git archive con core.autocrlf=true); develop guarda LF. El verificador normaliza solo el fin de línea.
+- 15:50:13: se quitaron los enlaces (solo el enlace; node_modules real intacto: 375 carpetas) y se borraron las 5 copias.
+
+COMPILACIÓN (15:33-15:34)
+- ng build: base, p1, p3, p4 -> exit 0. Mismas 2 advertencias que base (presupuesto 500 kB, jquery CommonJS; AUD-DES-12).
+- mvnw -q compile: base, p1, p5 -> exit 0.
+
+PRUEBAS UNITARIAS
+- Backend (mvnw test): base 50/50; p1 51/51 (+GlobalExceptionHandlerTest); p5 52/52 (+WebSecurityConfigCorsTest, 2 casos). BUILD SUCCESS.
+- Frontend caracterización (32) / todas (caracterización + unitarias):
+  base 32/49 SUCCESS; p1 32/49; p3 32/54 (+5 de medico-citas-pendientes.component.unitaria.spec.ts); p4 32/49.
+
+E2E Y CRITERIOS DE ACEPTACIÓN (backend y ng serve levantados desde cada copia)
+- BD sin recargar (la recarga con DROP DATABASE no fue autorizada). Foto antes y después: 21 citas,
+  estados 424341414444444444444, 15 pacientes, 15 médicos -> igual al terminar (15:44:36).
+- Playwright e2e/tests (6 pruebas, sin modificar): base 6 passed; p1 6 passed; p3 6 passed; p4 6 passed; p5 6 passed.
+
+BASE (línea de comparación, 15:37)
+  consola: "Intentando login paciente: <DNI>", "Login exitoso {...}", "Registrando paciente: {..., clave: Verif#2026x, ...}"
+           contiene la clave del registro: true | contiene el DNI: true | contiene "Login exitoso": true
+  doble clic (PUT demorado 1500 ms): botón Confirmar deshabilitado = false; PUT enviados: 2; mensaje role=status: (no existe)
+  layout 360: login-selection scrollWidth 380 > 360 | médico: sidebar 250, main 110, tabla 10 | admin: sidebar 260, main 100
+  layout 768: médico main 518, tabla 418 | admin main 508
+  lang "en", title "ProyectoValdiviezo"
+  log del backend: 0 líneas "Error no controlado"
+
+P1 (15:40)
+  consola: contiene la clave del registro: false | contiene el DNI: false | contiene "Login exitoso": false
+  POST /api/cita sin cuerpo -> 500 {"message":"Required request body is missing: ..."}  (igual que con backend base)
+  GET /api/cita/2147483648 -> 500 {"message":"Method parameter 'id': Failed to convert ...","status":"error"} (igual que base)
+  log del backend: 3 líneas "ERROR ... GlobalExceptionHandler : Error no controlado en la API" (registro duplicado + las 2 peticiones)
+
+P3 (15:40)
+  doble clic (PUT demorado 1500 ms): botón Confirmar deshabilitado = true; texto "Guardando..."; botones Aceptar deshabilitados 1 de 1
+  PUT enviados: 1 | mensaje role=status: "Cita 35 confirmada." | estado final en BD: 2 (Confirmada); la cita de prueba se borró
+
+P4 (15:41)
+  lang "es", title "Posta Médica Valdiviezo"
+  360: login-selection scrollWidth 360 | médico: sidebar 360 (arriba), main 360, tabla 290 | admin: main 360
+  768: médico main 768, tabla 698 | admin main 768
+  1280: medidas iguales a base; capturas login-selection, medico-citas-pendientes y admin-reportes IDÉNTICAS byte a byte (cmp) a base
+
+P5 (15:43-15:44)
+  Sin variables: P25 (14 líneas) idéntico a base (diff vacío); primeros 90 caracteres de cada línea iguales a docs/evidencias/lb5-P25-cors.txt
+  Con PORT=8081 SHOW_SQL=false CORS_ORIGINS="http://localhost:4200,https://posta-valdiviezo.vercel.app":
+    "Tomcat started on port 8081"; 8080 sin respuesta
+    localhost:4200 -> 200 (7/7); https://posta-valdiviezo.vercel.app -> 200 (7/7); http://otro-origen.example -> 403 (7/7)
+    0 líneas "Hibernate:" en el log (con SHOW_SQL por defecto: 2 en el arranque corto)
+  vercel.json: JSON válido; ng build deja dist/proyecto_valdiviezo/browser/index.html (outputDirectory). No probado en Vercel.
+
+VERIFICACIÓN DE LAS FICHAS (15:49:47, docs/entrega/fichas/verificar-ficha.cjs)
+  FICHA_P1: bloques 9, archivos 5, fallos 0
+  FICHA_P3: bloques 5, archivos 3, fallos 0
+  FICHA_P4: bloques 8, archivos 4, fallos 0
+  FICHA_P5: bloques 6, archivos 4, fallos 0
+  (cada ANTES aparece exactamente 1 vez en develop o es igual al archivo completo; develop + DESPUÉS == copia compilada y probada;
+   cada copia difiere de base solo en los archivos de su ficha: diff -rq)
+
+OBSERVACIÓN (no es de los paquetes)
+  En /admin/reportes las especialidades se ven como "Pediatr├¡a", "Cardiolog├¡a" (texto con codificación dañada), igual en base y en p4.
+  Viene de los datos cargados en la BD, no del código cambiado. Causa no verificada (posible recarga de la BD sin utf8mb4).
