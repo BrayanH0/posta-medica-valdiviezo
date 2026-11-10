@@ -813,3 +813,4 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 5. En H-032 escribí al principio "Se probó: el admin ve…", pero la auditoría lo probó por API; se corrigió a "en pantalla no se probó".
 
 **Commit:** en `develop`, solo `docs/`, con el mensaje "T3: RFC-010..018, hallazgos H-042+, issues y fichas". Sin push. El hash se agrega al final de esta entrada después del commit.
+- 16:00:50: commit `def78c0` en `develop` (padre `08b4d99`; 18 archivos, todos en `docs/`). `master` sigue en `08b4d99`. Esta línea con el hash queda **sin commit** (un commit no puede contener su propio hash); queda para el usuario.
