@@ -931,3 +931,47 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - 20:20:51: commit `9b250fc` en `hotfix/rfc-010-claves-seguras`, "Hotfix RFC-010: claves con BCrypt y sin exponer en la API (Closes #7)". Esta anotación del hash va en un segundo commit de solo bitácora (como en la tarea 18), para que el árbol quede limpio antes de los merges del usuario.
 - `git merge-tree --write-tree --name-only develop hotfix/rfc-010-claves-seguras` (no modifica ninguna rama): conflictos **solo** en `docs/BITACORA.md`, `docs/HALLAZGOS.md` y `docs/rfc/RFC-010.md` (add/add). Se resuelven conservando lo de `develop` (tarea 18) y lo del hotfix (tarea 19). En RFC-010, la versión del hotfix ya contiene la de `develop` más las secciones nuevas.
 - `git merge-base --is-ancestor master hotfix/…` → sí: el merge a `master` puede hacerse sin conflictos.
+
+---
+
+## Tarea 20 — Merge del hotfix RFC-010 a `develop` y H-048 asignado a RFC-011
+
+### [2026-11-10 20:25–20:29] Rama, merge y resolución de conflictos
+- Estado al empezar (20:25:35): rama actual `master` = `0af31db` ("Merge pull request #48 from BrayanH0/hotfix/rfc-010-claves-seguras", 20:24:41, padres `08b4d99` y `e5ad0a4`); `develop` = `origin/develop` = `5a212cc`; `hotfix/rfc-010-claves-seguras` = `origin/…` = `e5ad0a4`; base común `08b4d99`. El tag `LB-10` ya existe (lo creó el usuario).
+- 20:25:42: `git switch -c merge/hotfix-rfc-010-a-develop develop` y `git merge --no-ff hotfix/rfc-010-claves-seguras`. Conflictos **solo** en los 3 archivos previstos en la tarea 19: `docs/BITACORA.md`, `docs/HALLAZGOS.md` y `docs/rfc/RFC-010.md` (add/add). Los 25 archivos de código, pruebas, SQL y el resto de `docs/` se unieron sin conflicto.
+- **Por qué hubo conflicto:** las dos ramas agregaron texto en los mismos lugares desde `08b4d99`. La tarea 18 (`develop`) y la 19 (hotfix) escribieron cada una su entrada al final de la bitácora, cada una reescribió la fila de H-007 y agregó filas al final de la tabla de hallazgos, y cada una creó su propio RFC-010 (la 19 partió de una copia del de la 18).
+- **Resolución** (con Edit, sin `git checkout --ours/--theirs`, para que los hooks controlen los archivos):
+  - `BITACORA.md`: las dos entradas completas, primero la de la tarea 18 y después la de la tarea 19 (orden cronológico: 15:25–16:00 y 19:44–20:21), separadas por `---`.
+  - `RFC-010.md`: la versión del hotfix, como pidió el usuario. Ya contenía todo lo de `develop` más el estatus, el historial, las diferencias de diseño, las pruebas cambiadas y la evaluación post-implementación. Comprobado: `git show hotfix/rfc-010-claves-seguras:docs/rfc/RFC-010.md | diff --strip-trailing-cr - docs/rfc/RFC-010.md` → `IDENTICO`.
+  - `HALLAZGOS.md`, fila H-007: se combinaron las dos. La descripción, las ubicaciones y la evidencia completas de la tarea 18 (la versión del hotfix solo tenía un resumen que remitía a "texto completo en `develop`"), más la corrección de la tarea 19 con su estado y su columna "Cambio" ("Corregido en la rama hotfix…", RFC-010). La remisión "(texto completo en `develop`)" se quitó porque ya no aplica, y la línea de `WebSecurityConfig` quedó como `:49-53` (la de la tarea 19, más precisa que `:52`).
+  - `HALLAZGOS.md`, final de la tabla: se conservan H-042…H-047 (tarea 18) y después H-048 (tarea 19).
+  - **Alternativa descartada:** tomar la fila H-007 de una sola rama. La de `develop` perdía la corrección y la del hotfix perdía el detalle de la auditoría. El pedido es conservar lo de las dos tareas.
+- **Comprobaciones de la resolución (20:27):**
+  - 0 marcadores de conflicto en los 3 archivos.
+  - Líneas de cada rama que no están en el resultado: BITACORA 0 y 0. HALLAZGOS: de `develop`, 2 (la fila H-007 combinada y la fila #7 de la tabla de issues, que el hotfix había actualizado y git unió solo); del hotfix, 5 (la H-007 combinada y las filas H-012, H-013, H-016 y H-032, que en `develop` tienen la versión ampliada de la tarea 18 y git tomó automáticamente porque el hotfix no las tocó).
+  - Columnas: 48 filas H-0xx en la tabla principal. Las filas con un número de columnas distinto de 10 (H-027, H-035, H-040, H-043, contando `|` dentro de código) son las mismas que ya tenía `develop`: no las causó el merge. Con el método de la tarea 18 (que no cuenta las barras dentro de código) no se volvió a comprobar: sin registro.
+- **Código del merge = código del hotfix:** `git diff --cached --stat hotfix/rfc-010-claves-seguras -- . ':!docs'` → vacío, y el diff `develop`→merge fuera de `docs/` es igual al diff `08b4d99`→hotfix (`IGUAL`).
+
+### [2026-11-10 20:28–20:29] Compilación y pruebas unitarias sobre el merge (antes de cerrarlo)
+- `./mvnw test` (20:28:11–20:28:40): `Tests run: 66, Failures: 0, Errors: 0, Skipped: 0` · `BUILD SUCCESS` (igual que el hotfix en la tarea 19; incluye U89 y `contextLoads` contra MySQL). 0 apariciones de `$2a$` en la salida.
+- `ng build --configuration development` (hasta 20:28:23): `exit=0`, 0 advertencias. `ng build` (producción, 20:28:24–20:28:35): `exit=0`, las mismas 2 advertencias de siempre (presupuesto 808.17 kB; `jquery` no ESM).
+- Unitarias del frontend con los comandos de `docs/PRUEBAS.md`: `TOTAL: 32 SUCCESS` (20:28:45–20:28:53) y `TOTAL: 49 SUCCESS` (20:28:53–20:29:00).
+- Salidas completas en el scratchpad de la sesión (`t20/mvn-test.txt`, `ng-build-dev.txt`, `ng-build-prod.txt`, `fe-32.txt`, `fe-49.txt`), fuera del repositorio.
+- **No se ejecutó** la batería P01–P25 ni Playwright: el pedido fue compilar y correr las unitarias, y el código del merge es idéntico byte a byte al del hotfix, que pasó la batería completa en la tarea 19 (20:13–20:15). Si el usuario quiere la regresión completa sobre `develop`, queda pendiente.
+- 20:29:23: commit de merge `29a28ea` en `merge/hotfix-rfc-010-a-develop` (padres `5a212cc` = `develop` y `e5ad0a4` = hotfix).
+
+### [2026-11-10 20:29–20:31] H-048 asignado a RFC-011 (pedido del usuario)
+- `docs/rfc/RFC-011.md`: H-048 en "Error conocido asociado", sección nueva "Debe corregir también H-048" (qué pasa, por qué le toca a RFC-011, qué hacer, orden con P5, prueba y criterio nuevos) y una fila en el historial (20:29, "Registrado (ampliado)"). El estatus sigue en "Registrado".
+- **Por qué RFC-011:** es la RFC que activa los filtros JWT. Mientras estén comentados, el bean NoOp no tiene efecto; si se activan sin corregirlo, ningún login funcionaría.
+- `docs/HALLAZGOS.md`, H-048, columna "Cambio que lo atiende": de "Pendiente (paquete P5…)" a "RFC-011 (asignado en la tarea 20…)". Se cambió para que HALLAZGOS y RFC-011 digan lo mismo.
+- Comprobado en `docs/entrega/fichas/FICHA_P5.md`: el DESPUÉS de `WebSecurityConfig.java` (archivo completo, desde la línea 211) conserva `NoOpPasswordEncoder` (línea 266). Por eso RFC-011 dice que la corrección va sobre el `WebSecurityConfig` que deje P5, y no en la ficha.
+- **No se cambió** la frase de RFC-010 "el bean `NoOpPasswordEncoder` … (H-048) lo debe quitar el paquete P5" (Evaluación post-implementación, "Riesgo residual"): el usuario pidió quedarse con la versión del hotfix. Ahora la asignación vigente es la de HALLAZGOS y RFC-011. Si el usuario quiere, se corrige esa frase en RFC-010.
+
+### Cosas que el usuario debe saber (tarea 20)
+- **Numeración de issues:** el número #48 de GitHub ya lo usa el PR del hotfix (`0af31db`, "Merge pull request #48"). La regla "H-0XX = issue #XX" de HALLAZGOS ya no se puede cumplir para H-048, y los issues H-042…H-047 tampoco quedarán con su número si se crean después de otro PR (la tarea 18 lo advirtió). No se creó ningún issue.
+- Issue #7: no se consultó en GitHub si se cerró con el merge a `master`: sin registro.
+- Entorno al terminar: siguen corriendo el backend del hotfix (pid 9644) y `ng serve` (pid 22608), los dos desde la tarea 19, sin tocar. La BD tiene la semilla con hashes.
+- Sin push ni PR (los hace el usuario). La rama `merge/hotfix-rfc-010-a-develop` solo existe en local.
+- Fallos propios: ninguno registrado.
+- Cumplimiento de CLAUDE.md: los conflictos se resolvieron con Edit; ningún archivo de prueba ni de código se editó; horas tomadas de `date` y `git log`; sin comandos destructivos de Git.
+- Commit de documentación: después del merge, en la misma rama, con RFC-011, HALLAZGOS (H-048) y esta entrada. Su hash no puede ir dentro de él mismo: queda en `git log`.
