@@ -12,7 +12,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.centro_valdiviezo.backend.model.Paciente;
 import com.centro_valdiviezo.backend.repository.PacienteRepository;
@@ -23,6 +26,10 @@ class PacienteServiceCaracterizacionTest {
 
     @Mock
     private PacienteRepository pacienteRepository;
+
+    // RFC-010: PacienteService recibe el PasswordEncoder por constructor (BCrypt real, costo 4)
+    @Spy
+    private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(4);
 
     @InjectMocks
     private PacienteService service;
@@ -62,16 +69,19 @@ class PacienteServiceCaracterizacionTest {
         assertTrue(service.listarPorId(2).isEmpty());
     }
 
-    // U49: guarda la clave tal como llega, sin cifrar (comportamiento actual, H-007)
+    // U49: guarda la clave como hash BCrypt, no tal como llega (H-007 corregido por RFC-010).
+    // Antes de RFC-010 esta prueba comprobaba que se guardaba en texto plano.
     @Test
-    void crearPacienteGuardaLaClaveEnTextoPlanoComportamientoActualH007() {
+    void crearPacienteGuardaLaClaveComoHashBCryptRfc010() {
         Paciente p = paciente(1, "Ana", "900");
         when(pacienteRepository.save(p)).thenReturn(p);
 
         Paciente r = service.crearPaciente(p);
 
         verify(pacienteRepository).save(p);
-        assertEquals("clave-1", r.getClave());
+        assertNotEquals("clave-1", r.getClave());
+        assertTrue(r.getClave().startsWith("$2a$"));
+        assertTrue(passwordEncoder.matches("clave-1", r.getClave()));
     }
 
     // U50: devuelve true siempre, exista o no el paciente

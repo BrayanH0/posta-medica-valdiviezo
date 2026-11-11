@@ -15,6 +15,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.centro_valdiviezo.backend.autenticacion.AutenticadorAdministrador;
 import com.centro_valdiviezo.backend.autenticacion.AutenticadorMedico;
@@ -42,12 +44,15 @@ class AuthControllerCaracterizacionTest {
 
     private AuthController authController;
 
+    // RFC-010: las claves guardadas son hashes BCrypt (costo 4 para que la prueba sea rápida)
+    private final PasswordEncoder encoder = new BCryptPasswordEncoder(4);
+
     @BeforeEach
     void construir() {
         authController = new AuthController(List.of(
-                new AutenticadorPaciente(pacienteRepository),
-                new AutenticadorMedico(medicoRepository),
-                new AutenticadorAdministrador(usuarioRepository)));
+                new AutenticadorPaciente(pacienteRepository, encoder),
+                new AutenticadorMedico(medicoRepository, encoder),
+                new AutenticadorAdministrador(usuarioRepository, encoder)));
     }
 
     private static Map<String, String> credenciales(String dni, String clave) {
@@ -62,23 +67,24 @@ class AuthControllerCaracterizacionTest {
         return (Map<String, Object>) r.getBody();
     }
 
-    private static Paciente paciente(String dni, String clave) {
+    // La entidad simulada guarda el hash de la clave, como la BD desde RFC-010
+    private Paciente paciente(String dni, String clave) {
         Paciente p = new Paciente();
         p.setIdPaciente(7);
         p.setNombres("Ana");
         p.setApellidos("Rojas Diaz");
         p.setDni(dni);
-        p.setClave(clave);
+        p.setClave(encoder.encode(clave));
         return p;
     }
 
-    private static Medico medico(String dni, String clave) {
+    private Medico medico(String dni, String clave) {
         Medico m = new Medico();
         m.setId_medico(3);
         m.setNombres("Luis");
         m.setApellidos("Paz Soto");
         m.setDni(dni);
-        m.setClave(clave);
+        m.setClave(encoder.encode(clave));
         m.setCmp("CMP777");
         return m;
     }
@@ -130,7 +136,7 @@ class AuthControllerCaracterizacionTest {
         admin.setNombre("Rosa");
         admin.setApellidos("Leon");
         admin.setDni("33334444");
-        admin.setClave("clave-a");
+        admin.setClave(encoder.encode("clave-a"));
         admin.setRol("ADMIN");
         when(pacienteRepository.findByDni("33334444")).thenReturn(Optional.empty());
         when(medicoRepository.findByDni("33334444")).thenReturn(Optional.empty());

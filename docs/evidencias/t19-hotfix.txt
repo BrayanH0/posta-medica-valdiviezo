@@ -1,0 +1,82 @@
+Tarea 19 — Hotfix RFC-010: evidencia (claves con BCrypt y sin exponer en la API)
+Rama: hotfix/rfc-010-claves-seguras (desde master = LB-9, 08b4d99)
+Este archivo NO contiene ninguna clave real ni ningún hash completo: de cada clave guardada solo
+se muestra el prefijo de 4 caracteres y el largo. La clave de prueba se lee de docs/PRUEBAS.md.
+
+== 1. La API ya no devuelve la clave ==
+BD recargada 20:15:54–20:15:55 (DROP DATABASE + database/BDPostaMedica.sql).
+Backend del hotfix arrancado 20:16:08 (log: "Migración de claves a BCrypt: 0 paciente(s), 0 médico(s),
+0 administrador(es) convertidos": la semilla ya viene en hash).
+
+===== EVIDENCIA 2026-11-10 20:16:08 rama hotfix/rfc-010-claves-seguras
+$ curl -s http://localhost:8080/api/paciente
+  HTTP 200, 2694 bytes, apariciones de "clave": 0, apariciones de "$2a$": 0
+  campos del primer registro: idPaciente,nombres,apellidos,dni,fecha_nacimiento,sexo,telefono,id_estado_paciente,id_ubigeo
+$ curl -s http://localhost:8080/api/medico
+  HTTP 200, 1752 bytes, apariciones de "clave": 0, apariciones de "$2a$": 0
+  campos del primer registro: id_medico,nombres,apellidos,cmp,dni,id_especialidad
+$ curl -s http://localhost:8080/usuarios
+  HTTP 200, 82 bytes, apariciones de "clave": 0, apariciones de "$2a$": 0
+  campos del primer registro: id,apellidos,dni,rol,nombre
+$ curl -s http://localhost:8080/api/paciente/codigo/1
+  HTTP 200, 179 bytes, apariciones de "clave": 0, apariciones de "$2a$": 0
+  campos del primer registro: idPaciente,nombres,apellidos,dni,fecha_nacimiento,sexo,telefono,id_estado_paciente,id_ubigeo
+$ curl -s http://localhost:8080/api/medico/codigo/1
+  HTTP 200, 113 bytes, apariciones de "clave": 0, apariciones de "$2a$": 0
+  campos del primer registro: id_medico,nombres,apellidos,cmp,dni,id_especialidad
+
+Antes (master/LB-9, batería del paso 1, 19:52): /api/medico 2007 B, /api/paciente 2949 B, /usuarios 99 B,
+y los 3 traían el campo "clave"; /api/paciente/codigo/1 y /api/medico/codigo/1 también.
+
+== 2. En la BD todas las claves están en hash BCrypt ==
+$ mysql -e "SELECT tabla, filas, LEFT(clave,4) prefijo, largo_min, largo_max, formato_bcrypt ... GROUP BY prefijo"
+  (columnas: tabla | filas | prefijo | largo mínimo | largo máximo | filas con formato BCrypt completo)
+  Paciente	15	$2a$	60	60	15
+  medico	15	$2a$	60	60	15
+  Administrador	1	$2a$	60	60	1
+Un solo grupo por tabla: las 31 claves empiezan con $2a$ y miden 60 caracteres.
+Formato verificado con REGEXP '^[$]2[aby][$][0-9]{2}[$].{53}$'.
+
+== 3. El login sigue funcionando con las claves de prueba (20:16:26) ==
+POST /login dni 12345678 clave=<la de PRUEBAS.md>: "tipo":"paciente"  HTTP 200
+POST /login dni 12345678 clave=malaclave: HTTP 401
+POST /login dni 10000001 clave=<la de PRUEBAS.md>: "tipo":"medico"  HTTP 200
+POST /login dni 10000001 clave=malaclave: HTTP 401
+POST /login dni 87654321 clave=<la de PRUEBAS.md>: "tipo":"administrador"  HTTP 200
+POST /login dni 87654321 clave=malaclave: HTTP 401
+Costo de BCrypt (costo 10): 20 logins secuenciales: min 0.078 s, mediana 0.079 s, max 0.091 s, promedio 0.081 s.
+No se repitió la prueba de carga concurrente de AUD-CAR-04 (sin registro).
+
+== 4. Migración al arrancar con una BD en texto plano ==
+20:11:21 BD cargada con la semilla de LB-9 (git show LB-9:database/BDPostaMedica.sql | mysql):
+  Paciente	15	con_hash 0	texto_plano 15
+  medico	15	con_hash 0	texto_plano 15
+  Administrador	1	con_hash 0	texto_plano 1
+Primer arranque del backend del hotfix (log):
+  20:11:50.900 MigracionClaves : Migración de claves a BCrypt: 15 paciente(s), 15 médico(s), 1 administrador(es) convertidos
+  20:11:50.924 TomcatWebServer : Tomcat started on port 8080 (http) with context path '/'
+  (la migración termina ANTES de que el servidor acepte peticiones)
+20:12:03 después del arranque (tabla | filas | formato BCrypt | texto plano | prefijo):
+  Paciente	15	15	0	$2a$
+  medico	15	15	0	$2a$
+  Administrador	1	1	0	$2a$
+  login 12345678: 200 / con clave mala: 401
+  login 10000001: 200 / con clave mala: 401
+  login 87654321: 200 / con clave mala: 401
+  En el log de ese arranque: 0 líneas con la clave semilla y 0 hashes ("$2a$").
+Segundo arranque (idempotencia), 20:12:37:
+  MigracionClaves : Migración de claves a BCrypt: 0 paciente(s), 0 médico(s), 0 administrador(es) convertidos
+  MD5 de todas las claves de Paciente antes y después del segundo arranque: iguales (diff vacío).
+
+== 5. H-032: "Gestión de Pacientes" del administrador sigue actualizando sin borrar la clave ==
+(Playwright, pantalla real /admin/pacientes, paciente 2; md5 de la clave guardada, no la clave)
+# hora 20:13:09
+BD antes  (dni, nombres, md5(clave), prefijo): 23456789 | Maria | d95c77fa838bc4ec92081d0296ff10c0 | $2a$
+GET /api/paciente (pantalla) trae "clave": false
+alerta: Paciente actualizado correctamente
+200 PUT /api/paciente/actualizar/2; campos enviados: idPaciente,nombres,apellidos,dni,fecha_nacimiento,sexo,telefono,id_estado_paciente,id_ubigeo; incluye clave: false
+BD despues(dni, nombres, md5(clave), prefijo): 23456789 | Maria H032 | d95c77fa838bc4ec92081d0296ff10c0 | $2a$
+md5(clave) sin cambios: true
+login del paciente 2 tras la edicion: 200 nombres=Maria H032
+# hora 20:13:18
+(La BD se recargó después, a las 20:13:26, antes de Playwright y de la batería.)
