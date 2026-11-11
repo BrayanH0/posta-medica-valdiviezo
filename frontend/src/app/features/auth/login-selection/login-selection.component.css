@@ -13,7 +13,8 @@
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     text-align: center;
-    min-width: 400px;
+    /* 400px en pantallas grandes; en el celular, como máximo el ancho de la pantalla (RFC-013) */
+    min-width: min(400px, 100%);
 }
 
 h2 {

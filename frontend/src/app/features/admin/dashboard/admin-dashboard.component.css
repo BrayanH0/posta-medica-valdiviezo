@@ -26,3 +26,17 @@
 .collapsed .logout-btn span { display: none; } /* Hide text if icon added later, or just text */
 .collapsed .logout-btn { padding: 10px; width: 40px; height: 40px; border-radius: 50%; }
 .collapsed .sidebar-footer { align-items: center; }
+
+/* Celular y tablet vertical: el menú pasa arriba y el contenido usa todo el ancho (RFC-013) */
+@media (max-width: 768px) {
+  .dashboard-wrapper { flex-direction: column; }
+  .sidebar, .collapsed .sidebar { width: 100%; padding: 12px 15px; }
+  .sidebar .logo { margin-bottom: 10px; padding-bottom: 10px; }
+  .nav { flex-direction: row; flex-wrap: wrap; gap: 6px; }
+  .nav a, .collapsed .nav a { padding: 8px 12px; }
+  .nav a:hover { transform: none; }
+  .sidebar-footer { flex-direction: row; justify-content: flex-end; margin-top: 10px; padding-top: 10px; }
+  .toggle { display: none; }
+  .logout-btn, .collapsed .logout-btn { width: auto; height: auto; padding: 8px 16px; border-radius: 25px; }
+  .content { padding: 15px; min-width: 0; }
+}

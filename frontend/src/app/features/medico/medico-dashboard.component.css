@@ -135,3 +135,46 @@
     line-height: 1.5;
     margin: 0;
 }
+
+/* Celular y tablet vertical: el menú pasa arriba y el contenido usa todo el ancho (RFC-013) */
+@media (max-width: 768px) {
+    .dashboard-container {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+    }
+
+    .sidebar-header {
+        padding: 12px 15px;
+    }
+
+    .sidebar-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin-top: 0;
+    }
+
+    .nav-item {
+        padding: 10px 12px;
+    }
+
+    .nav-item.active {
+        border-left: none;
+        border-bottom: 4px solid #5c6bc0;
+    }
+
+    .sidebar-footer {
+        padding: 10px 15px;
+    }
+
+    .main-content {
+        padding: 15px;
+        min-width: 0;
+    }
+
+    .cards-container {
+        flex-direction: column;
+    }
+}
