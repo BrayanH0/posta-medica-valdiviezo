@@ -1,0 +1,6 @@
+{
+  "outputDirectory": "dist/proyecto_valdiviezo/browser",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
