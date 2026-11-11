@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.centro_valdiviezo.backend.repository.MedicoRepository;
@@ -15,9 +16,11 @@ import com.centro_valdiviezo.backend.model.Medico;
 public class MedicoService implements IMedicoService {
 
     private final MedicoRepository medicoRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public MedicoService(MedicoRepository medicoRepository) {
+    public MedicoService(MedicoRepository medicoRepository, PasswordEncoder passwordEncoder) {
         this.medicoRepository = medicoRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public ArrayList<Medico> listarMedicos() {
@@ -29,6 +32,9 @@ public class MedicoService implements IMedicoService {
     }
 
     public Medico crearMedico(Medico medico) {
+        if (medico.getClave() != null) {
+            medico.setClave(passwordEncoder.encode(medico.getClave()));
+        }
         return medicoRepository.save(medico);
     }
 

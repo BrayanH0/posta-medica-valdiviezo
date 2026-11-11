@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.centro_valdiviezo.backend.controller.AuthController;
 import com.centro_valdiviezo.backend.repository.MedicoRepository;
@@ -26,6 +27,8 @@ class AutenticadorRolOrdenTest {
             ctx.registerBean(UsuarioRepository.class, () -> mock(UsuarioRepository.class));
             ctx.registerBean(MedicoRepository.class, () -> mock(MedicoRepository.class));
             ctx.registerBean(PacienteRepository.class, () -> mock(PacienteRepository.class));
+            // RFC-010: los autenticadores reciben un PasswordEncoder por constructor
+            ctx.registerBean(PasswordEncoder.class, () -> mock(PasswordEncoder.class));
             ctx.register(AutenticadorAdministrador.class, AutenticadorMedico.class, AutenticadorPaciente.class,
                     ListaInyectada.class);
             ctx.refresh();
