@@ -874,3 +874,8 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
   - Archivos creados y modificados con Edit/Write, salvo la excepción registrada de RFC-010.
   - Horas tomadas de `date` y de los logs.
   - Sin push ni comandos destructivos de Git.
+
+### [2026-11-10 20:20–20:21] Commit del hotfix y simulación del merge
+- 20:20:51: commit `9b250fc` en `hotfix/rfc-010-claves-seguras`, "Hotfix RFC-010: claves con BCrypt y sin exponer en la API (Closes #7)". Esta anotación del hash va en un segundo commit de solo bitácora (como en la tarea 18), para que el árbol quede limpio antes de los merges del usuario.
+- `git merge-tree --write-tree --name-only develop hotfix/rfc-010-claves-seguras` (no modifica ninguna rama): conflictos **solo** en `docs/BITACORA.md`, `docs/HALLAZGOS.md` y `docs/rfc/RFC-010.md` (add/add). Se resuelven conservando lo de `develop` (tarea 18) y lo del hotfix (tarea 19). En RFC-010, la versión del hotfix ya contiene la de `develop` más las secciones nuevas.
+- `git merge-base --is-ancestor master hotfix/…` → sí: el merge a `master` puede hacerse sin conflictos.
