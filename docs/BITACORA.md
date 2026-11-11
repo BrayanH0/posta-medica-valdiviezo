@@ -1101,3 +1101,17 @@ Evidencia completa: `docs/evidencias/t23-rerevision-prs.txt`. Misma metodología
 - La BD se recargó antes de cada etapa y al final (18:12:42, 21 citas).
 - Entorno al terminar: backend y `ng serve` detenidos, 4200/8080/8081 libres y MySQL encendido.
 - No hubo merge de PR, push ni comentarios en GitHub. Las ramas de los integrantes no se modificaron.
+
+### [2026-11-11 18:29–18:39] Re-revisión de P1 #50 (pedida por el usuario)
+Evidencia: `docs/evidencias/t23-rerevision-prs.txt`, sección 7.
+- 18:29:47 fetch: llegó 1 commit nuevo, `9d59c01` (18:27:28). Es de pfaberio27-png, hecho en el editor web.
+  - Toca solo las 2 líneas pedidas en `login-paciente.component.ts`: la 34 queda vacía y la 35 con 4 espacios.
+  - El mensaje es el pedido, pero **empieza con un espacio** (`" P1: corregir espacios…"`). Es estético; quitarlo exige reescribir la historia de la rama. No se pide; decide el usuario.
+- **Verificador:** `bloques: 9, archivos: 5, fallos: 0`. En la tarea 22 había dado 1 fallo.
+- **Pruebas** (worktrees de develop `463ca1d` y de P1 `9d59c01`; `correr23.cjs` con la comprobación funcional `func.cjs` de la tarea 22 y sin la prueba con variables, que es de P5):
+  - Base: 18:30:50–18:34:28. P1: 18:34:28–18:38:04.
+  - P1 da 67/67 (+1), 32, 49 y 6/6. La batería y P11/P18 son **idénticas a LB-10**.
+  - Consola: la base muestra el DNI y la clave; P1 no muestra ninguno. El 500 tiene el mismo cuerpo y queda en el log (de 1 a 2 líneas).
+- **Simulación de merge:** sin conflictos con develop, con P3 ni con P5. El árbol final es `1cda20f` en los órdenes P5 → P1 → P3 y P1 → P3 → P5.
+- **Veredicto: P1 #50 APROBAR.** Orden recomendado: P5 → P1 → P3 (P3 cuando ponga la descripción). El comentario para GitHub está en la sección 7.7.
+- Limpieza: enlaces y worktrees quitados (exit 0, sin `--force`), puertos libres y BD recargada (21 citas). No hubo merge, push ni comentarios en GitHub.

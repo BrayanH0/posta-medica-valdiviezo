@@ -222,3 +222,68 @@ sin resultados a las 18:14:10). BD recargada al final (18:12:42, 21 citas).
 No hubo merge de PR, push ni comentarios en GitHub.
 Salidas completas (fuera del repo): scratchpad de la sesion c74b1801..., carpeta t23/ (base/, p5/,
 verificador-p5.txt, p5-body.txt, p5-ficha-body.txt, merge-sim.txt, correr23.cjs, cors.cjs).
+
+======================================================================
+7. RE-REVISION DE P1 #50 (pedida por el usuario despues del commit 57cdfd9)
+======================================================================
+18:29:47 git fetch: feature/rfc-014-p1-consola-y-log 0cf8c0b..9d59c01 (1 commit nuevo).
+--- 7.1 Commit nuevo ---
+  9d59c01 2026-11-11 18:27:28 -0500
+  autor pfaberio27-png <pfaberio27@gmail.com>, committer GitHub <noreply@github.com> (editor web). Sin trailers.
+  Asunto exacto (git log --format='[%s]' | cat -A):
+    [ P1: corregir espacios en login de paciente (RFC-014)]$
+  -> el mensaje es el pedido, pero empieza con UN ESPACIO. Es solo estetico; quitarlo exige reescribir la
+     historia de la rama (force push). No se pide (decide el usuario).
+  Diff (git show 9d59c01 | cat -A): 1 archivo, +2 -2, solo las 2 lineas pedidas:
+    -    $                                                       (4 espacios)
+    -     this.authService.login(this.dni, this.clave).subscribe({$ (5 espacios)
+    +$                                                           (vacia)
+    +    this.authService.login(this.dni, this.clave).subscribe({$  (4 espacios)
+  PR: base develop, 6 commits, 5 archivos (los de la ficha). merge-base con develop = 731d5e1.
+--- 7.2 Archivos vs ficha (verificar-ficha-eol.cjs; 18:30:03) ---
+OK    ANTES aparece 1 vez/veces en develop: .../login-paciente/login-paciente.component.ts
+OK    ANTES aparece 1 vez/veces en develop: .../login-medico/login-medico.component.ts
+OK    ANTES aparece 1 vez/veces en develop: .../registro/registro.component.ts
+OK    ANTES (archivo completo) igual a develop: .../exception/GlobalExceptionHandler.java
+OK    archivo nuevo no existe en develop: .../exception/GlobalExceptionHandlerTest.java
+OK    DESPUES de la ficha == archivo del PR: (los 5 archivos)
+bloques: 9, archivos: 5, fallos: 0          (en la tarea 22: fallos 1, login-paciente lineas 34-35)
+--- 7.3 Pruebas (worktrees wt/base = develop 463ca1d y wt/p1 = 9d59c01; correr23.cjs con FUNC=1 y
+        SIN_CONVAR=1: agrega func.cjs de la tarea 22, sin cambios, y omite la prueba con variables, que es de P5) ---
+Corridas: base 18:30:50-18:34:28 (carpeta t23/base-func) | P1 18:34:28-18:38:04 (carpeta t23/p1)
+                          | base hoy (develop) | P1 (9d59c01)
+ng build                  | exit 0, 2 WARNING  | exit 0, 2 WARNING
+mvnw test                 | 66/66 BUILD SUCCESS| 67/67 BUILD SUCCESS (+1 GlobalExceptionHandlerTest)
+unitarias frontend 32     | 32 SUCCESS         | 32 SUCCESS
+unitarias frontend todas  | 49 SUCCESS         | 49 SUCCESS
+Playwright                | 6 passed           | 6 passed
+Bateria P01-P25 (on)      | IDENTICA a LB-10   | IDENTICA a LB-10
+P11/P18 (backend apagado) | IDENTICA a LB-10   | IDENTICA a LB-10
+--- 7.4 Comprobacion funcional (func.cjs; DNI y clave reemplazados por [DNI]/[CLAVE]) ---
+BASE (18:33:50):
+  /login-paciente: 5 mensajes, DNI=true; "Intentando login paciente: [DNI]" y "Login exitoso {..., dni: [DNI]}"
+  /login-medico:   5 mensajes, DNI=true; "Intentando login medico: [DNI]" y "Login exitoso {...}"
+  /registro:       5 mensajes, DNI=true CLAVE=true; "Registrando paciente: {..., clave: [CLAVE], ...}"
+  POST /api/cita sin cuerpo -> 500 {"message":"Required request body is missing: ...","status":"error"}
+  log "Error no controlado en la API": antes=0 despues=0
+P1 (18:37:26):
+  /login-paciente, /login-medico, /registro: 3 mensajes cada uno (solo vite/Angular), DNI=false CLAVE=false;
+    los logins llegan a /welcome y /medico-dashboard; el registro da POST 200 y 1 fila en la BD
+  POST /api/cita sin cuerpo -> 500 con el MISMO cuerpo que la base
+  log "Error no controlado en la API": antes=1 despues=2 (la anterior es el 500 de P04 de la bateria)
+  => mismo resultado que P1 en la tarea 22: CUMPLE.
+(func.cjs tambien corre la parte de P3; en base y en P1 da 2 PUT y sin mensaje, lo esperado sin P3.)
+--- 7.5 Simulacion de merge con el head nuevo (18:38:34) ---
+develop 463ca1d | P1 9d59c01 | P3 2280d9d | P5 73cec2a
+develop+P1, P1+P3, P1+P5: exit=0, sin conflictos.
+P5 -> P1 -> P3 y P1 -> P3 -> P5: 0, 0, 0 en cada paso; arbol final 1cda20f en los dos ordenes
+(cambia respecto de 96f3aee de la seccion 3 porque cambio P1).
+GitHub: #50 MERGEABLE, BLOCKED (la revision CHANGES_REQUESTED de BrayanH0 sigue vigente hasta que se apruebe).
+--- 7.6 Veredicto P1 #50: APROBAR ---
+Orden recomendado: P5 -> P1 (los dos listos) -> P3 cuando ponga la descripcion.
+--- 7.7 Comentario para GitHub (PR #50, listo para pegar) ---
+Hola, gracias por la corrección. Revisé el commit nuevo: cambia solo las 2 líneas pedidas y ahora los 5 archivos son idénticos a la ficha. Volví a correr todo y pasa (backend 67/67, frontend 32 y 49, Playwright 6/6); la consola ya no muestra el DNI ni la clave y el error 500 queda en el log del servidor. Aprobado. No hagas nada más en esta rama.
+--- 7.8 Limpieza ---
+18:38:50 enlaces node_modules quitados (375 carpetas reales intactas); git status de los 2 worktrees: 0
+lineas; `git worktree remove` base y p1: exit 0, sin --force; `git worktree list` -> solo el repo.
+4200/8080/8081 libres. BD recargada al final (18:38:04, 21 citas).
