@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.centro_valdiviezo.backend.autenticacion.AutenticadorAdministrador;
 import com.centro_valdiviezo.backend.autenticacion.AutenticadorMedico;
@@ -57,10 +58,12 @@ class AuthControllerExtensionTest {
         when(pacienteRepository.findByDni(anyString())).thenReturn(Optional.empty());
         when(medicoRepository.findByDni(anyString())).thenReturn(Optional.empty());
         when(usuarioRepository.findByDni(anyString())).thenReturn(Optional.empty());
+        // RFC-010: los autenticadores reciben el PasswordEncoder (los repositorios no devuelven usuarios)
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(4);
         AuthController controller = new AuthController(List.of(
-                new AutenticadorPaciente(pacienteRepository),
-                new AutenticadorMedico(medicoRepository),
-                new AutenticadorAdministrador(usuarioRepository),
+                new AutenticadorPaciente(pacienteRepository, encoder),
+                new AutenticadorMedico(medicoRepository, encoder),
+                new AutenticadorAdministrador(usuarioRepository, encoder),
                 new AutenticadorRolDeEjemplo()));
 
         Map<String, String> credenciales = new HashMap<>();

@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.core.annotation.Order;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.centro_valdiviezo.backend.model.Medico;
@@ -16,9 +17,11 @@ import com.centro_valdiviezo.backend.repository.MedicoRepository;
 public class AutenticadorMedico implements AutenticadorRol {
 
     private final MedicoRepository medicoRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public AutenticadorMedico(MedicoRepository medicoRepository) {
+    public AutenticadorMedico(MedicoRepository medicoRepository, PasswordEncoder passwordEncoder) {
         this.medicoRepository = medicoRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -26,7 +29,7 @@ public class AutenticadorMedico implements AutenticadorRol {
         Optional<Medico> medicoOpt = medicoRepository.findByDni(dni);
         if (medicoOpt.isPresent()) {
             Medico medico = medicoOpt.get();
-            if (medico.getClave() != null && medico.getClave().equals(clave)) {
+            if (medico.getClave() != null && passwordEncoder.matches(clave, medico.getClave())) {
                 Map<String, Object> response = new HashMap<>();
                 response.put("success", true);
                 response.put("tipo", "medico");

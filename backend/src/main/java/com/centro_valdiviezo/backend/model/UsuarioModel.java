@@ -1,5 +1,7 @@
 package com.centro_valdiviezo.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,6 +27,8 @@ public class UsuarioModel {
     @Column(name = "dni", unique = true)
     private String dni;
 
+    // RFC-010: se acepta al crear, pero nunca se devuelve en el JSON
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name = "clave")
     private String clave;
 

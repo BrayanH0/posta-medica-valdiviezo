@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,13 +36,16 @@ public class AuthControllerTest {
 
     private AuthController authController;
 
+    // RFC-010: la clave guardada es un hash BCrypt (costo 4 para que la prueba sea rápida)
+    private final PasswordEncoder encoder = new BCryptPasswordEncoder(4);
+
     @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
         authController = new AuthController(List.of(
-                new AutenticadorPaciente(pacienteRepository),
-                new AutenticadorMedico(medicoRepository),
-                new AutenticadorAdministrador(usuarioRepository)));
+                new AutenticadorPaciente(pacienteRepository, encoder),
+                new AutenticadorMedico(medicoRepository, encoder),
+                new AutenticadorAdministrador(usuarioRepository, encoder)));
     }
 
     @Test
@@ -51,7 +56,7 @@ public class AuthControllerTest {
         Medico medico = new Medico();
         medico.setId_medico(1);
         medico.setDni(dni);
-        medico.setClave(clave);
+        medico.setClave(encoder.encode(clave));
         medico.setNombres("Jorge");
         medico.setApellidos("Santos Ruiz");
         medico.setCmp("CMP12345");

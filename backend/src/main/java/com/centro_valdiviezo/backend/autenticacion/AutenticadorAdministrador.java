@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.core.annotation.Order;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.centro_valdiviezo.backend.model.UsuarioModel;
@@ -16,9 +17,11 @@ import com.centro_valdiviezo.backend.repository.UsuarioRepository;
 public class AutenticadorAdministrador implements AutenticadorRol {
 
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public AutenticadorAdministrador(UsuarioRepository usuarioRepository) {
+    public AutenticadorAdministrador(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -26,7 +29,7 @@ public class AutenticadorAdministrador implements AutenticadorRol {
         Optional<UsuarioModel> adminOpt = usuarioRepository.findByDni(dni);
         if (adminOpt.isPresent()) {
             UsuarioModel admin = adminOpt.get();
-            if (admin.getClave() != null && admin.getClave().equals(clave)) {
+            if (admin.getClave() != null && passwordEncoder.matches(clave, admin.getClave())) {
                 Map<String, Object> response = new HashMap<>();
                 response.put("success", true);
                 response.put("tipo", "administrador");
