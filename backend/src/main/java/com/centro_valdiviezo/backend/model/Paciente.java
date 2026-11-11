@@ -1,5 +1,7 @@
 package com.centro_valdiviezo.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -20,6 +22,8 @@ public class Paciente {
     @Column(name = "dni")
     private String dni;
     
+    // RFC-010: se acepta al crear, pero nunca se devuelve en el JSON
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name = "clave")
     private String clave;
     

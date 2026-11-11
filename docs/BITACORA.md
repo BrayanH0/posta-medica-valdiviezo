@@ -762,3 +762,115 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Fallos propios: (1) en la entrada de la parte A anoté al principio una hora estimada ("16:55–16:59") y la corregí con las marcas reales. (2) La hora de lanzamiento de la segunda ola se había escrito como "~17:36"; se reemplazó por el rango real entre dos `date`.
 - Commit: solo `docs/auditoria/` y `.claude/agents/`, como pide la tarea. **Esta bitácora queda modificada sin commit**, porque el pedido no la incluye en el commit; queda para el usuario.
 - Cumplimiento de CLAUDE.md: los archivos se crearon o modificaron solo con Write/Edit; no se tocó código de la aplicación; las fechas se tomaron de `date`; donde no hay dato se escribió "sin registro"; no se modificó ninguna prueba; no hubo push ni comandos destructivos de Git. Excepción registrada: los agentes escribieron scripts temporales con Bash en el scratchpad, fuera del repositorio.
+
+---
+
+## Tarea 19 — Hotfix RFC-010: claves con BCrypt y sin exponer en la API (cambio de emergencia)
+
+> Esta entrada se escribe en la rama `hotfix/rfc-010-claves-seguras`, creada desde `master` (LB-9). Las entradas de la tarea 18 (registro de RFC-010) están en `develop`; se unen al hacer el merge del hotfix a `develop`.
+
+### [2026-11-10 19:44–19:54] Paso 1: batería base en `master` (LB-9)
+- `master` = `08b4d99`. `git diff --stat LB-9 master -- backend frontend database e2e` → vacío, y lo mismo entre `master` y `develop`: el código de `master` es el de LB-9.
+- **Los scripts de la batería de LB-8/LB-9 ya no existen** (estaban en el scratchpad de esas sesiones; los scratchpads anteriores están vacíos). Se reescribió la batería completa en un solo script de Node + Playwright (`bateria.cjs`, scratchpad de esta sesión, fuera del repositorio) que sigue P01–P25 en el orden del documento y lee las credenciales de prueba de `docs/PRUEBAS.md` (no las tiene escritas). Para que la comparación sea válida, **el mismo script** se corre en `master` (paso 1) y en el hotfix (paso 4). No imprime el valor de ninguna clave: en P01/P03 registra si la respuesta tiene el campo `clave` y la lista de campos.
+- 19:48:47–19:48:48: BD recargada (`DROP DATABASE` + `database/BDPostaMedica.sql`, 21 citas).
+- 19:48:58–19:49:16, `./mvnw test`: `Tests run: 50, Failures: 0, Errors: 0, Skipped: 0` · `BUILD SUCCESS`.
+- Frontend: `TOTAL: 32 SUCCESS` (19:49:26–19:49:39) y `TOTAL: 49 SUCCESS` (hasta 19:49:46).
+- Backend arrancado (`Started CentroValdiviezoApplication` 19:50:09, pid 30496) y `ng serve`. Playwright (19:50:17–19:50:36): **6 passed**.
+- Primera corrida de la batería (19:50:45–19:51:02): se cortó en P12 por un error del script (esperaba que las `<option>` fueran "visibles"; se cambió a `state: 'attached'`). En esa corrida también se cambió la medición de tamaño a bytes crudos de la respuesta. Se recargó la BD y se repitió todo.
+- 19:52:05 BD recargada; batería P01–P25 19:52:06–19:53:27; backend detenido (pid 30496, 19:53:54); P11 apagado y P18 19:54:00–19:54:19. Resultado: **igual a LB-9 en todo lo registrado** (P04 500; P13–P16 fallan igual; P05–P10, P17, P19–P23 y P25 como en LB-9; P03 trae `clave` en `/api/medico/codigo/1` y `/api/paciente/codigo/1`; P01 trae `clave` en `/api/medico`, `/api/medico/especialidad/1`, `/api/paciente` y `/usuarios`).
+- Notas de método de la batería reescrita:
+  - **P24:** la primera versión buscaba el texto `123456` sin comillas y lo encontró dentro del DNI `12345678` (`texto-clave-prueba:true`), un falso positivo. LB-9 buscaba el valor de clave. Se corrigió el script para buscar `"123456"` entre comillas y se comprobó sobre el mismo backend de `master` con `curl … | grep -c '"123456"'` → `0` en los 2 endpoints, igual que LB-9.
+  - **P01, tamaños:** con bytes crudos, varios tamaños difieren de los anotados desde LB-0 (cie 306 B vs 291 B, cita 2818 vs 2811, especialidad 584 vs 554, disponibilidad 8677 vs 8632…), aunque `database/BDPostaMedica.sql` no cambió desde LB-9. No se investigó la causa (sospecha no comprobada: la codificación con que el cliente `mysql` cargó los acentos). Sin efecto en esta comparación: base y hotfix se miden con el mismo método.
+  - La sesión de médico de P11 con el backend apagado se carga en localStorage, igual que en LB-4 a LB-9.
+- Salidas: `base/` en el scratchpad (`bateria.txt`, `bateria-apagado.txt`, `mvn-test.txt`, `fe-32.txt`, `fe-49.txt`, `playwright.txt`, `p24-recheck.txt`).
+
+### [2026-11-10 19:54] Paso 2: rama `hotfix/rfc-010-claves-seguras` desde `master`
+- `git checkout -b hotfix/rfc-010-claves-seguras master` → `08b4d99`.
+- RFC-010 solo existe en `develop` (tarea 18). Se trajo a la rama con `git checkout develop -- docs/rfc/RFC-010.md` para actualizarlo aquí. **Fallo propio:** ese comando crea el archivo desde la terminal, y CLAUDE.md pide crear archivos solo con Edit/Write. El contenido es idéntico al de `develop` (comprobable con `git diff develop -- docs/rfc/RFC-010.md` antes de editarlo). No se deshizo porque borrarlo también requeriría la terminal.
+
+### [2026-11-10 19:54] Decisión del usuario sobre las pruebas (antes de implementar)
+- Aprobadas en el pedido: U33–U41, `AuthControllerTest`, U81 y "P03/U52".
+- Al leer las pruebas se vio que el diseño pedido rompe además **U49, U55 y U80**, y que **U52 no se rompe** (`actualizarPaciente` no usa el encoder; el RFC la nombró en lugar de U49). Se le preguntó al usuario antes de tocar código:
+  - U49 afirma que `crearPaciente` guarda la clave en texto plano (caracteriza H-007): falla sí o sí.
+  - U55 usa `@InjectMocks` sin un `PasswordEncoder` simulado: el encoder llega `null` y `crearMedico` lanzaría `NullPointerException`.
+  - U80 arma un contexto de Spring mínimo sin bean `PasswordEncoder`: no arranca si los autenticadores lo reciben por constructor.
+- Respuesta del usuario: **"Aprobar U49, U55 y U80"** como corrección esperada. Se descartó el diseño alternativo (que cada clase cree su propio `BCryptPasswordEncoder` para no tocar U55/U80) porque contradice "PasswordEncoder como bean" y sería acomodar el código a las pruebas.
+
+### Por qué ocurre el problema (causa, antes de cambiar código)
+1. **Se guarda en texto plano:** `PacienteService.crearPaciente` y `UsuarioService.crear` tienen el `encode` comentado, y `MedicoService.crearMedico` guarda tal cual. La semilla `BDPostaMedica.sql` inserta `'123456'` literal en las 31 filas.
+2. **Se compara en texto plano:** los 3 `Autenticador*` usan `getClave().equals(clave)`. El único `PasswordEncoder` del contexto es `NoOpPasswordEncoder` (`WebSecurityConfig.java:49-53`), que además alimenta el `AuthenticationManager` (no usado por `/login`: el filtro JWT está comentado).
+3. **Se devuelve en el JSON:** los controladores devuelven las entidades JPA sin DTO, y `clave` no tiene ninguna anotación que la saque de la serialización. Por eso `GET /api/paciente`, `/api/medico` y `/usuarios` la incluyen.
+
+### Restricciones del pedido que cambian el diseño del RFC
+- **No se toca `WebSecurityConfig.java` ni `application.properties`** (los modifica el paquete P5 de otro integrante). Por eso:
+  - El bean nuevo va en `config/PasswordConfig.java`. Como `WebSecurityConfig` ya define un bean llamado `passwordEncoder` (NoOp) y Spring Boot no permite sobrescribir beans con el mismo nombre, el nuevo se llama `bcryptPasswordEncoder` y lleva `@Primary`: cualquier `PasswordEncoder` inyectado por tipo recibe BCrypt.
+  - El bean NoOp **sigue existiendo** y el `AuthenticationManager` de `WebSecurityConfig` lo sigue usando (llama a `passwordEncoder()` directamente). Hoy ese camino no se usa (`/login` lo atiende `AuthController`), pero queda registrado como hallazgo para P5.
+  - El RFC proponía activar la migración con `app.migrar-claves=true` en `application.properties`. Como no se puede tocar, y el pedido dice "migración al arrancar … una sola vez … idempotente", el componente corre en cada arranque y solo cambia las claves que no son BCrypt; si ya están en hash no hace nada.
+
+### [2026-11-10 19:55–20:10] Paso 3: implementación
+- **Qué se cambió** (detalle por archivo en RFC-010, "Diferencias entre el diseño registrado y lo implementado"):
+  - Nuevos: `config/PasswordConfig.java` (bean `bcryptPasswordEncoder`, `@Primary`) y `config/MigracionClaves.java`.
+  - Los 3 `Autenticador*` reciben `PasswordEncoder` por constructor y usan `matches(claveIngresada, hashGuardado)`.
+  - `PacienteService`, `MedicoService` y `UsuarioService` aplican `encode` al crear.
+  - `clave` lleva `@JsonProperty(access = WRITE_ONLY)` en `Paciente`, `Medico` y `UsuarioModel`.
+  - `database/BDPostaMedica.sql`: 31 hashes.
+- **`MigracionClaves`:**
+  - Se escribió primero como `ApplicationRunner`, siguiendo el RFC. Se cambió a `SmartInitializingSingleton` antes de probarlo: un `ApplicationRunner` corre después de que Tomcat acepta peticiones, y en el primer arranque con claves en texto plano un login en ese instante daría 401. Comprobado después en el log: migración 20:11:50.900, Tomcat 20:11:50.924.
+  - Se considera BCrypt el formato completo (`^\$2[aby]\$\d{2}\$[./0-9A-Za-z]{53}$`), no solo "empieza con `$2`". Así, una clave en texto plano que empiece con `$2` también se migra.
+  - El log solo informa cuántas filas cambió por tabla.
+- **Semilla:**
+  - 31 hashes generados con el mismo `BCryptPasswordEncoder` (un programa Java de una sola línea de uso, en el scratchpad). Cada hash se verificó con `matches` al generarlo, y la clave se leyó de `docs/PRUEBAS.md`, no se escribió en el comando.
+  - Se reemplazaron con Edit. `grep` + `diff` (ignorando `\r`) contra la lista generada → idénticos. `grep -c "'123456'"` en el SQL → 0.
+- `./mvnw -q compile` (19:58:25): sin errores.
+- **Pruebas:**
+  - Antes de escribir las pruebas aprobadas, el usuario rechazó las primeras 4 ediciones preguntando "¿cuál es la ruta?". Se le dio la ruta y el detalle de cada cambio, y respondió "sí, sigue".
+  - Se adaptaron U33–U41, `AuthControllerTest`, U80, U81, U49 y U55 (antes/después en RFC-010). Se escribieron U85–U89 (16 casos).
+- **Alternativas descartadas:**
+  - Modificar `WebSecurityConfig` (prohibido).
+  - DTOs de salida (demasiado grande para una emergencia, ya descartado en el RFC).
+  - Que cada clase cree su propio `BCryptPasswordEncoder` para no tocar U55/U80 (acomodar el código a las pruebas).
+  - `ObjectProvider<PasswordEncoder>` en los autenticadores para que U80 no necesite el bean (mismo motivo).
+  - Migrar con SQL (MySQL no tiene BCrypt).
+
+### [2026-11-10 20:10–20:16] Paso 4: verificación (regresión contra el paso 1)
+- 20:10:06 BD recargada con la semilla nueva. `./mvnw test` (20:10:07–20:10:29): `Tests run: 66, Failures: 0, Errors: 0, Skipped: 0` · `BUILD SUCCESS` (50 + 16 nuevas). En ese log, la migración informa 0/0/0 en los 2 contextos de Spring (la semilla ya está en hash) y 1/1/1 y luego 0/0/0 en U87. 0 hashes y 0 claves en la salida.
+- Frontend (sin cambios): `TOTAL: 32 SUCCESS` (20:10:56–20:11:04) y `TOTAL: 49 SUCCESS` (hasta 20:11:11).
+- **Migración con una BD en texto plano** (pedido explícito):
+  - 20:11:21: se cargó la semilla de LB-9 con `git show LB-9:database/BDPostaMedica.sql | mysql` → 15/15/1 filas en texto plano, 0 con hash.
+  - Primer arranque del backend del hotfix (pid 20160): `Migración de claves a BCrypt: 15 paciente(s), 15 médico(s), 1 administrador(es) convertidos`, antes de `Tomcat started`.
+  - 20:12:03: las 31 claves con formato BCrypt; login de los 3 roles 200, y 401 con una clave mala; en el log, 0 apariciones de la clave y 0 de `$2a$`.
+  - Segundo arranque (pid 28716, 20:12:37): `0 … 0 … 0 convertidos`, y el MD5 de todas las claves de Paciente es igual antes y después.
+- **H-032** (Playwright sobre la pantalla real `/admin/pacientes`, 20:13:09–20:13:18): `GET /api/paciente` sin `clave`; el administrador edita el paciente 2 → `200 PUT /api/paciente/actualizar/2`, cuerpo sin `clave`; MD5 de la clave guardada idéntico; el paciente 2 sigue entrando (200).
+- 20:13:26 BD recargada. Playwright (20:13:27–20:13:36): **6 passed**.
+- 20:13:43 BD recargada. Batería P01–P25 (20:13:44–20:15:07). Backend detenido (pid 28716, 20:15:19). P11/P18 (20:15:23–20:15:42).
+- **`diff` contra el paso 1 (sin las líneas de hora):**
+  - P01: `/api/medico` 2007→1752 B, `/api/medico/especialidad/1` 411→360 B, `/api/paciente` 2949→2694 B y `/usuarios` 99→82 B, y `clave:true→false`.
+  - P03: los 2 `/codigo/1` sin el campo `clave`.
+  - P24: la línea del script corregido (`texto-clave-prueba` true→false). En `master`, el rechequeo con comillas también dio 0, así que P24 es igual.
+  - **Nada más cambió**: P02, P04–P23 y P25 idénticas; P11/P18 idénticas.
+- **P01 no estaba en la lista de pruebas aprobadas.** Su resultado no cambia (PASA, 14/14 en 200), y el RFC ya preveía este "cambio esperado (menor)". Solo bajan los tamaños registrados de los 4 listados que devolvían la clave. No se modificó su definición en PRUEBAS.md, y se le informa al usuario.
+
+### [2026-11-10 20:15–20:19] Paso 5: evidencia y documentación
+- 20:15:54 BD recargada. Backend del hotfix arrancado (pid 9644, 20:16:08; migración 0/0/0).
+- `curl` sobre `/api/paciente`, `/api/medico`, `/usuarios` y los 2 `/codigo/1`: 200 y 0 apariciones de `"clave"` y de `$2a$`.
+- BD: las 31 claves con prefijo `$2a$`, 60 caracteres y formato BCrypt completo. Login de los 3 roles 200, y 401 con una clave mala (20:16:26).
+- 20 logins secuenciales: mediana 0,079 s (costo de BCrypt). AUD-CAR-04 (carga concurrente): no se repitió, sin registro.
+- Todo está en `docs/evidencias/t19-hotfix.txt`, sin claves ni hashes completos (solo prefijos, largos y MD5 de hashes).
+- Actualizados: RFC-010 (estatus, historial, diferencias de diseño, pruebas cambiadas antes/después/por qué, evaluación post-implementación), H-007, H-048 (nuevo), PRUEBAS.md ("Resultados del hotfix RFC-010", U49, U85–U89, resumen) y ELEMENTOS_CONFIGURACION (EC-01, EC-03, EC-18).
+- **H-048** (nuevo, numerado así porque `develop` ya usa hasta H-047): el bean `NoOpPasswordEncoder` sigue en `WebSecurityConfig` y alimenta un `AuthenticationManager` que hoy no se usa. Si se activa el filtro JWT, ningún login funcionaría. Queda para el paquete P5.
+- 20:19:57: `git diff --stat master` de `WebSecurityConfig.java` y `application.properties` → vacío (no se tocaron).
+
+### Pendientes, fallos propios y estado del entorno (tarea 19)
+- **No se hizo el respaldo `mysqldump`** que pide el paso 1 del plan de implementación del RFC. La BD local es de prueba y se recrea con el SQL de LB-9 (`git show LB-9:database/BDPostaMedica.sql`), que es el back-out de datos. En una BD con datos reales, el respaldo es obligatorio antes de arrancar el backend nuevo, porque la migración no se puede revertir.
+- Fallo propio: RFC-010 se trajo de `develop` con `git checkout develop -- …` (comando de terminal; ver el paso 2).
+- **Merge a `develop`:** `docs/BITACORA.md`, `docs/HALLAZGOS.md` (fila de H-007) y `docs/rfc/RFC-010.md` cambiaron en las dos ramas. Se esperan conflictos solo en `docs/`. Resolución: conservar las entradas de la tarea 18 de `develop` **y** las de esta tarea. El código no cambió en `develop` desde LB-9, así que no debería tener conflictos.
+- Estado del entorno al terminar: backend del hotfix corriendo (pid 9644) y `ng serve` corriendo; BD cargada con la semilla nueva (en hash). Para volver a probar `master` hay que recargar la BD con su SQL: con la semilla nueva, el login de LB-9 (`equals`) ya no funciona.
+- Push, PR, merges y tag LB-10: no se ejecutaron (los hace el usuario).
+- Cumplimiento de CLAUDE.md:
+  - La causa quedó escrita antes del código.
+  - Ninguna prueba se cambió sin aprobación: las 4 aprobadas en el pedido más U49, U55 y U80, aprobadas antes de tocar código.
+  - Sin valores a mano ni condiciones para los datos de prueba: el código no menciona DNIs ni claves; la semilla tiene hashes de la clave documentada.
+  - Ningún error se atrapa en silencio.
+  - Archivos creados y modificados con Edit/Write, salvo la excepción registrada de RFC-010.
+  - Horas tomadas de `date` y de los logs.
+  - Sin push ni comandos destructivos de Git.

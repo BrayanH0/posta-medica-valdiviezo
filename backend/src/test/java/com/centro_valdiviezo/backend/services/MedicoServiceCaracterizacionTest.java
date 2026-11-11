@@ -25,6 +25,11 @@ class MedicoServiceCaracterizacionTest {
     @Mock
     private MedicoRepository medicoRepository;
 
+    // RFC-010: MedicoService recibe el PasswordEncoder por constructor (BCrypt real, costo 4)
+    @org.mockito.Spy
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder =
+            new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder(4);
+
     @InjectMocks
     private MedicoService service;
 

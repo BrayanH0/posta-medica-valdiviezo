@@ -551,6 +551,44 @@ Ejecución del 2026-10-21. Cambió solo `application.properties` (`${DB_USER:roo
 
 ---
 
+## Resultados del hotfix RFC-010 (tarea 19; propuesta LB-10, tag pendiente)
+
+Ejecución del 2026-11-10 (hora real, `date`). Es un cambio **correctivo de emergencia**: los resultados pueden cambiar solo en lo que el usuario aprobó (P03, y los efectos menores en P01 que preveía el RFC). Las credenciales de prueba **no cambian** para el usuario: la semilla guarda el hash BCrypt de la misma clave.
+
+**Método.** Los scripts de LB-8/LB-9 se perdieron con el scratchpad de esas sesiones. Se escribió de nuevo la batería P01–P25 completa (un script de Node + Playwright que lee las credenciales de este documento y nunca imprime una clave) y se ejecutó **el mismo script** primero en `master` (código de LB-9) y después en la rama hotfix. La comparación es el `diff` de las dos salidas sin las líneas de hora.
+
+1. **Base, `master`** (19:48–19:54): BD recargada; `./mvnw test` 50/50; frontend 32/32 y 49/49; Playwright 6 passed; P01–P25 (19:52:06–19:53:27); P11/P18 apagado (19:54:00–19:54:19). Igual que LB-9.
+2. **Hotfix** (20:10–20:15): BD recargada con la semilla nueva (20:10:06); `./mvnw test` **66/66** (20:10:07–20:10:29); frontend 32/32 y 49/49 (20:10:56–20:11:11); Playwright 6 passed (20:13:27–20:13:36); BD recargada (20:13:43); P01–P25 (20:13:44–20:15:07); P11/P18 apagado (20:15:23–20:15:42).
+
+| ID | Obtenido en el hotfix | ¿Igual a la base (`master` = LB-9)? |
+|---|---|---|
+| P01 | 200 en los 14. `/api/medico` 1752 B, `/api/medico/especialidad/1` 360 B, `/api/paciente` 2694 B, `/usuarios` 82 B, **sin `clave`**; los otros 10, mismos tamaños | **Cambió (menor):** mismo resultado (PASA), pero 4 listados ya no traen `clave` (antes 2007, 411, 2949 y 99 B) |
+| P02 | 200 en los 6, mismos cuerpos | Igual |
+| P03 | 11/11 en 200; `/api/medico/codigo/1` → `id_medico,nombres,apellidos,cmp,dni,id_especialidad`; `/api/paciente/codigo/1` → sin `clave` | **Cambió (aprobado): ya no expone la clave (H-007)** |
+| P04 | `500 Cannot instantiate query result type …ResumenMedico…` | Igual |
+| P05–P07 | `200 POST /login`; `/welcome`, `/medico-dashboard`, `/admin/inicio`; mismo localStorage | Igual |
+| P08 | 3 roles: `401`, se quedan en su login, `{}`, "Credenciales inválidas" | Igual |
+| P09 | 200 ×3 con los mismos campos; `401 {"error":"Credenciales inválidas"}` | Igual |
+| P10 | `401`, `/login-paciente`, `{}`, "Credenciales inválidas" | Igual |
+| P11 | Apagado: 4 pantallas con el mensaje de conexión, 0 filas | Igual |
+| P12–P16 | Cita 22; pestaña nueva sin `10:00`; duplicado 23 (`COUNT = 2`); 23 / 4 / 13; 5 / 1; 9 peticiones | Igual (P13–P16 siguen fallando) |
+| P17–P19 | localStorage `{}` al cerrar sesión; sin backend, mensaje de conexión; 6/6 roles cruzados con el mensaje de rol | Igual |
+| P20–P23 | Pendientes 22 y 23 = SELECT; 22 → Confirmada, 23 → Cancelada; 20/20 iguales | Igual |
+| P24 | Sin campo de clave, sin el valor de clave | Igual (ver nota) |
+| P25 | 200 desde `localhost:4200`, 403 desde el origen ajeno | Igual |
+
+**Resumen hotfix RFC-010:** 20 PASA · 5 FALLA (P04, P13, P14, P15, P16), las mismas que en LB-9. Cambiaron solo P03 (aprobado) y los tamaños de 4 listados de P01. Backend 66/66 (50 + U85–U89); frontend 32/32 y 49/49; Playwright 6/6. Pruebas modificadas con la aprobación del usuario: U33–U41, `AuthControllerTest`, U49, U55, U80 y U81 (antes/después en `docs/rfc/RFC-010.md`).
+
+**Notas de método:**
+- **P24:** la primera versión del script nuevo buscaba el texto `123456` sin comillas y lo encontraba dentro del DNI `12345678`. Se corrigió para buscar el valor entre comillas, como LB-9; en `master` se comprobó con `curl … | grep -c` → 0.
+- **P01:** con bytes crudos, los tamaños de `master` ya difieren de los anotados desde LB-0 (por ejemplo, cie 306 B vs 291 B), aunque el SQL no cambió. La causa no se investigó (sin registro). La comparación base/hotfix usa el mismo método.
+- `ClavesIntegracionTest` (U89), igual que `contextLoads`, necesita MySQL con `database/BDPostaMedica.sql` cargada: comprueba que las claves de la BD están en hash.
+- **Migración al arrancar** (prueba de sistema, fuera de P01–P25): BD con la semilla de LB-9 (texto plano) → el primer arranque convierte 15/15/1 antes de que Tomcat acepte peticiones, y el login funciona; el segundo arranque convierte 0. Evidencia en `docs/evidencias/t19-hotfix.txt`.
+
+**Evidencias:** `docs/evidencias/t19-hotfix.txt`. Las salidas completas de la batería (base y hotfix) están en el scratchpad de la sesión, fuera del repositorio.
+
+---
+
 ## Pruebas unitarias
 
 **Qué son.** Son pruebas de **caracterización**: comprueban el comportamiento **actual** del código, aunque sea incorrecto. Su función es servir de red de seguridad para la reorganización y las refactorizaciones: si una refactorización cambia el comportamiento, una prueba falla. No dicen cómo *debería* funcionar el sistema (eso lo dicen el "Esperado" de P01–P24 y las RFC).
@@ -637,7 +675,7 @@ Script de la base de datos (desde LB-4): `database/BDPostaMedica.sql`.
 | U46 | ídem (parametrizada, 4 casos) | Acepta cualquier cambio: Cancelada→Confirmada, Pendiente→Atendida, Atendida→Pendiente, Cancelada→Reprogramada (comportamiento actual) | Unitaria | **H-031** |
 | U47 | `BE/…/services/PacienteServiceCaracterizacionTest.java` | `listarPacientes` devuelve lo de `findAll` | Unitaria | — |
 | U48 | ídem | `listarPorId` devuelve el `Optional` del repositorio | Unitaria | — |
-| U49 | ídem | `crearPaciente` guarda la clave tal como llega, sin cifrar (comportamiento actual) | Unitaria | H-007 |
+| U49 | ídem | Hasta LB-9: `crearPaciente` guarda la clave tal como llega, sin cifrar (caracterizaba H-007). **Desde el hotfix RFC-010** (cambio aprobado por el usuario): guarda un hash BCrypt que verifica con la clave original | Unitaria | H-007 (corregido) |
 | U50 | ídem | `eliminarPaciente` llama a `deleteById` y devuelve `true` siempre | Unitaria | — |
 | U51 | ídem | `existePaciente` consulta `existsById` | Unitaria | — |
 | U52 | ídem | `actualizarPaciente` copia nombres, apellidos, DNI, fecha, sexo, estado y ubigeo; **no** copia teléfono ni clave (comportamiento actual) | Unitaria | **H-032** |
@@ -673,6 +711,13 @@ Script de la base de datos (desde LB-4): `database/BDPostaMedica.sql`.
 | U82 | `BE/…/services/CitaServiceCambioEstadoTest.java` (LB-8, RFC-008; 4 casos) | `cambiarEstadoDeCitaDeMedico`: cita ajena o inexistente → `CITA_NO_ENCONTRADA` sin consultar estados ni guardar; estado inexistente → `ESTADO_INEXISTENTE` sin guardar; cambio válido → `CAMBIADO` con el DTO, consultas en el mismo orden que el controlador de LB-7 | Unitaria | H-015; H-031 sigue (sin máquina de estados) |
 | U83 | `BE/…/services/CitaServiceCrudTest.java` (LB-8, RFC-008; 4 casos) | `listarCitas`, `crearCita`, `obtenerCitaPorId`, `eliminarCita` delegan; `actualizarCita` copia los 6 campos o devuelve vacío sin guardar; las 3 consultas del médico delegan | Unitaria | H-015 |
 | U84 | `BE/…/InyeccionPorConstructorTest.java` (LB-8, RFC-008; 3 casos) | Por reflexión: sin `@Autowired` en atributos y todos `final` en 8 controladores, 4 servicios y `UserDetailServiceImpl`; controladores sin servicios concretos; `CitaController` y `CitaConsultaController` sin repositorios | Unitaria | H-015, H-020 |
+| U85 | `BE/…/autenticacion/AutenticadoresBCryptTest.java` (hotfix RFC-010; 4 casos) | Los 3 autenticadores: el hash correcto entra, la clave incorrecta no, una clave guardada en texto plano no entra; una clave guardada nula no entra | Unitaria | H-007 |
+| U86 | `BE/…/model/ClaveNoSeSerializaTest.java` (hotfix RFC-010; 3 casos) | `Paciente`, `Medico` y `UsuarioModel` no serializan `clave` (`WRITE_ONLY`) y la siguen aceptando al leer JSON | Unitaria | H-007 |
+| U87 | `BE/…/config/MigracionClavesTest.java` (hotfix RFC-010; 2 casos) | `esBCrypt` reconoce solo el formato completo; la migración convierte solo las filas en texto plano; en la segunda ejecución no guarda nada (idempotente) | Unitaria | H-007 |
+| U88 | `BE/…/services/ClaveConHashEnServiciosTest.java` (hotfix RFC-010; 3 casos) | Crear paciente, médico y administrador guarda un hash que verifica; crear sin clave no llama al encoder; `actualizarPaciente` sin clave conserva el hash | Unitaria | H-007, H-032 |
+| U89 | `BE/…/ClavesIntegracionTest.java` (hotfix RFC-010; 4 casos) | Contexto completo y BD real: el encoder inyectado es BCrypt; las 3 tablas están en formato BCrypt; `/login` con las credenciales de prueba da 200 y una clave mala da 401 en los 3 roles; `/api/paciente`, `/api/medico`, `/usuarios` y `/codigo/1` sin `clave` | Integración (contexto de Spring + MySQL) | H-007 |
+
+> **Hotfix RFC-010:** U33–U41, `AuthControllerTest`, U80 y U81 cambiaron solo la construcción de los autenticadores (reciben un `PasswordEncoder`) y guardan el hash en las entidades simuladas; sus aserciones son las mismas. U55 solo agrega un `@Spy PasswordEncoder`. U49 cambió de sentido (ver su fila). Detalle antes/después en `docs/rfc/RFC-010.md`.
 
 (`BE/…` = `backend/src/test/java/com/centro_valdiviezo/backend/`; `FE/` = `frontend/src/app/`. Rutas actualizadas en LB-4; hasta LB-3 eran `backend/backend/…` y `proyecto_valdiviezo/src/app/` con las carpetas de la tabla de RFC-004.) `getResumenMedicoPorEspecialidad` (H-005) no se caracteriza aquí: con el repositorio simulado no se reproduce el error 500, que nace en la consulta; lo cubre P04.
 
@@ -753,5 +798,7 @@ Los specs viejos quedan fuera de la batería hasta que el usuario decida qué ha
 **Resumen LB-8:** 20 PASA · 5 FALLA (P04, P13, P14, P15, P16). **Las 25 pruebas dieron lo mismo que en LB-7** (salidas idénticas con `diff`). Backend 50/50 (39 + U82–U84); frontend 32/32 y 49/49; Playwright 6/6. Sin efectos no deseados.
 
 **Resumen LB-9:** 20 PASA · 5 FALLA (P04, P13, P14, P15, P16). RFC-009 solo cambia de dónde sale la contraseña de MySQL (variable `DB_PASSWORD`), así que **las 25 pruebas dieron lo mismo que en LB-8** (salidas idénticas con `diff`). Backend 50/50; frontend 32/32 y 49/49; Playwright 6/6. Sin efectos no deseados. Detalle en "Resultados de LB-9".
+
+**Resumen hotfix RFC-010 (propuesta LB-10; la columna se agrega a la tabla cuando exista el tag):** 20 PASA · 5 FALLA (P04, P13, P14, P15, P16). P03 deja de exponer `clave` (cambio aprobado). En P01, 4 listados sin `clave` y con menos bytes (mismo resultado). Las otras 23 pruebas dieron lo mismo que en `master` (LB-9). Backend 66/66; frontend 32/32 y 49/49; Playwright 6/6. Detalle en "Resultados del hotfix RFC-010".
 
 > **Atención al repetir P12 y P13:** cada ejecución agrega citas a la BD. Antes de correr la batería en cada línea base nueva, recargar la base (`DROP DATABASE posta_medica_valdiviezo;` y volver a ejecutar `database/BDPostaMedica.sql`, porque el script usa `CREATE TABLE` sin `DROP`) o borrar las citas de prueba con `DELETE FROM Cita WHERE motivo LIKE 'Prueba LB-0%';` para partir del mismo estado.

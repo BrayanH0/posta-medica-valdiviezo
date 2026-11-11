@@ -3,6 +3,7 @@ package com.centro_valdiviezo.backend.services;
 import java.util.ArrayList;
 import java.util.Optional;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.centro_valdiviezo.backend.model.Paciente;
@@ -12,9 +13,11 @@ import com.centro_valdiviezo.backend.repository.PacienteRepository;
 public class PacienteService implements IPacienteService {
 
     private final PacienteRepository pacienteRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public PacienteService(PacienteRepository pacienteRepository) {
+    public PacienteService(PacienteRepository pacienteRepository, PasswordEncoder passwordEncoder) {
         this.pacienteRepository = pacienteRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public ArrayList<Paciente> listarPacientes() {
@@ -27,7 +30,7 @@ public class PacienteService implements IPacienteService {
 
     public Paciente crearPaciente(Paciente paciente) {
         if (paciente.getClave() != null) {
-            // paciente.setClave(new BCryptPasswordEncoder().encode(paciente.getClave()));
+            paciente.setClave(passwordEncoder.encode(paciente.getClave()));
         }
         return pacienteRepository.save(paciente);
     }
