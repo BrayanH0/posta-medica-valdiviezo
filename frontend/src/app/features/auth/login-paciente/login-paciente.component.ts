@@ -31,8 +31,8 @@ export class LoginPacienteComponent {
   login() {
     this.error = validarFormularioLogin(this.dni, this.clave);
     if (this.error) return;
-    
-     this.authService.login(this.dni, this.clave).subscribe({
+
+    this.authService.login(this.dni, this.clave).subscribe({
         next: (res: any) => {
             const resultado = resolverRespuestaLogin(res, LOGIN_PACIENTE);
             if ('ruta' in resultado) {
