@@ -1044,3 +1044,60 @@ Evidencia completa: `docs/evidencias/t22-revision-prs.txt`. Esta tarea **no camb
 - No hubo merge, push ni comentarios en GitHub; los publica el usuario.
 - Las ramas de los integrantes no se modificaron, y los heads probados eran los mismos en el fetch final (17:13:15).
 - Cumplimiento de CLAUDE.md: no se editó ningún archivo de código ni de pruebas del repo; solo `docs/`, con Edit/Write. Las horas son de `date` y de los registros. Sin comandos destructivos de Git.
+
+## Tarea 23 — Re-revisión de los PR #50, #51 y #52 (sin merge, sin push)
+
+Evidencia completa: `docs/evidencias/t23-rerevision-prs.txt`. Misma metodología que la tarea 22. Esta tarea **no cambia código**: revisa ramas ajenas en worktrees temporales y documenta.
+
+### [2026-11-11 18:01–18:03] Actualización y estado de los PR
+- 18:01:59 `git checkout develop` + `git pull`: develop pasó de `731d5e1` a `463ca1d` (merge del PR #53, P4).
+- 18:02:01 `gh pr list`. Estado de los PR:
+  - #53 (P4): unido.
+  - #52 (P5): 4 commits (head `73cec2a`).
+  - #50 (P1) y #51 (P3): **sin commits nuevos**, con los mismos heads de la tarea 22 (`0cf8c0b` y `2280d9d`).
+  - 18:13:17, fetch final: los 3 heads no cambiaron.
+- Los archivos de la ficha P5 no cambiaron en develop desde `731d5e1` (`git diff --stat` vacío). Por eso el verificador compara contra el develop de hoy.
+
+### [2026-11-11 18:02–18:14] PR #52 (P5): revisión completa
+- **Autoría:** los 4 commits son de Rashidchz, hechos con el editor web (committer GitHub) y sin trailers. Ninguno es de BrayanH0.
+- **Base:** `develop` (`merge-base` = `731d5e1`).
+- **Commits y PR:** los 4 títulos son iguales a la ficha y van en el mismo orden. La descripción es idéntica a la ficha (`diff` sin diferencias; empieza con `Closes #46`).
+- **Archivos contra la ficha:** se usó la copia del verificador que normaliza CRLF (tarea 22), sin cambios. Resultado: `bloques: 6, archivos: 4, fallos: 0`. No hay archivos fuera de la ficha.
+- **Pruebas:** worktrees de la base (develop `463ca1d`) y de P5, con el orquestador `correr23.cjs`. Es la misma secuencia de la tarea 22 y usa el mismo `bateria.cjs` de la tarea 19.
+  - Base: 18:04:34–18:08:35. Da 66/66, 32, 49 y 6/6. La batería y P11/P18 son **idénticas a LB-10**.
+  - P5: 18:09:00–18:12:42. Da **68/68** (+2 de `WebSecurityConfigCorsTest`), 32, 49 y 6/6. La batería y P11/P18 son **idénticas a LB-10** y a la base. `ng build` tiene las 2 advertencias de siempre y deja `index.html` en `dist/proyecto_valdiviezo/browser`.
+- **CORS sin variables:** P25 es idéntico a LB-10. Responde en 8080; `localhost:4200` recibe 200, y Vercel y un origen ajeno reciben 403. Igual que la base.
+- **CORS con variables:** `PORT=8081`, `SHOW_SQL=false` y `CORS_ORIGINS` con el valor de la ficha.
+  - P5 arranca en 8081. Vercel recibe 200 con `Access-Control-Allow-Origin`, el origen ajeno sigue en 403 y hay 0 líneas `Hibernate:`.
+  - Control: la base, con las mismas variables, sigue en 8080, rechaza a Vercel (403) y escribe 7 líneas `Hibernate:`.
+  - Prueba agregada (no está en la ficha): con un espacio después de la coma, P5 da lo mismo.
+- No se probó `DB_URL` con otro valor (la ficha no lo pide) ni el despliegue en Vercel.
+
+### [2026-11-11 18:13] PR #50 (P1) y #51 (P3): solo lo pedido
+- **P1:** sigue igual. La línea 34 de `login-paciente.component.ts` tiene 4 espacios y la 35 tiene 5 de sangría (`cat -A`). **No corrigió.**
+- **P3:** la descripción sigue vacía (0 caracteres, sin `Closes #44`). **No corrigió.**
+  - La base ya es `develop`, pero la cambió BrayanH0 (`base_ref_changed` 22:51:19Z), no P3.
+- GitHub marca los dos como MERGEABLE pero BLOCKED, por la revisión CHANGES_REQUESTED de BrayanH0.
+
+### [2026-11-11 18:13:41] Simulación de merge sobre develop `463ca1d`
+- `git merge-tree` no muestra conflictos en ningún caso: develop+P1, develop+P3 y develop+P5, los 3 pares y 3 órdenes secuenciales.
+- El árbol final es el mismo (`96f3aee`) en los 3 órdenes. No hay archivos en común entre los PR ni con P4.
+- Límite: no se corrieron las pruebas sobre el árbol combinado, solo sobre cada PR por separado.
+- **Orden recomendado: P5 → P1 → P3.** P5 es el único listo, y unirlo primero no cambia el resultado. Alternativa: el orden de la tarea 22 (P1 → P3 → P5), que da el mismo árbol pero obliga a esperar.
+
+### Veredictos (tarea 23)
+- **P5 #52: APROBAR.**
+- **P1 #50: sigue PEDIR CAMBIOS** (espacios sin corregir).
+- **P3 #51: sigue PEDIR CAMBIOS** (falta la descripción con `Closes #44`).
+- Los comentarios listos para pegar están en la evidencia, sección 5.
+
+### Fallos propios, excepciones y estado del entorno (tarea 23)
+- **Fallo propio:** el `git merge --no-edit develop` en `docs/t22-revision-prs` (18:14:34) dejó el mensaje de merge sin la línea `Co-Authored-By`. Lo corregí con `git commit --amend`, en local y sin push: quedó `2319db2` (padres `169743c` y `463ca1d`).
+- **Observación nueva en HALLAZGOS** (tarea 23): las descripciones de PR de las fichas citan conteos de `mvnw test` que ya no coinciden (P5 dice 52/52 y da 68/68).
+- **Excepción a CLAUDE.md** ("los archivos se crean y borran solo con Edit/Write"): igual que en la tarea 22, y todo fuera del repositorio (scratchpad).
+  - Por terminal: se copiaron los scripts de la tarea 22 y se crearon las carpetas.
+  - Con PowerShell: se crearon y quitaron los enlaces de `node_modules`. El `node_modules` real sigue con 375 carpetas.
+  - `git worktree add` y `git worktree remove` de base y p5: exit 0, sin `--force`. `git worktree list` muestra solo el repo.
+- La BD se recargó antes de cada etapa y al final (18:12:42, 21 citas).
+- Entorno al terminar: backend y `ng serve` detenidos, 4200/8080/8081 libres y MySQL encendido.
+- No hubo merge de PR, push ni comentarios en GitHub. Las ramas de los integrantes no se modificaron.
