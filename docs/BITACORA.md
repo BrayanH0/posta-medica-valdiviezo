@@ -975,3 +975,72 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Fallos propios: ninguno registrado.
 - Cumplimiento de CLAUDE.md: los conflictos se resolvieron con Edit; ningún archivo de prueba ni de código se editó; horas tomadas de `date` y `git log`; sin comandos destructivos de Git.
 - Commit de documentación: después del merge, en la misma rama, con RFC-011, HALLAZGOS (H-048) y esta entrada. Su hash no puede ir dentro de él mismo: queda en `git log`.
+
+---
+
+## Tarea 22 — Revisión de los PR de los integrantes (sin merge, sin push)
+
+Evidencia completa: `docs/evidencias/t22-revision-prs.txt`. Esta tarea **no cambia código**: solo revisa ramas ajenas en worktrees temporales y documenta. Rama: `docs/t22-revision-prs` desde `develop` (`731d5e1`).
+
+### [2026-11-11 16:44–16:47] Lectura, fetch y revisión estática
+- Lectura previa: CLAUDE.md y las 4 fichas de `docs/entrega/fichas/`.
+- 16:45:28 `git fetch origin`. PR abiertos: #50 (P1), #51 (P3) y #52 (P5). El #53 (P4) apareció en el fetch de 17:00:31.
+- **Indicaciones del usuario durante la tarea:** P5 "lo está haciendo ahora", P4 "también está en avance, evalúa aquellos que están completos" y, después, "revisa el p4 que ya está". Se evaluaron completos P1, P3 y P4. P5 (2 de 4 commits) solo se revisó en estático y queda **sin veredicto**.
+- **Autoría:** ningún commit es de BrayanH0 (ítem 14.2). Los autores son pfaberio27-png (P1), Paolo1710 (P3), Angel29042001 (P4) y Rashidchz (P5). Las 4 ramas salen de `develop` (`merge-base` = `731d5e1`).
+- **Alcance:** cada PR toca solo los archivos de su ficha.
+- **Comparación contra lo verificado en la tarea 18.** La copia de la tarea 18 ya no existe (se descartó el 2026-11-10). Se usó el verificador de la tarea 18 apuntando a un worktree de cada PR: "develop + DESPUÉS de la ficha == archivo del PR".
+  - **Problema encontrado:** el script del repo dio `bloques: 0 … fallos: 0` en las 3 fichas. La ficha tiene CRLF en este clon y la expresión regular espera `\n`, así que es un falso "todo bien" (anotado en HALLAZGOS, observaciones de la tarea 22). Se usó una copia en el scratchpad que solo normaliza el fin de línea; el script del repo no se tocó.
+  - Resultado: P3 y P4 idénticos (0 fallos). P5, lo hecho hasta ahora es idéntico.
+  - P1 tiene 1 diferencia: en `login-paciente.component.ts`, la línea 34 tiene 4 espacios en lugar de quedar vacía y la línea 35 tiene 5 espacios de sangría en lugar de 4. Solo espacios en blanco; el commit dice "adjusted formatting".
+- **PR:**
+  - #50, #52 y #53: título, descripción y `Closes #N` iguales a la ficha, con base `develop`.
+  - **#51 tiene base `master`** (por eso muestra 8 commits) y la **descripción vacía**.
+  - El 3.er commit de P3 tiene el mensaje mezclado con el texto que propone GitHub ("Implement unit tests for MedicoCitasPendientesComponentP3: …").
+  - Los 4 commits de P4 se hicieron en local en 21 s, y cada uno lleva `Co-Authored-By: Claude Opus 5.5`. Decide el usuario.
+
+### [2026-11-11 16:46–17:13] Pruebas en worktrees temporales
+- `git worktree add --detach` en el scratchpad: base (`develop`), p1, p3 y p5 a las 16:46:09; p4 a las 17:00:49. En cada uno, `frontend/node_modules` es un enlace (junction) al del repo.
+- Orquestador `correr.cjs` (scratchpad) por variante:
+  - `ng build`, unitarias 32 y todas, con los comandos de PRUEBAS.md.
+  - BD recargada + `mvnw test`.
+  - BD recargada + backend y `ng serve` **del worktree**, y Playwright desde `e2e/` (ningún PR toca `e2e/`).
+  - BD recargada + batería P01–P25 con **el mismo `bateria.cjs` de la tarea 19**, sin cambios.
+  - BD recargada + comprobación funcional (`func.cjs`, `func-p4.cjs`).
+  - Backend apagado + P11/P18, y BD recargada al final.
+- **Base de hoy = LB-10:** la batería y P11/P18 de la base son idénticas línea por línea a la salida de LB-10 de la tarea 19, sin contar las horas.
+- **Resultados:**
+  - P1: 67/67 (+1 nueva), 32/49 y 6/6.
+  - P3: 66/66, 32/**54** (+5 nuevas) y 6/6.
+  - P4: 66/66, 32/49 y 6/6.
+  - En los 3: batería P01–P25 y P11/P18 **idénticas** a la base, y el build con las mismas 2 advertencias de siempre.
+- **Comprobación funcional** (base contra PR):
+  - P1, consola: la base muestra DNI y clave; P1 no muestra ninguno de los dos.
+  - P1, error 500: el cuerpo es igual al de la base, y el POST sin cuerpo agrega 1 línea "Error no controlado en la API" al log (de 1 a 2; la anterior es el 500 de P04 de la batería). En la base, ese contador queda en 0.
+  - P3, doble clic: la base envía 2 PUT; P3 envía 1, con "Guardando...", botones desactivados y "Cita 22 confirmada." visible dentro de `role="status"`.
+  - P4: a 360 px no hay desborde (380 → 360), la tabla del médico pasa de 10 a 290 px y el contenido del admin de 100 a 360. A 1280 px, las 3 capturas son idénticas byte a byte a las de la base.
+- **Simulación de merge** (`git merge-tree`, no modifica ramas): sin conflictos con develop, entre cada par y en secuencia; ningún archivo en común. Orden recomendado: P1 → P3 → P4 → P5.
+  - P1 va primero porque RFC-012 depende de su `GlobalExceptionHandler`.
+  - P5 va al final y cuando esté completo, porque RFC-011 (H-048) parte de su `WebSecurityConfig`.
+
+### Veredictos
+- **P1 #50: PEDIR CAMBIOS (menor)**, por los 2 renglones de espacios. Alternativa para el usuario: aprobar y corregirlo después, porque no cambia el comportamiento.
+- **P3 #51: PEDIR CAMBIOS**: cambiar la base a `develop` y pegar la descripción con `Closes #44`. El código está bien.
+- **P4 #53: APROBAR.**
+- **P5 #52: sin veredicto** (en curso).
+- Los comentarios listos para pegar están en la evidencia, sección 8.
+
+### Fallos propios, excepciones y estado del entorno (tarea 22)
+- **Fallo propio 1:** la primera corrida de la base (16:49:49) falló en `mvnw test`, porque `cmd` no encontró `mvnw.cmd` sin `.\`; el backend tampoco arrancó. Se detuvo, se comprobó que 4200/8080 estaban libres, se corrigió a `.\mvnw.cmd` y se repitió completa (16:51:07–16:54:29). No se usó ningún resultado de la corrida fallida.
+- **P4, intento 1 (17:03:09–17:07:56):** Playwright dio 0/6 por un error del entorno. `ng serve` no pudo renombrar la caché de Vite del worktree (`EPERM … rename … .angular\cache\…\vite\deps`) y la página no cargó. Se detuvo y se repitió todo P4 (17:09:15–17:12:53): 6/6 y ninguna línea EPERM. El intento 1 no se usó.
+- **Fallo propio 2:** para repetir P4 intenté renombrar `t22/p4` con `mv` (scratchpad, fuera del repo), pero falló porque 2 procesos `tail` de mis propios monitores detenidos tenían abierto un archivo. Por eso la cadena siguió directo a la medición de la base (`solo-p4`), que **reescribió `base/resumen.txt`**: se perdió ese archivo de horas de la corrida completa de la base. Las horas quedan aquí, tomadas de los avisos de esa corrida. Los resultados de la base (`bateria*.txt`, `mvn-test.txt`, `fe-*.txt`, `playwright.txt`, `func.txt`) no se perdieron. Se cerraron los 2 `tail` y P4 se repitió en `t22/p4-intento2`.
+- `git commit-tree` (simulación secuencial) dejó commits sueltos que ninguna rama apunta. No cambian nada y git los elimina solo.
+- **Excepción a CLAUDE.md** ("los archivos se borran solo con Edit/Write"). El pedido indicaba borrar los worktrees con `git worktree remove`:
+  - 17:13:26: primero se quitaron solo los enlaces de `node_modules`, con PowerShell. El `node_modules` real tenía 375 carpetas antes y después.
+  - 17:13:33–17:13:37: `git worktree remove` de los 5, con exit 0 y sin `--force`. `git worktree list` muestra solo el repo.
+  - Todo estaba fuera del repositorio (scratchpad), donde no aplican los hooks.
+  - Además, por terminal y también en el scratchpad: se crearon las carpetas de salida, y el intento de `mv` falló (ver arriba).
+- La BD se recargó varias veces (`DROP DATABASE` + `database/BDPostaMedica.sql`, 21 citas cada vez), la última al terminar P4. Los registros temporales (1 paciente por registro, 1 cita por doble clic) se crearon y quedaron borrados con la recarga.
+- Entorno al terminar: backend y `ng serve` detenidos, 4200/8080 libres y MySQL encendido.
+- No hubo merge, push ni comentarios en GitHub; los publica el usuario.
+- Las ramas de los integrantes no se modificaron, y los heads probados eran los mismos en el fetch final (17:13:15).
+- Cumplimiento de CLAUDE.md: no se editó ningún archivo de código ni de pruebas del repo; solo `docs/`, con Edit/Write. Las horas son de `date` y de los registros. Sin comandos destructivos de Git.
