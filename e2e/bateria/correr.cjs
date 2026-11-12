@@ -33,6 +33,14 @@ function run(nombre, cmd, cwd, env = {}) {
   return r;
 }
 // Igual que desde la tarea 19 (mysql sin --default-character-set): el script declara su codificación (RFC-017)
+// Sin shell: la ruta de salida viene de la línea de comandos y no debe interpretarse como comando
+function runNode(nombre, args, cwd) {
+  nota(`inicio ${nombre}: node ${args.map((a) => JSON.stringify(a)).join(' ')}`);
+  const r = spawnSync(process.execPath, args, { cwd, env: process.env, encoding: 'utf8', maxBuffer: 1 << 30 });
+  fs.writeFileSync(path.join(OUT, `${nombre}.txt`), (r.stdout || '') + '\n--- stderr ---\n' + (r.stderr || ''));
+  nota(`fin ${nombre} exit=${r.status}`);
+  return r;
+}
 function recargarBD() {
   const env = { ...process.env, MYSQL_PWD: process.env.DB_PASSWORD };
   spawnSync('mysql', ['-uroot', '-e', 'DROP DATABASE IF EXISTS posta_medica_valdiviezo'], { env });
@@ -78,10 +86,10 @@ function detener(nombre, p) {
   nota(`frontend listo: ${await esperar('http://localhost:4200/', 300)}`);
   run('playwright', 'npx playwright test tests/ --workers=1', path.join(RAIZ, 'e2e'));
   recargarBD();
-  run('bateria-on', `node "${BATERIA}" "${OUT}" on`, OUT);
+  runNode('bateria-on', [BATERIA, OUT, 'on'], OUT);
   detener('backend', be);
   await new Promise((s) => setTimeout(s, 3000));
-  run('bateria-off', `node "${BATERIA}" "${OUT}" off`, OUT);
+  runNode('bateria-off', [BATERIA, OUT, 'off'], OUT);
   detener('frontend', fe);
   recargarBD();
   nota('fin');

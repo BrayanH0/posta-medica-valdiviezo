@@ -31,6 +31,11 @@ const m = doc.match(/paciente `(\d{8})` \/ `([^`]+)` · médico `(\d{8})` \/ `[^
 const DNI_P = m[1], CLAVE = m[2], DNI_M = m[3], DNI_A = m[4];
 const DNI_X = doc.match(/escribir `(\d{8})` \(no existe\)/)[1];
 
+// Lo que se interpola en las consultas son DNIs de 8 dígitos (leídos con \d{8}) e ids numéricos;
+// se comprueba aquí para que el script falle en lugar de armar una consulta con otro texto.
+for (const d of [DNI_P, DNI_M, DNI_A, DNI_X]) if (!/^\d{8}$/.test(d)) throw new Error('DNI de prueba no válido en PRUEBAS.md');
+const entero = (v) => { const n = Number(v); if (!Number.isInteger(n)) throw new Error('Se esperaba un número: ' + v); return n; };
+
 function sql(q) {
   return execFileSync('mysql', ['-uroot', '-N', '-B', 'posta_medica_valdiviezo', '-e', q],
     { env: { ...process.env, MYSQL_PWD: process.env.DB_PASSWORD }, encoding: 'utf8' }).trim();
@@ -45,8 +50,8 @@ async function tokenDe(dni) {
   }
   return tokens[dni];
 }
-const dniPaciente = (id) => sql(`SELECT dni FROM Paciente WHERE idPaciente=${Number(id)}`);
-const dniMedico = (id) => sql(`SELECT dni FROM Medico WHERE id_medico=${Number(id)}`);
+const dniPaciente = (id) => sql(`SELECT dni FROM Paciente WHERE idPaciente=${entero(id)}`);
+const dniMedico = (id) => sql(`SELECT dni FROM Medico WHERE id_medico=${entero(id)}`);
 const cabeceras = async (dni) => (dni ? { Authorization: 'Bearer ' + (await tokenDe(dni)) } : {});
 
 async function get(ruta, dni) {
@@ -256,7 +261,7 @@ async function fase_on() {
     log(`${id} modal: ${modal}`);
     log(`${id} red: ${M.red.filter((x) => x.startsWith('200 PUT') || x.includes('PUT')).join(',')}`);
     log(`${id} pendientes: ${(await filas(M.page)).join(' // ')}`);
-    log(`${id} BD: ${sql(`SELECT c.idCita,c.id_medico,c.estado_cita,e.nombre_estado,c.motivo FROM Cita c JOIN Estado_Cita e ON e.id_estado_cita=c.estado_cita WHERE c.idCita=${idCita}`).replace(/\t/g, ' | ')}`);
+    log(`${id} BD: ${sql(`SELECT c.idCita,c.id_medico,c.estado_cita,e.nombre_estado,c.motivo FROM Cita c JOIN Estado_Cita e ON e.id_estado_cita=c.estado_cita WHERE c.idCita=${entero(idCita)}`).replace(/\t/g, ' | ')}`);
     await M.page.goto(FE + '/medico-dashboard/' + pantalla); await M.page.reload();
     log(`${id} ${pantalla} tras recargar: ${(await filas(M.page)).join(' // ')}`);
   }
@@ -332,11 +337,11 @@ async function fase_on() {
 
 // P28 (nueva, RFC-011): matriz de autorización contra el backend real
 async function p28() {
-  const yoP = Number(sql(`SELECT idPaciente FROM Paciente WHERE dni='${DNI_P}'`));
-  const yoM = Number(sql(`SELECT id_medico FROM Medico WHERE dni='${DNI_M}'`));
-  const citaAjena = sql(`SELECT MIN(idCita) FROM Cita WHERE id_paciente<>${yoP}`);
-  const historiaAjena = sql(`SELECT MIN(idhistoria_Clinica) FROM Historia_Clinica WHERE id_paciente<>${yoP}`);
-  const otroMedico = sql(`SELECT MIN(id_medico) FROM Medico WHERE id_medico<>${yoM}`);
+  const yoP = entero(sql(`SELECT idPaciente FROM Paciente WHERE dni='${DNI_P}'`));
+  const yoM = entero(sql(`SELECT id_medico FROM Medico WHERE dni='${DNI_M}'`));
+  const citaAjena = entero(sql(`SELECT MIN(idCita) FROM Cita WHERE id_paciente<>${yoP}`));
+  const historiaAjena = entero(sql(`SELECT MIN(idhistoria_Clinica) FROM Historia_Clinica WHERE id_paciente<>${yoP}`));
+  const otroMedico = entero(sql(`SELECT MIN(id_medico) FROM Medico WHERE id_medico<>${yoM}`));
   // Token vencido firmado con el mismo secreto del backend (HS256), para probar que el vencimiento se comprueba
   const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
   let vencido = '(sin JWT_SECRET)';
