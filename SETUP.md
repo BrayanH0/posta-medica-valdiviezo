@@ -60,6 +60,25 @@ $env:DB_PASSWORD = "tu_clave"
 
 Para el usuario, igual con `DB_USER` si no usas `root`. La misma variable la necesita `./mvnw test`, porque una de las pruebas levanta la aplicación completa.
 
+##### `JWT_SECRET` (obligatoria desde RFC-011)
+El backend firma los tokens de sesión con `JWT_SECRET` (`app.jwt.secret=${JWT_SECRET}` en `application.properties`). **No tiene valor por defecto**: sin ella, o con menos de 32 bytes, el backend no arranca. Usa un valor aleatorio largo, distinto en cada entorno, y no lo escribas en ningún archivo del proyecto ni lo compartas: quien lo conozca puede fabricar tokens válidos. Cambiarlo cierra todas las sesiones abiertas.
+
+Generarlo y guardarlo **de forma permanente** para tu usuario de Windows, sin que el valor aparezca en pantalla (PowerShell; luego abre una terminal nueva y reinicia VS Code):
+
+```powershell
+$b = New-Object byte[] 48; [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Environment]::SetEnvironmentVariable("JWT_SECRET", [Convert]::ToBase64String($b), "User"); Remove-Variable b
+```
+
+Solo para la sesión actual de PowerShell (se pierde al cerrarla):
+
+```powershell
+$b = New-Object byte[] 48; [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); $env:JWT_SECRET = [Convert]::ToBase64String($b); Remove-Variable b
+```
+
+Comprobar que existe **sin mostrarla** (debe dar 64): `([Environment]::GetEnvironmentVariable("JWT_SECRET","User")).Length`.
+
+`./mvnw test` no la necesita: las pruebas usan un secreto solo de prueba (`backend/src/test/resources/config/application.properties`). La batería de regresión (`e2e/bateria/LEEME.md`) genera uno propio si la variable no está definida.
+
 ---
 
 ## 🚀 Ejecutar la Aplicación
