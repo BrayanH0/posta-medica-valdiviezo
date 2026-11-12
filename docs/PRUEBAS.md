@@ -589,6 +589,21 @@ Ejecución del 2026-11-10 (hora real, `date`). Es un cambio **correctivo de emer
 
 ---
 
+## Resultados de RFC-017 (tarea 24A, datos semilla ficticios y UTF-8; rama `feature/rfc-017-datos-semilla`)
+
+Base: `develop` `d981f3b` (2026-11-11 18:49:58–18:53:25). Rama: 18:55:47–18:58:54. Mismo runner y mismo script de batería en las dos (scratchpad `t24/`), BD recargada antes de cada parte. El script de la tarea 24 agrega P26 y P27 (RFC-012) y líneas "X" de observación; se corrieron también en la base.
+
+| ID | Obtenido en la rama | ¿Igual a la base? |
+|---|---|---|
+| P01 | 200 en los 14. Tamaños: cie 291 B, cita 2811 B, disponibilidad_medico 8632 B, especialidad 554 B, estado_cita 458 B, estado_paciente 461 B, evolucion_clinica 1443 B, historia_clinica 746 B (los mismos de LB-0); medico 1761 B, medico/conEspecialidad 2505 B, medico/especialidad/1 351 B, paciente 2743 B | Mismo resultado (PASA); cambian los tamaños, por la codificación y los nombres (esperado) |
+| P02–P22 | Iguales | Igual |
+| P23 | 20/20 iguales; pacientes del médico 1: API `7,1,6,11` (antes `7,6,1,11`), BD `1,6,7,11` | Mismo resultado; cambia el orden (la consulta ordena por apellidos) |
+| P24–P27, P11/P18 apagado | Iguales | Igual |
+
+**Resumen RFC-017:** sin cambios de resultado. Backend 69/69, frontend 32/32 y 49/49, Playwright 6/6. **Nota P01:** la diferencia de tamaños que la nota de método del hotfix RFC-010 dejó "sin investigar" (cie 306 B vs 291 B) era la codificación dañada al cargar el SQL con el cliente `mysql` en `cp850`; con `SET NAMES utf8mb4` en el script, los tamaños vuelven a los de LB-0. Evidencia: `docs/evidencias/t24-base.txt`, `docs/evidencias/t24-a-rfc017.txt`.
+
+---
+
 ## Pruebas unitarias
 
 **Qué son.** Son pruebas de **caracterización**: comprueban el comportamiento **actual** del código, aunque sea incorrecto. Su función es servir de red de seguridad para la reorganización y las refactorizaciones: si una refactorización cambia el comportamiento, una prueba falla. No dicen cómo *debería* funcionar el sistema (eso lo dicen el "Esperado" de P01–P24 y las RFC).
