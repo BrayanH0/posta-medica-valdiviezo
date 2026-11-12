@@ -1,4 +1,5 @@
 import { test, expect, APIRequestContext } from '@playwright/test';
+import { conToken } from './token';
 
 // RFC-003: flujo Pendiente -> Confirmada y Pendiente -> Cancelada con datos reales.
 // La prueba crea sus propias citas pendientes por la API y las borra al terminar.
@@ -8,9 +9,10 @@ const ID_PACIENTE = 1;
 const creadas: number[] = [];
 
 async function crearCitaPendiente(request: APIRequestContext, motivo: string, hora: string): Promise<number> {
-  const estados = await (await request.get(`${API}/api/estado_cita`)).json();
+  const estados = await (await request.get(`${API}/api/estado_cita`, { headers: await conToken(request, 'admin') })).json();
   const pendiente = estados.find((e: any) => e.nombre_estado === 'Pendiente').id_estado_cita;
   const resp = await request.post(`${API}/api/cita`, {
+    headers: await conToken(request, 'paciente'),
     data: { id_paciente: ID_PACIENTE, id_medico: ID_MEDICO, fecha_cita: '2099-12-31', hora_cita: hora, motivo, estado_cita: pendiente }
   });
   const cita = await resp.json();
@@ -19,7 +21,7 @@ async function crearCitaPendiente(request: APIRequestContext, motivo: string, ho
 }
 
 test.afterAll(async ({ request }) => {
-  for (const id of creadas) await request.delete(`${API}/api/cita/${id}`);
+  for (const id of creadas) await request.delete(`${API}/api/cita/${id}`, { headers: await conToken(request, 'admin') });
 });
 
 test('Medico Dashboard - Full Flow: Pendiente -> Confirmada -> Cancelada', async ({ page, request }) => {

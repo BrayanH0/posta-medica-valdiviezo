@@ -1,4 +1,5 @@
 import { test, expect, Page, Browser } from '@playwright/test';
+import { conToken } from './token';
 
 // RFC-012 (tarea 24B): dos pestañas del paciente eligen el mismo horario.
 // La segunda recibe el 409 y ve el mensaje; la lista de horas se actualiza. Al cancelar la cita, el horario vuelve.
@@ -10,8 +11,8 @@ const HORA = '08:40';
 const PREFIJO = 'Playwright RFC-012';
 
 async function borrarCitasDePrueba(request: any) {
-  const citas = await (await request.get(`${API}/api/citas/medico/1/fecha/${FECHA}`)).json();
-  for (const c of citas) if (String(c.motivo).startsWith(PREFIJO)) await request.delete(`${API}/api/cita/${c.idCita}`);
+  const citas = await (await request.get(`${API}/api/citas/medico/1/fecha/${FECHA}`, { headers: await conToken(request, 'medico') })).json();
+  for (const c of citas) if (String(c.motivo).startsWith(PREFIJO)) await request.delete(`${API}/api/cita/${c.idCita}`, { headers: await conToken(request, 'admin') });
 }
 
 async function pestanaPaciente(browser: Browser): Promise<{ page: Page; dialogos: string[] }> {
@@ -80,11 +81,11 @@ test('RFC-012: la segunda pestaña recibe 409 con mensaje, y cancelar libera el 
   expect((await horas(B.page)).length).toBeGreaterThan(0);
 
   // En la BD hay una sola cita en ese horario
-  const delDia = await (await request.get(`${API}/api/citas/medico/1/fecha/${FECHA}`)).json();
+  const delDia = await (await request.get(`${API}/api/citas/medico/1/fecha/${FECHA}`, { headers: await conToken(request, 'medico') })).json();
   expect(delDia.filter((c: any) => c.hora_cita.startsWith(HORA)).length).toBe(1);
 
   // El médico cancela la cita de A: el horario vuelve a ofrecerse
-  const cancelar = await request.put(`${API}/api/citas/medico/1/${idCita}/estado`, { data: { estado: 'Cancelada' } });
+  const cancelar = await request.put(`${API}/api/citas/medico/1/${idCita}/estado`, { headers: await conToken(request, 'medico'), data: { estado: 'Cancelada' } });
   expect(cancelar.status()).toBe(200);
   const C = await pestanaPaciente(browser);
   expect(await prepararCita(C.page, `${PREFIJO} C ${sufijo}`)).toContain(HORA);
