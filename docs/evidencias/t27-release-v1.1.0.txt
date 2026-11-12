@@ -1,0 +1,85 @@
+TAREA 27 - RELEASE v1.1.0 (GitFlow)
+===================================
+Fecha: 2026-11-12. Horas reales: `date`, `git log` y el resumen del runner (EC-19).
+Regla de esta evidencia: ningun token ni clave se escribe completo.
+
+0. Entorno
+----------
+15:46:19  JWT_SECRET: existe en el proceso y en el usuario, longitud 64 (no se muestra el valor).
+          DB_PASSWORD: existe (no se muestra).
+          git checkout develop; git pull -> fast-forward 897bdbb..b947a75
+          develop = origin/develop = b947a75 "Merge pull request #58 from BrayanH0/docs/t22-revision-prs"
+          git checkout -b release/1.1  (desde b947a75)
+          git diff --stat 4b473a5 HEAD (commit probado en la tarea 26 -> develop): solo SETUP.md y docs/
+          (9 archivos, 1057 inserciones, 8 borrados); ningun archivo de codigo ni de pruebas.
+Versiones antes del cambio: backend/pom.xml 0.0.1-SNAPSHOT ; frontend/package.json 0.0.0
+                            (frontend/package-lock.json lineas 3 y 9: 0.0.0)
+
+1. Bateria completa ANTES del cambio de version (release/1.1 = b947a75, sin cambios)
+-----------------------------------------------------------------------------------
+Comando: node e2e/bateria/correr.cjs <scratchpad>/t27-base
+resumen.txt:
+[15:46:49] rama release/1.1, HEAD b947a75, cambios sin commit: 0
+[15:46:49] JWT_SECRET: tomado del entorno (no se muestra)
+[15:47:00] fin ng-build exit=0
+[15:47:08] fin fe-32 exit=0
+[15:47:17] fin fe-todas exit=0
+[15:47:45] fin mvn-test exit=0
+[15:48:16] fin playwright exit=0
+[15:49:47] fin bateria-on exit=0
+[15:50:09] fin bateria-off exit=0
+[15:50:10] BD recargada (exit=0, citas=21)
+
+ng build (configuracion por defecto = production, angular.json): exit=0
+   WARNING bundle initial exceeded maximum budget ... total of 809.95 kB   (de siempre)
+   WARNING Module 'jquery' ... is not ESM                                  (de siempre)
+frontend caracterizacion: TOTAL: 32 SUCCESS        (tarea 26: 32)
+frontend todas:           TOTAL: 73 SUCCESS        (tarea 26: 73)
+mvnw test: Tests run: 97, Failures: 0, Errors: 0, Skipped: 0   (tarea 26: 97)
+Playwright: 11 passed (17.0s)                      (tarea 26: 11)
+
+P01-P28 (lineas clave; comparadas con docs/evidencias/t26-rfc011.txt, seccion 3):
+P01 14/14 200 con token (cita 2811B, historia_clinica 148B, evolucion_clinica 390B, paciente 2743B, usuarios 82B); clave:false
+    sin token: 401 en 13 de 14; /api/especialidad 200                                    = tarea 26
+P02 6/6 200 ; P03 11/11 200, sin clave                                                    = tarea 26
+P04 500 {"message":"Cannot instantiate query result type '...ResumenMedico' ...           = FALLA (H-005), igual
+P05-P07 ls:{"token":"eyJhbGciOi...","userId":"1",...} -> /welcome, /medico-dashboard, /admin/inicio = tarea 26
+P08, P10 401 -> ls {} "Credenciales invalidas" ; P09 token{sub:1,rol:...,duracion_s:7200}; invalido 401 = tarea 26
+P12 200 "Cita registrada con exito" ; P13 POST duplicado 409, BD reservas: 1              = tarea 26
+P14 total=3 paciente1=3 distintos=1 BD=22|3                                               = tarea 26 (PASA)
+P15 total=1 paciente1=1 BD=5|1                                                            = tarea 26 (PASA)
+P16 recibidas=3 delPaciente1=3 tarjetas=3 peticiones=7                                    = tarea 26 (PASA)
+P17, P19 iguales ; P20-P22 iguales (P22 crea la cita 24 y la cancela) ; P23 20/20 iguales ; P24 sin clave
+P25 4200 -> 200 en 6 preflight + GET ; otro-origen -> 403 en los 7                        = tarea 26
+P26 codigos {"200":1,"409":9} ; BD filas: 1 ; texto-SQL-en-respuestas: false              = tarea 26
+P27 409 / ofrece 11:40 tras cancelar / 200 ; BD: 3,1                                      = tarea 26
+P28 17/17 como se esperaba                                                                = tarea 26
+P11 apagado: "No se pudo conectar con el servidor..." en las 4 pantallas ; P18 ERR_CONNECTION_REFUSED, ls {}
+Diferencias con la tarea 26: solo horas e ids autogenerados (P27 idCita 35 y 37).
+Tokens completos en la salida: grep "eyJ[A-Za-z0-9_-]{20,}" -> 0.
+Resumen: 27 PASA / 1 FALLA (P04) sobre P01-P28 = tarea 26.
+
+mvnw package (15:50:46-15:51:11, -q): exit=0 ; surefire-reports: tests=97 failures=0 errors=0 skipped=0
+   genera target/backend-0.0.1-SNAPSHOT.jar (60142977 bytes)
+   Las lineas ERROR del log son esperadas: las provocan las pruebas a proposito
+   (por ejemplo GlobalExceptionHandlerTest.respondeIgualQueAntesYDejaElErrorEnElLog; FK cita_ibfk_3).
+
+2. Cambio de version (Edit)
+---------------------------
+backend/pom.xml            linea 17: <version>0.0.1-SNAPSHOT</version> -> <version>1.1.0</version>
+frontend/package.json      linea 3:  "version": "0.0.0" -> "1.1.0"
+frontend/package-lock.json lineas 3 y 9: "version": "0.0.0" -> "1.1.0" (solo la raiz; ninguna dependencia)
+
+3. Compilacion y unitarias DESPUES del cambio de version
+--------------------------------------------------------
+15:51:46 git status --short: M backend/pom.xml, M frontend/package-lock.json, M frontend/package.json
+ng build: exit=0 (15:51:56), mismas 2 advertencias (809.95 kB; jquery no ESM)
+frontend caracterizacion: TOTAL: 32 SUCCESS
+frontend todas:           TOTAL: 73 SUCCESS   (15:52:10)
+BD recargada con database/BDPostaMedica.sql: citas=21
+mvnw package (15:52:24-15:52:46): exit=0
+   [INFO] Tests run: 97, Failures: 0, Errors: 0, Skipped: 0
+   [INFO] Building jar: ...\backend\target\backend-1.1.0.jar   (60142950 bytes)
+   [INFO] BUILD SUCCESS
+BD recargada al terminar: citas=21
+Resultado: igual que antes del cambio; el jar ahora se llama backend-1.1.0.jar.
