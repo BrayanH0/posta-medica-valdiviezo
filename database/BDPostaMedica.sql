@@ -125,6 +125,10 @@ CREATE TABLE Cita (
   hora_cita TIME,
   motivo VARCHAR(255),
   estado_cita INT,
+  -- RFC-012: un horario (médico, fecha, hora) solo puede tener una cita que no esté Cancelada (estado 3).
+  -- Las canceladas dan NULL, y una UNIQUE admite varios NULL: cancelar libera el horario.
+  slot_activo TINYINT GENERATED ALWAYS AS (IF(estado_cita = 3, NULL, 1)) STORED,
+  CONSTRAINT uq_cita_medico_fecha_hora UNIQUE (id_medico, fecha_cita, hora_cita, slot_activo),
   FOREIGN KEY (estado_cita) REFERENCES Estado_Cita(id_estado_cita),
   FOREIGN KEY (id_paciente) REFERENCES Paciente(idPaciente) ON DELETE CASCADE,
   FOREIGN KEY (id_medico) REFERENCES Medico(id_medico)

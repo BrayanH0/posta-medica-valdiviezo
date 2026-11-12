@@ -975,3 +975,29 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Fallos propios: ninguno registrado.
 - Cumplimiento de CLAUDE.md: los conflictos se resolvieron con Edit; ningún archivo de prueba ni de código se editó; horas tomadas de `date` y `git log`; sin comandos destructivos de Git.
 - Commit de documentación: después del merge, en la misma rama, con RFC-011, HALLAZGOS (H-048) y esta entrada. Su hash no puede ir dentro de él mismo: queda en `git log`.
+
+---
+
+## Tarea 24B — RFC-012 (doble reserva, opción B)
+
+> Rama `feature/rfc-012-doble-reserva` desde `develop` (`d981f3b`), **no** desde 24A, como pide la tarea. La preparación y la batería base de la tarea 24 (18:44–18:53, `docs/evidencias/t24-base.txt`) están registradas en la entrada "Tarea 24" de la rama de 24A; se repite aquí lo necesario.
+
+### [2026-11-11 19:02] Causa (antes de cambiar el código)
+- 19:02:16: rama creada. Base de comparación: la batería de `develop` de las 18:49–18:53 (backend 69/69, frontend 32/32 y 49/49, Playwright 6/6; P13 duplicado `200` con 2 reservas; P26 nueva `{"200":10}` con 10 filas; P27 nueva: tras cancelar, la pantalla no ofrece el horario).
+- **Por qué ocurre:** la tabla `Cita` no tiene ninguna restricción sobre `(id_medico, fecha_cita, hora_cita)`; `CitaService.crearCita` hace `save` sin validar; el frontend solo oculta las horas al cargar la lista. Una validación "consultar y luego insertar" no es atómica (P26: 10 de 10 simultáneas se guardan). La garantía tiene que estar en la BD.
+- **Por qué un horario cancelado no se libera hoy:** `calcularHorariosDisponibles` (`horarios-cita.ts`) trata como ocupada toda cita del día que devuelve `/api/citas/medico/{id}/fecha/{fecha}`, sin mirar `estado_cita`.
+- **Decisión del usuario: opción B** (RFC-012, "Decisión pendiente"): columna generada `slot_activo = IF(estado_cita = 3, NULL, 1)` y `UNIQUE (id_medico, fecha_cita, hora_cita, slot_activo)`. MySQL admite varios `NULL` en un índice UNIQUE, así que las canceladas no ocupan el horario.
+- **El estado 3 es "Cancelada" (confirmado en el código):** orden de los `INSERT INTO Estado_Cita` de `BDPostaMedica.sql` (Pendiente, Confirmada, **Cancelada**, Atendida, Reprogramada → id 3); `mis-citas.component.ts:75` (`case 3: return 'Cancelada'`); `ReporteController.java:36` (`countByEstadoCita(3)` para las canceladas).
+- Semilla: `SELECT … WHERE estado_cita IS NULL OR estado_cita<>3 GROUP BY id_medico, fecha_cita, hora_cita HAVING COUNT(*)>1` → sin filas (19:02): la restricción se puede crear.
+
+### [2026-11-11 19:02–19:12] Cambios, pruebas y documentación
+- **BD:** `BDPostaMedica.sql` (columna generada `slot_activo` + `uq_cita_medico_fecha_hora`); migración `database/migraciones/RFC-012-slot-activo.sql` (lista duplicados y crea la restricción) y su back-out `RFC-012-slot-activo-revertir.sql`.
+- **Prueba de la migración** (19:03, script `t24/migracion.cjs` del scratchpad): BD de `develop` + migración → `SHOW CREATE TABLE` igual a la BD nueva y datos iguales (MD5); con duplicados activos → los lista, falla con `ERROR 1062` y la tabla no cambia; con una cancelada y una activa en la misma hora no los cuenta como duplicado.
+- **Fallo encontrado en el back-out del RFC** (19:03:20): `DROP INDEX uq_cita_medico_fecha_hora` falla con `ERROR 1553 … needed in a foreign key constraint`, porque InnoDB usa el índice UNIQUE (empieza por `id_medico`) para la FK de `id_medico`. Se corrigió el script de reversión para recrear antes el índice `id_medico`; repetido a las 19:03:37: la tabla queda igual a la de `develop`. Corregido también el "Plan de back-out" de RFC-012.
+- **Backend:** `GlobalExceptionHandler` con un handler nuevo para `DataIntegrityViolationException`. Si la causa nombra la restricción → 409 con mensaje propio y `WARN`. Si no → llama a `handleRuntimeException` (la respuesta 500 y el `log.error` de P1 no cambian; `GlobalExceptionHandlerTest` pasa sin cambios). Alternativa descartada: capturar en `CitaService` (habría que repetirlo en los 3 caminos que guardan citas).
+- **Frontend:** `horarios-cita.ts` ignora las citas con `estado_cita === 3` al calcular las horas; `registrar-cita.component.ts` ante un 409 muestra el `message`, borra la hora elegida y recarga las horas. Ninguna prueba existente usa `estado_cita` (U19–U23, U75–U79 pasan sin cambios).
+- **Pruebas nuevas:** U90 (4), U91 (2, servidor + BD reales con 10 hilos), U92 (7), E01 (Playwright, dos pestañas). Primera corrida aislada 19:05: backend 7/7 de las clases tocadas; frontend `TOTAL: 56 SUCCESS`.
+- **Batería completa 19:07:07–19:09:55** (cambios sin commit): backend 75/75, frontend 32/32 y 56/56, Playwright 7/7. Diferencias con la base solo por la corrección: P13 FALLA→PASA (409, 1 reserva); P14 y P16 una cita menos; P20, P21 y P23 sin la cita 23; P26 `{"200":1,"409":9}` y 1 fila; P27 el horario cancelado vuelve a ofrecerse. Backend apagado: idéntico.
+- **P22 queda no ejecutable** (cancelaba la cita 23 de la doble reserva). **No se modificó**: decide el usuario; opciones en RFC-012.
+- Observación: cada 409 deja además una línea `ERROR … SqlExceptionHelper : Duplicate entry …` de Hibernate en el log (12 en la corrida, igual que los `WARN` propios). No se cambió la configuración de logs; anotado en HALLAZGOS.
+- Documentación: RFC-012 (decisión B, diseño, antes/después, P22, evaluación), HALLAZGOS (H-012 corregido en la rama, observaciones), PRUEBAS.md (P26, P27, U90–U92, E01, resultados). Evidencia: `docs/evidencias/t24-b-rfc012.txt`.
