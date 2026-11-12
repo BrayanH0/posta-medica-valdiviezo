@@ -29,6 +29,9 @@ public class PacienteService implements IPacienteService {
     }
 
     public Paciente crearPaciente(Paciente paciente) {
+        // RFC-011 (AUD-SEG-04): el alta es pública; un idPaciente en el cuerpo haría que save()
+        // sobrescribiera esa cuenta (incluida la clave). Siempre se crea un paciente nuevo.
+        paciente.setIdPaciente(null);
         if (paciente.getClave() != null) {
             paciente.setClave(passwordEncoder.encode(paciente.getClave()));
         }

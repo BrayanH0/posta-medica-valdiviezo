@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -30,6 +31,16 @@ public class GlobalExceptionHandler {
         error.put("status", "error");
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    // RFC-011: un recurso de otro usuario (UsuarioAutenticado.exigirPropietario) -> 403, no 500.
+    // Sin este manejador, handleRuntimeException lo atraparía antes que Spring Security.
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, String>> handleAccessDenied(AccessDeniedException ex) {
+        return new ResponseEntity<>(Map.of("error", MENSAJE_SIN_PERMISO), HttpStatus.FORBIDDEN);
+    }
+
+    // Mismo texto que el 403 de WebSecurityConfig
+    static final String MENSAJE_SIN_PERMISO = "No tiene permiso para este recurso";
 
     // RFC-012: la BD rechazó una segunda cita activa en el mismo horario -> 409 con un mensaje propio, sin texto SQL.
     // Cualquier otra violación de integridad sigue igual que antes (500, por handleRuntimeException).

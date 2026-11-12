@@ -1,6 +1,8 @@
 package com.centro_valdiviezo.backend.controller;
 
 import com.centro_valdiviezo.backend.dto.CitaMedicoDTO;
+import com.centro_valdiviezo.backend.dto.HoraOcupadaDTO;
+import com.centro_valdiviezo.backend.seguridad.UsuarioAutenticado;
 import com.centro_valdiviezo.backend.dto.PacienteMedicoDTO;
 import com.centro_valdiviezo.backend.model.Cita;
 import com.centro_valdiviezo.backend.services.ICitaService;
@@ -28,9 +30,15 @@ public class CitaConsultaController {
         this.citaService = citaService;
     }
 
+    // RFC-011: WebSecurityConfig deja pasar al paciente (cualquier médico) y al médico dueño del {idMedico}.
+    // El paciente recibe solo hora y estado; el médico, las citas completas como antes.
     @GetMapping("/medico/{idMedico}/fecha/{fecha}")
-    public List<Cita> getCitasPorMedicoYFecha(@PathVariable Integer idMedico, @PathVariable String fecha) {
-        return citaService.citasDeMedicoEnFecha(idMedico, fecha);
+    public List<?> getCitasPorMedicoYFecha(@PathVariable Integer idMedico, @PathVariable String fecha) {
+        List<Cita> citas = citaService.citasDeMedicoEnFecha(idMedico, fecha);
+        if (UsuarioAutenticado.actual().esPaciente()) {
+            return citas.stream().map(HoraOcupadaDTO::de).toList();
+        }
+        return citas;
     }
 
     // Citas del médico en un estado (nombre de Estado_Cita), filtradas en el servidor

@@ -13,6 +13,7 @@ import com.centro_valdiviezo.backend.controller.AuthController;
 import com.centro_valdiviezo.backend.repository.MedicoRepository;
 import com.centro_valdiviezo.backend.repository.PacienteRepository;
 import com.centro_valdiviezo.backend.repository.UsuarioRepository;
+import com.centro_valdiviezo.backend.seguridad.TokensDePrueba;
 
 // RFC-007 (LB-7). Comprueba que Spring entrega a AuthController los autenticadores en el orden
 // caracterizado por U40 (paciente -> médico -> administrador), usando @Order. Contexto mínimo:
@@ -39,7 +40,7 @@ class AutenticadorRolOrdenTest {
             assertInstanceOf(AutenticadorPaciente.class, lista.get(0));
             assertInstanceOf(AutenticadorMedico.class, lista.get(1));
             assertInstanceOf(AutenticadorAdministrador.class, lista.get(2));
-            assertNotNull(new AuthController(lista));
+            assertNotNull(new AuthController(lista, TokensDePrueba.tokenUtils()));
         }
     }
 
