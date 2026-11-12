@@ -1,0 +1,88 @@
+TAREA 25 - Integracion de RFC-012 con develop (que ya incluye RFC-017)
+=======================================================================
+Fecha: 2026-11-11. Horas reales: `date`, `git log` y el resumen del runner.
+
+1. Preparacion
+--------------
+19:33:43  git checkout develop; git pull  -> fast-forward d981f3b..d0beb4c
+          (d0beb4c = "Merge pull request #55 from BrayanH0/feature/rfc-017-datos-semilla")
+          git checkout feature/rfc-012-doble-reserva; git merge --no-ff --no-commit develop
+            Auto-merging database/BDPostaMedica.sql            (sin conflicto)
+            CONFLICT (content): Merge conflict in docs/BITACORA.md
+            CONFLICT (content): Merge conflict in docs/HALLAZGOS.md
+            CONFLICT (content): Merge conflict in docs/PRUEBAS.md
+          Resolucion con Edit: se conservan las dos partes, primero develop (RFC-017), despues la rama (RFC-012).
+          Comprobacion (script de Node, ignorando CR): toda linea de develop y de la rama esta en el resultado
+            BITACORA dev faltan: 0 / head faltan: 0
+            PRUEBAS   dev faltan: 0 / head faltan: 0
+            HALLAZGOS dev faltan: 1 (fila H-012 vieja, la rama la actualizo) / head faltan: 7 (fila H-042 y filas
+                      "#42..#47 (por crear)" viejas, develop las actualizo). Ningun texto nuevo se perdio.
+          grep de marcadores <<<<<<< ======= >>>>>>> en docs/ -> sin resultados.
+19:38:31  commit de merge ce31018 (padres a420127 = rama, d0beb4c = develop).
+
+2. Cambio de P22 (opcion 1, decision del usuario)
+-------------------------------------------------
+Script de bateria (scratchpad t25/bateria.cjs, copia del de la tarea 24): al empezar P22 hace
+  POST /api/cita {id_paciente:1, id_medico:1, fecha_cita:2026-10-26, hora_cita:10:20:00,
+                  motivo:"Prueba P22: cita para cancelar", estado_cita:1}
+y cancela desde "Citas Pendientes" la cita con el idCita que devuelve el servidor (no se fija a 23).
+Lo que se verifica no cambia.
+
+3. Bateria completa (HEAD ce31018, cambios sin commit: 0)
+--------------------------------------------------------
+[19:38:48] inicio; ng build exit=0 (19:38:59; mismas 2 advertencias de siempre: presupuesto 808.48 kB, jquery no ESM)
+[19:39:06] frontend caracterizacion: TOTAL: 32 SUCCESS
+[19:39:13] frontend todas:           TOTAL: 56 SUCCESS
+[19:39:40] mvnw test: Tests run: 75, Failures: 0, Errors: 0, Skipped: 0 / BUILD SUCCESS
+[19:40:06] Playwright: 7 passed (12.7s)
+[19:40:07-19:41:55] P01-P27 (backend y frontend encendidos, BD recargada: 21 citas)
+[19:41:59-19:42:18] P11/P18 con el backend apagado
+[19:42:19] BD recargada (21 citas); backend y frontend detenidos por el runner
+
+Lineas clave de la bateria:
+P13 POST duplicado 409 idCita:undefined
+P13 BD reservas: 1
+P14 total=22 paciente1=3 distintos=13 BD=22|3
+P16 recibidas=22 delPaciente1=3 tarjetas=3 peticiones=7
+P20 pantalla: 22 | Juan Perez Gomez | ... | 2026-10-26 | 10:00:00 | Prueba LB-0: control general
+P20 SELECT:   22 | Juan Perez Gomez | ... | 2026-10-26 | 10:00:00 | Prueba LB-0: control general
+P21 red: 200 PUT /api/citas/medico/1/22/estado ; BD: 22 | 1 | 2 | Confirmada
+P22 crear 200 idCita:24
+P22 BD antes: 24 | 1 | 1 | Pendiente | Prueba P22: cita para cancelar
+P22 modal: Cancelar Cita ... Fecha: 2026-10-26 - 10:20:00 Motivo: Prueba P22: cita para cancelar ...
+P22 red: 200 PUT /api/citas/medico/1/24/estado
+P22 pendientes: No hay citas pendientes.
+P22 BD: 24 | 1 | 3 | Cancelada | Prueba P22: cita para cancelar
+P22 citas-canceladas tras recargar: 24 | Juan Perez Gomez | 12345678 | 2026-10-26 | 10:20:00 | Prueba P22: cita para cancelar | Cancelada
+P23 medico 1 Cancelada: API [24] BD [24] igual
+P23 20/20 iguales
+P23 pacientes medico 1: API 7,1,6,11 BD 1,6,7,11
+P26 codigos {"200":1,"409":9} ; texto-SQL-en-respuestas: false ; BD filas: 1
+P27 duplicado-antes-de-cancelar 409 ; pantalla ofrece 11:40 tras cancelar: true ; reservar-de-nuevo 200 ; BD: 3,1
+X especialidad HEX id2: 50656469617472C3AD61   (Pediatria con UTF-8 correcto, RFC-017)
+backend.log: 12 lineas "SqlExceptionHelper ... Duplicate entry" y 12 WARN propios del 409 (igual que en la tarea 24B)
+
+4. Comparacion (diff sin las lineas "# hora")
+--------------------------------------------
+Contra la rama RFC-012 sola (tarea 24, t24/b):
+  - P01: tamanos de 12 listados (los de RFC-017, iguales a LB-0)         -> por RFC-017
+  - P22: antes "NO EJECUTABLE"; ahora crea la 24 y la cancela            -> por el cambio de P22
+  - P23: medico 1 Cancelada [] -> [24]                                    -> por el cambio de P22
+  - P23: orden de pacientes del medico 1 7,6,1,11 -> 7,1,6,11             -> por RFC-017 (ordena por apellidos)
+  - P27: idCita 34/36 -> 35/37 (P22 crea una cita mas antes)              -> por el cambio de P22
+  - lineas X: nombres ficticios y tildes                                 -> por RFC-017
+Contra la rama RFC-017 sola (tarea 24, t24/a):
+  - P13 409 y 1 reserva; P14 22|3; P16 22/3/3/7; P20 y P21 sin la cita 23; P26 {"200":1,"409":9}; P27 409 y
+    se libera el horario                                                  -> por RFC-012
+  - P22: cancela la 24 (cita propia) en lugar de la 23 (duplicado de P13) -> por el cambio de P22
+  - P23: medico 1 Cancelada [23] -> [24]                                  -> por el cambio de P22
+Backend apagado (P11/P18): identico a las dos.
+
+5. Notas
+--------
+- P22 obtuvo idCita 24 y no 23: el INSERT duplicado de P13, rechazado por la UNIQUE, consume un valor de
+  AUTO_INCREMENT en InnoDB. Por eso el script usa el id que devuelve el servidor.
+- "X dias disponibilidad" muestra "Mi?rcoles" tambien en la corrida de RFC-017 sola (t24/a): es como el script
+  decodifica la salida del cliente mysql, no un dato danado (el HEX de Especialidad es el UTF-8 correcto).
+  No se investigo mas; sin efecto en ninguna prueba.
+- Salidas completas en el scratchpad de la sesion (t25/integrado/), fuera del repositorio.

@@ -299,9 +299,14 @@ Ejecución del 2026-10-21, entre 09:30 y 09:37 (hora real: `date` antes y despu�
 
 ### P22 — Cancelar una cita
 - Tipo: Sistema/E2E (navegador de punta a punta) y Aceptación
-- Qué se hace: en "Citas Pendientes" del médico 1, pulsar "Cancelar" en la cita 23 y confirmar; `SELECT` de la cita; abrir "Citas Canceladas" y recargar la página.
-- Esperado: la cita deja la lista de pendientes, queda en la base con el estado "Cancelada" y sigue en "Citas Canceladas" después de recargar.
-- Creada en: LB-3 (RFC-003).
+- Qué se hace (desde la tarea 25): al empezar P22, crear por la API una cita pendiente propia (`POST /api/cita` con paciente 1, médico 1, `2026-10-26`, `10:20:00`, motivo "Prueba P22: cita para cancelar", `estado_cita 1`); en "Citas Pendientes" del médico 1, pulsar "Cancelar" en **esa** cita (el `idCita` que devuelve el servidor) y confirmar; `SELECT` de la cita; abrir "Citas Canceladas" y recargar la página.
+- Esperado: la cita deja la lista de pendientes, queda en la base con el estado "Cancelada" y sigue en "Citas Canceladas" después de recargar. *(No cambia.)*
+- Creada en: LB-3 (RFC-003). Modificada en: tarea 25 (2026-11-11), por decisión del usuario (opción 1 de RFC-012).
+- **Cambio de la tarea 25 (antes / después / por qué):**
+  - Antes: "en 'Citas Pendientes' del médico 1, pulsar 'Cancelar' en la cita 23 y confirmar; …". La cita 23 era el duplicado que creaba P13.
+  - Después: P22 crea su propia cita pendiente del médico 1 al empezar y cancela esa, con el id que devuelve el servidor (no se escribe un id a mano: en la corrida de la tarea 25 salió 24, porque el `INSERT` rechazado de P13 consume un valor de `AUTO_INCREMENT`).
+  - Por qué: con RFC-012, P13 ya no crea la cita 23 (la segunda reserva responde 409), y P22 no se podía ejecutar como estaba escrita (tarea 24B). Lo que se verifica no cambia: estado "Cancelada" en la BD y en "Citas Canceladas" tras recargar. La hora `10:20` es distinta de la de P12 (`10:00`), de P26 y P27 (`2026-11-30`) y de las E2E (`2099-12-31`), así que no choca con la restricción.
+  - Efecto en otras pruebas: P23 (médico 1, Cancelada) ve esta cita en lugar de la 23; P27 recibe ids una unidad mayores. P20 y P21 no cambian (P22 crea la cita después de ellas).
 - Obtenido (LB-3): modal "Cancelar Cita … Motivo: Prueba LB-0: doble reserva (pestana B)"; red `200 PUT /api/citas/medico/1/23/estado {"estado":"Cancelada"}`; pendientes: "No hay citas pendientes.". Base: `23 | 1 | 3 | Cancelada | Prueba LB-0: doble reserva (pestana B)`. "Citas Canceladas" tras recargar: `23 | Juan Perez Gomez | 12345678 | 2026-10-26 | 10:00:00 | Prueba LB-0: doble reserva (pestana B) | Cancelada`.
 - Evidencia: `docs/evidencias/lb3-medico-citas-canceladas.png`
 - Resultado (LB-3): **PASA**
@@ -602,6 +607,69 @@ Base: `develop` `d981f3b` (2026-11-11 18:49:58–18:53:25). Rama: 18:55:47–18:
 
 **Resumen RFC-017:** sin cambios de resultado. Backend 69/69, frontend 32/32 y 49/49, Playwright 6/6. **Nota P01:** la diferencia de tamaños que la nota de método del hotfix RFC-010 dejó "sin investigar" (cie 306 B vs 291 B) era la codificación dañada al cargar el SQL con el cliente `mysql` en `cp850`; con `SET NAMES utf8mb4` en el script, los tamaños vuelven a los de LB-0. Evidencia: `docs/evidencias/t24-base.txt`, `docs/evidencias/t24-a-rfc017.txt`.
 
+## Pruebas nuevas de RFC-012 (tarea 24B)
+
+Se corren al final de la batería, después de P25, con el backend y el frontend encendidos. Las dos usan el médico 1 el `2026-11-30` (lunes) y dejan citas en la BD (la batería recarga la BD antes de cada corrida).
+
+### P26 — 10 reservas simultáneas al mismo horario
+- Tipo: Integración (API + base de datos)
+- Creada en: tarea 24B (RFC-012). Ejecutada también sobre `develop` antes del cambio.
+- Qué se hace: 10 `POST /api/cita` en paralelo (`Promise.all`) con `id_medico 1`, `fecha_cita 2026-11-30`, `hora_cita 11:00:00`, pacientes 1 a 5; se cuentan los códigos HTTP, se busca texto SQL (`sql`, `duplicate`, `constraint`, `insert into`, `jdbc`, `hibernate`) en las respuestas y se cuenta en la BD.
+- Esperado: 1 respuesta 200 y 9 respuestas 409 con un mensaje propio, sin texto SQL; 1 fila en la BD.
+- Obtenido (base `develop`, 2026-11-11 18:53): `{"200":10}`, 10 filas → FALLA (H-012).
+- Obtenido (rama RFC-012, 19:09): `{"200":1,"409":9}`, `{"message":"Ese horario ya fue reservado. Elija otra hora.","status":"error"}`, sin texto SQL, 1 fila → **PASA**.
+
+### P27 — Cancelar una cita libera el horario
+- Tipo: Integración (API + base de datos) y Sistema/E2E
+- Creada en: tarea 24B (RFC-012, opción B). Ejecutada también sobre `develop` antes del cambio.
+- Qué se hace: `POST` de una cita (médico 1, `2026-11-30`, `11:40:00`); otro `POST` al mismo horario; `PUT /api/citas/medico/1/{id}/estado {"estado":"Cancelada"}`; login de paciente por formulario y "Registrar Cita" con Medicina General, Jorge Santos Ruiz y esa fecha (¿ofrece 11:40?); `POST` nuevo al mismo horario; estados de las citas de ese horario en la BD.
+- Esperado: el segundo `POST` responde 409; tras cancelar, la pantalla ofrece 11:40 y el `POST` nuevo responde 200; quedan una cancelada y una activa.
+- Obtenido (base): duplicado 200; tras cancelar la pantalla **no** ofrece 11:40; estados `3,1,1` → FALLA.
+- Obtenido (rama RFC-012): duplicado 409; tras cancelar la pantalla ofrece 11:40; nueva reserva 200; estados `3,1` → **PASA**.
+
+## Resultados de RFC-012 (tarea 24B, doble reserva; rama `feature/rfc-012-doble-reserva`)
+
+Base: `develop` `d981f3b` (2026-11-11 18:49:58–18:53:25). Rama: 19:07:07–19:09:55. Mismo runner y mismo script (scratchpad `t24/`).
+
+| ID | Obtenido en la rama | ¿Igual a la base? |
+|---|---|---|
+| P01–P12 | Iguales | Igual |
+| P13 | Pestaña abierta antes: ofrece 10:00; pestaña nueva: no; `POST` duplicado → **`HTTP 409`**; 1 reserva | **Cambia: FALLA → PASA** (corrección) |
+| P14 | total 22, paciente 1: 3; BD `22 \| 3` | Cambia en 1 (P13 ya no agrega la cita 23; esperado en el RFC). Sigue FALLA (H-013) |
+| P15 | total 5, paciente 1: 1 | Igual |
+| P16 | 22 recibidas, 3 del paciente 1, 3 tarjetas, 7 peticiones | Cambia en 1 cita (esperado). Sigue FALLA (H-013/H-014) |
+| P17–P19 | Iguales | Igual |
+| P20 | Pantalla = SELECT, solo la cita 22 | Mismo resultado (PASA); falta la 23 |
+| P21 | Confirma la 22; pendientes: "No hay citas pendientes." | Mismo resultado (PASA); falta la 23 |
+| **P22** | **No ejecutable: la cita 23 no existe** | **Cambia. Decisión pendiente del usuario** (opciones en `docs/rfc/RFC-012.md`; la definición no se modificó) |
+| P23 | 20/20 iguales (médico 1 Cancelada `[]`) | Mismo resultado (PASA) |
+| P24, P25, P11/P18 apagado | Iguales | Igual |
+| P26 | `{"200":1,"409":9}`, 1 fila, sin texto SQL | FALLA → PASA (prueba nueva) |
+| P27 | Duplicado 409; tras cancelar se ofrece y se reserva | FALLA → PASA (prueba nueva) |
+
+**Resumen RFC-012:** P13 pasa a PASA; P14 y P16 cambian en 1 cita (siguen FALLA por H-013); P20, P21 y P23 siguen PASA sin la cita 23; **P22 no se puede ejecutar como está definida**. Backend 75/75 (69 + U90 ×4 + U91 ×2); frontend 32/32 y 56/56 (49 + U92 ×7); Playwright 7/7 (6 + E01). Ninguna prueba existente se modificó. Evidencia: `docs/evidencias/t24-b-rfc012.txt`.
+
+## Resultados de la integración RFC-017 + RFC-012 (tarea 25; rama `feature/rfc-012-doble-reserva` con `develop` combinado)
+
+Merge de `develop` `d0beb4c` (ya incluye RFC-017) en la rama: commit `ce31018`. P22 con la definición nueva (opción 1, ver P22). Corrida 19:38:48–19:42:19 del 2026-11-11, `HEAD ce31018`, sin cambios pendientes; mismo runner y script de la tarea 24 (copiados al scratchpad `t25/`; solo cambia P22). Se compara con las dos corridas de la tarea 24: la rama RFC-012 sola y la rama RFC-017 sola.
+
+| ID | Obtenido | Comparación |
+|---|---|---|
+| P01 | 200 en los 14; tamaños de RFC-017 (cie 291 B, … paciente 2743 B) | Igual a RFC-017; distinto de RFC-012 sola solo por RFC-017 |
+| P02–P12 | Iguales | Igual |
+| P13 | Duplicado `409`, 1 reserva → PASA | Igual a RFC-012 |
+| P14, P16 | 22 \| 3; 22 recibidas, 3 tarjetas, 7 peticiones (siguen FALLA, H-013) | Igual a RFC-012 |
+| P15, P17–P19 | Iguales | Igual |
+| P20, P21 | Solo la cita 22; la 22 → Confirmada; "No hay citas pendientes." → PASA | Igual a RFC-012 |
+| **P22** | Crea la cita **24** (Pendiente); `200 PUT /api/citas/medico/1/24/estado`; pendientes: "No hay citas pendientes."; BD `24 \| 1 \| 3 \| Cancelada`; "Citas Canceladas" tras recargar: la 24 → **PASA** | **Cambia: no ejecutable → PASA** (definición nueva) |
+| P23 | 20/20 iguales; médico 1 Cancelada `[24]`; pacientes del médico 1 API `7,1,6,11` | Cancelada `[24]` por P22; el orden, por RFC-017 |
+| P24, P25 | Iguales | Igual |
+| P26 | `{"200":1,"409":9}`, 1 fila, sin texto SQL → PASA | Igual a RFC-012 |
+| P27 | Duplicado 409; tras cancelar se ofrece 11:40 y se reserva (ids 35 y 37) → PASA | Igual a RFC-012 (ids +1 porque P22 crea una cita antes) |
+| P11/P18 apagado | Iguales | Igual |
+
+**Resumen tarea 25:** RFC-017 y RFC-012 juntas no se afectan entre sí: cada diferencia se explica por una de las dos o por la definición nueva de P22. **23 PASA · 4 FALLA** sobre P01–P27 (FALLA: P04 `500 Cannot instantiate … ResumenMedico`, P14, P15 y P16, las mismas del hotfix RFC-010 menos P13; P13, P22, P26 y P27 pasan). Backend 75/75; frontend 32/32 y 56/56; Playwright 7/7; `ng build` sin errores (las 2 advertencias de siempre). Evidencia: `docs/evidencias/t25-integracion.txt`.
+
 ---
 
 ## Pruebas unitarias
@@ -731,6 +799,11 @@ Script de la base de datos (desde LB-4): `database/BDPostaMedica.sql`.
 | U87 | `BE/…/config/MigracionClavesTest.java` (hotfix RFC-010; 2 casos) | `esBCrypt` reconoce solo el formato completo; la migración convierte solo las filas en texto plano; en la segunda ejecución no guarda nada (idempotente) | Unitaria | H-007 |
 | U88 | `BE/…/services/ClaveConHashEnServiciosTest.java` (hotfix RFC-010; 3 casos) | Crear paciente, médico y administrador guarda un hash que verifica; crear sin clave no llama al encoder; `actualizarPaciente` sin clave conserva el hash | Unitaria | H-007, H-032 |
 | U89 | `BE/…/ClavesIntegracionTest.java` (hotfix RFC-010; 4 casos) | Contexto completo y BD real: el encoder inyectado es BCrypt; las 3 tablas están en formato BCrypt; `/login` con las credenciales de prueba da 200 y una clave mala da 401 en los 3 roles; `/api/paciente`, `/api/medico`, `/usuarios` y `/codigo/1` sin `clave` | Integración (contexto de Spring + MySQL) | H-007 |
+| U90 | `BE/…/exception/GlobalExceptionHandlerDobleReservaTest.java` (RFC-012; 4 casos) | Violación de `uq_cita_medico_fecha_hora` → 409 `{"message":"Ese horario ya fue reservado. Elija otra hora.","status":"error"}` sin texto SQL (con y sin `constraintName` de Hibernate); otra violación de integridad → la misma respuesta 500 que `handleRuntimeException`; `esHorarioOcupado` solo reconoce esa restricción | Unitaria | H-012 |
+| U91 | `BE/…/CitaDobleReservaIntegracionTest.java` (RFC-012; 2 casos) | Servidor real (puerto aleatorio) y BD real, fecha 2099-12-28: 10 `POST /api/cita` simultáneos → 1 con 200, 9 con 409 sin texto SQL, 1 fila; cancelar la cita libera el horario (nuevo POST 200) y reactivar la cancelada choca (409). Borra sus citas antes y después | Integración (servidor + MySQL) | H-012 |
+| U92 | `FE/features/paciente/registrar-cita/doble-reserva.unitaria.spec.ts` (RFC-012; 7 casos) | `calcularHorariosDisponibles`: la cancelada (estado 3) no ocupa, los estados 1, 2, 4 y 5 sí, cancelada + activa en la misma hora sigue ocupada, y en el horario por defecto también; `registrarCita`: 409 → alerta con el `message` del servidor (o el texto por defecto si no hay cuerpo), borra la hora y recarga las horas; 500 → "Error al registrar cita" como antes | Unitaria | H-012 |
+
+**E2E nueva (RFC-012):** `e2e/tests/registrar-cita-doble-reserva.spec.ts` (E01). Dos pestañas del paciente cargan "Registrar Cita" para el médico 1 el 2099-12-29; la A reserva 08:40 (200); la B, con la lista vieja, intenta 08:40 → 409, alerta "Ese horario ya fue reservado. Elija otra hora.", sigue en el formulario y la lista ya no ofrece 08:40; 1 cita en la BD; el médico cancela la de A (PUT) → una pestaña nueva ofrece 08:40 y la reserva da 200. Borra sus citas al empezar y al terminar. Se corre con las demás: `npx playwright test tests/ --workers=1` (7 pruebas desde RFC-012).
 
 > **Hotfix RFC-010:** U33–U41, `AuthControllerTest`, U80 y U81 cambiaron solo la construcción de los autenticadores (reciben un `PasswordEncoder`) y guardan el hash en las entidades simuladas; sus aserciones son las mismas. U55 solo agrega un `@Spy PasswordEncoder`. U49 cambió de sentido (ver su fila). Detalle antes/después en `docs/rfc/RFC-010.md`.
 
