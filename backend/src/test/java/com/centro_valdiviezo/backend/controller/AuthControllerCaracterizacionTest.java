@@ -27,6 +27,7 @@ import com.centro_valdiviezo.backend.model.UsuarioModel;
 import com.centro_valdiviezo.backend.repository.MedicoRepository;
 import com.centro_valdiviezo.backend.repository.PacienteRepository;
 import com.centro_valdiviezo.backend.repository.UsuarioRepository;
+import com.centro_valdiviezo.backend.seguridad.TokensDePrueba;
 
 // Pruebas unitarias de caracterización (tarea 9): comprueban el comportamiento ACTUAL de POST /login.
 // Los repositorios son simulados con Mockito: no se usa la base de datos.
@@ -52,7 +53,7 @@ class AuthControllerCaracterizacionTest {
         authController = new AuthController(List.of(
                 new AutenticadorPaciente(pacienteRepository, encoder),
                 new AutenticadorMedico(medicoRepository, encoder),
-                new AutenticadorAdministrador(usuarioRepository, encoder)));
+                new AutenticadorAdministrador(usuarioRepository, encoder)), TokensDePrueba.tokenUtils());
     }
 
     private static Map<String, String> credenciales(String dni, String clave) {

@@ -1,0 +1,312 @@
+TAREA 22 - REVISION DE LOS PR DE LOS INTEGRANTES (sin merge, sin push)
+Fecha: 2026-11-11. Horas tomadas de `date` y de los registros de cada corrida.
+Rama de esta evidencia: docs/t22-revision-prs (desde develop = 731d5e1).
+
+======================================================================
+0. ALCANCE Y ESTADO AL REVISAR
+======================================================================
+16:45:28 git fetch origin. PR abiertos:
+  #50 P1 feature/rfc-014-p1-consola-y-log      autor pfaberio27-png   base develop
+  #51 P3 feature/rfc-015-p3-medico-doble-envio  autor Paolo1710        base MASTER
+  #52 P5 feature/rfc-016-p5-config-despliegue   autor Rashidchz        base develop
+  #53 P4 feature/rfc-013-p4-accesibilidad-celular autor Angel29042001  base develop (aparecio en el fetch de 17:00:31)
+
+Indicaciones del usuario durante la tarea:
+  - "el P5 lo esta haciendo ahora asi que probablemente no este terminado"
+  - "el P4 creo que tambien esta en avance, evalua aquellos que estan completos"
+  - "cuando termines revisa el p4 que ya esta"
+Por eso: P1, P3 y P4 se evaluaron completos. P5 solo se reviso en estatico (en curso, SIN veredicto).
+
+Heads evaluados (comprobados sin cambios en el fetch final de 17:13:15):
+  P1 0cf8c0b (5 commits) | P3 2280d9d (3) | P4 cf6bffb (4) | P5 baa1a13 (2 de 4)
+develop = origin/develop = 731d5e1. LB-10 = 0af31db (master).
+`git diff --stat LB-10 develop -- . ':!docs'` -> vacio: el codigo de develop es el de LB-10.
+
+======================================================================
+1. AUTORIA (item 14.2: que no sea BrayanH0)   git log develop..rama
+======================================================================
+P1 (todos los commits):
+  autor     pfaberio27-png <pfaberio27@gmail.com>
+  committer Clauder Faberio <pfaberio@gmail.com>     (commits hechos en local, no en la web)
+  e20e0ad 10:48:07 | 2ae8d23 10:56:00 | ce5ea34 10:58:42 | 9d9e535 11:01:41 | 0cf8c0b 11:05:58  (-0500)
+P3:
+  autor     Paolo1710 <paolo.17.silva@gmail.com>, committer GitHub (editor web)
+  c2739dd 15:51:42 | e8bfead 15:56:42 | 2280d9d 15:59:10  (-0500)
+P4:
+  autor y committer Angel29042001 <angel2001np@gmail.com>  (commits hechos en local, no en la web)
+  8260124 16:46:14 | 7a750bb 16:46:19 | 505b4c5 16:46:27 | cf6bffb 16:46:35  (-0500; los 4 en 21 segundos)
+  Cada mensaje termina con el trailer "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>".
+P5 (en curso):
+  autor Rashidchz <166431729+Rashidchz@users.noreply.github.com>, committer GitHub
+  c5bb51f 16:17:14 | baa1a13 16:54:36  (-0500)
+Resultado: NINGUN commit es de BrayanH0 en los 4 PR.
+Para decidir el usuario (no se juzga aqui): P4 no siguio el metodo de la ficha (editor web) y declara
+a Claude como coautor en los 4 commits.
+
+======================================================================
+2. BASE Y ALCANCE (comparacion contra la ficha verificada en la tarea 18)
+======================================================================
+merge-base con origin/develop = 731d5e1 en las 4 ramas: todas salen de develop.
+
+Metodo. La copia de la tarea 18 se descarto el 2026-11-10 (bitacora, tarea 18, 15:50:13); lo que quedo
+verificado es la ficha: el verificador de la tarea 18 comprobo "develop + DESPUES == copia compilada y
+probada" con 0 fallos. Aqui se usa el mismo verificador apuntando a un worktree de cada PR.
+Los archivos de las fichas no cambiaron en develop desde la tarea 18:
+`git diff --stat 5a212cc develop -- <archivos de las fichas>` -> vacio.
+
+Problema del verificador (registrado en HALLAZGOS, observaciones de la tarea 22):
+`node docs/entrega/fichas/verificar-ficha.cjs FICHA_Pn.md <worktree> .` dio en los 3 casos
+"bloques: 0, archivos: 0, fallos: 0". En este clon (core.autocrlf=true) la ficha tiene CRLF, la
+expresion regular espera "\n" y no encuentra ningun bloque: informa 0 fallos sin comprobar nada.
+Ademas, `git cat-file -p develop:<archivo>` da CRLF (ej.: GlobalExceptionHandler.java 21 de 21 lineas).
+Se uso una copia en el scratchpad (verificar-ficha-eol.cjs) que solo normaliza CRLF->LF en la ficha,
+en develop y en el PR, e imprime las lineas distintas. El script del repo NO se modifico.
+
+--- P1 (16:46:46) ---
+OK    ANTES aparece 1 vez/veces en develop: frontend/src/app/features/auth/login-paciente/login-paciente.component.ts
+OK    ANTES aparece 1 vez/veces en develop: frontend/src/app/features/auth/login-medico/login-medico.component.ts
+OK    ANTES aparece 1 vez/veces en develop: frontend/src/app/features/auth/registro/registro.component.ts
+OK    ANTES (archivo completo) igual a develop: backend/.../exception/GlobalExceptionHandler.java
+OK    archivo nuevo no existe en develop: backend/src/test/.../exception/GlobalExceptionHandlerTest.java
+FALLA DESPUES de la ficha == archivo del PR: frontend/src/app/features/auth/login-paciente/login-paciente.component.ts
+   linea 34
+     ficha: ""
+     PR:    "    "
+   linea 35
+     ficha: "    this.authService.login(this.dni, this.clave).subscribe({"
+     PR:    "     this.authService.login(this.dni, this.clave).subscribe({"
+OK    DESPUES de la ficha == archivo del PR: login-medico.component.ts
+OK    DESPUES de la ficha == archivo del PR: registro.component.ts
+OK    DESPUES de la ficha == archivo del PR: GlobalExceptionHandler.java
+OK    DESPUES de la ficha == archivo del PR: GlobalExceptionHandlerTest.java
+bloques: 9, archivos: 5, fallos: 1
+Diferencia exacta (git diff develop...rama, login-paciente):
+   -
+   -    console.log('Intentando login paciente:', this.dni);
+   -    this.authService.login(this.dni, this.clave).subscribe({
+   +    (4 espacios)
+   +     this.authService.login(this.dni, this.clave).subscribe({      (5 espacios)
+   ...
+   -            console.log('Login exitoso', res);
+Es decir: se borro tambien la linea vacia que la ficha conserva, quedo en su lugar una linea con 4
+espacios, y la llamada a login quedo con 5 espacios de sangria (la ficha deja 4). Solo espacios en
+blanco: no cambia el comportamiento (build, unitarias, batería y prueba funcional iguales). La
+descripcion del commit e20e0ad dice "Removed console log for login attempt and adjusted formatting."
+Archivos fuera de la ficha: ninguno (5 archivos, los 5 de la ficha).
+
+--- P3 (16:46:46) ---
+OK    ANTES (archivo completo) igual a develop: medico-citas-pendientes.component.ts
+OK    ANTES (archivo completo) igual a develop: medico-citas-pendientes.component.html
+OK    archivo nuevo no existe en develop: medico-citas-pendientes.component.unitaria.spec.ts
+OK    DESPUES de la ficha == archivo del PR: medico-citas-pendientes.component.ts
+OK    DESPUES de la ficha == archivo del PR: medico-citas-pendientes.component.html
+OK    DESPUES de la ficha == archivo del PR: medico-citas-pendientes.component.unitaria.spec.ts
+bloques: 5, archivos: 3, fallos: 0
+Archivos fuera de la ficha: ninguno (3 de 3).
+
+--- P4 (17:00:49) ---
+OK    ANTES aparece 1 vez/veces en develop: frontend/src/index.html
+OK    ANTES aparece 1 vez/veces en develop: login-selection.component.css
+OK    ANTES aparece 1 vez/veces en develop: medico-dashboard.component.css
+OK    ANTES aparece 1 vez/veces en develop: admin-dashboard.component.css
+OK    DESPUES de la ficha == archivo del PR: (los 4 archivos)
+bloques: 8, archivos: 4, fallos: 0
+Archivos fuera de la ficha: ninguno (4 de 4).
+
+--- P5 (en curso; 1.a lectura 16:46:46 con c5bb51f, 2.a lectura con baa1a13) ---
+OK    ANTES (archivo completo) igual a develop: application.properties y WebSecurityConfig.java
+OK    DESPUES de la ficha == archivo del PR: backend/src/main/resources/application.properties
+OK    DESPUES de la ficha == archivo del PR: backend/.../seguridad/WebSecurityConfig.java
+FALLA no existe en el PR: frontend/vercel.json                                  (paso 4.3 pendiente)
+FALLA no existe en el PR: backend/src/test/.../seguridad/WebSecurityConfigCorsTest.java   (paso 4.4 pendiente)
+Lo hecho hasta ahora es identico a la ficha. Sin veredicto.
+
+======================================================================
+3. MENSAJES DE COMMIT Y PR (gh pr view, 16:46:57 y 17:00:49)
+======================================================================
+P1 #50: base develop. Titulo = ficha. Descripcion = ficha, con "Closes #43". 5 commits; los 5 titulos
+        = ficha, en orden. (e20e0ad agrega una descripcion extendida; no afecta.)
+P3 #51: base MASTER (la ficha pide develop). Por eso GitHub muestra 8 commits: si se uniera asi a
+        master traeria tambien 5 commits de develop (def78c0, 5a212cc, 29a28ea, 24ae794, 731d5e1).
+        Titulo = ficha. DESCRIPCION VACIA: no tiene "Closes #44".
+        Commits 1 y 2 = ficha. Commit 3 (2280d9d): "Implement unit tests for
+        MedicoCitasPendientesComponentP3: pruebas unitarias del doble envio y del mensaje (RFC-015)"
+        -> quedo delante el texto que propone GitHub. Corregirlo exige reescribir la historia de la
+        rama (no se puede desde la web sin borrar y rehacer); queda anotado, decide el usuario.
+P4 #53: base develop. Titulo y descripcion = ficha, con "Closes #45". 4 commits con los titulos de la
+        ficha, en orden (mas el trailer Co-Authored-By, ver seccion 1).
+P5 #52: base develop. Titulo y descripcion = ficha, con "Closes #46". 2 de 4 commits; titulos = ficha.
+Issues: #43, #44, #45 y #46 existen y estan abiertos (gh issue view).
+`closingIssuesReferences` sale vacio en todos: es lo esperado, GitHub solo enlaza "Closes" para PR a
+la rama por defecto (master); la ficha ya lo advierte.
+
+======================================================================
+4. PRUEBAS (worktrees temporales; ninguna rama se modifico)
+======================================================================
+Worktrees: `git worktree add --detach <scratchpad>/wt/{base,p1,p3,p5}` (16:46:09) y wt/p4 (17:00:49).
+base = develop 731d5e1 (codigo de LB-10). frontend/node_modules: enlace (junction) al del repo.
+Scripts (scratchpad de la sesion, fuera del repo):
+  correr.cjs  : ng build; unitarias 32 y todas (comandos exactos de PRUEBAS.md); BD recargada + mvnw test;
+                BD recargada + backend y ng serve DEL WORKTREE; Playwright (e2e/ del repo: ningun PR toca
+                e2e/); BD recargada + bateria P01-P25; BD recargada + func.cjs + func-p4.cjs;
+                backend apagado + P11/P18; BD recargada al final.
+  bateria.cjs : el MISMO script de la tarea 19 (scratchpad 238a9e3b...), sin cambios.
+  func.cjs    : comprobacion funcional P1 y P3. func-p4.cjs: P4 (360/768/1280 px y capturas).
+La BD se recargo (DROP DATABASE + database/BDPostaMedica.sql, 21 citas) antes de mvnw test, antes de
+levantar el backend, antes de la bateria, antes de la prueba funcional y al terminar cada variante.
+
+Base de hoy vs LB-10 (salida de la tarea 19, rama hotfix = LB-10):
+  diff (sin lineas "# hora") bateria.txt          -> IDENTICO
+  diff (sin lineas "# hora") bateria-apagado.txt  -> IDENTICO
+  => el entorno de hoy reproduce LB-10; las comparaciones de abajo son contra esta base.
+
+Corridas: base 16:51:07-16:54:29 | P1 16:54:47-16:58:10 | P3 16:58:11-17:01:28 |
+          P4 intento 1 17:03:09-17:07:56 (descartado, ver abajo) | base (solo P4) 17:08:04-17:08:52 |
+          P4 intento 2 17:09:15-17:12:53
+
+                         | base/LB-10 | P1          | P3          | P4
+ng build                 | exit 0, 2 WARNING | exit 0, 2 | exit 0, 2 | exit 0, 2
+  (las 2 de siempre: presupuesto 808.17 kB y 'jquery' no ESM)
+mvnw test                | 66/66      | 67/67 (+GlobalExceptionHandlerTest 1) | 66/66 | 66/66
+unitarias frontend 32    | 32 SUCCESS | 32 SUCCESS  | 32 SUCCESS  | 32 SUCCESS
+unitarias frontend todas | 49 SUCCESS | 49 SUCCESS  | 54 SUCCESS (+5 RFC-015) | 49 SUCCESS
+Playwright (6)           | 6 passed   | 6 passed    | 6 passed    | 6 passed (intento 2)
+Bateria P01-P25 (on)     | = LB-10    | IDENTICA a base | IDENTICA a base | IDENTICA a base
+P11/P18 (backend apagado)| = LB-10    | IDENTICA    | IDENTICA    | IDENTICA
+Todos: "BUILD SUCCESS" y "Failures: 0, Errors: 0".
+Resultado de la bateria (igual que LB-10): 20 PASA, 5 FALLA (P04, P13, P14, P15, P16), las mismas.
+
+P4, intento 1 (descartado): Playwright 0/6, las 6 por tiempo de espera en page.fill del login
+(el formulario no aparecio). Causa en el log de ng serve del worktree:
+  "[vite] (client) error while updating dependencies: Error: EPERM: operation not permitted, rename
+   '...\wt\p4\frontend\.angular\cache\20.3.8\proyecto_valdiviezo\vite\deps_temp_123388cd' -> '...\vite\deps'"
+Es del entorno (cache de Vite en Windows), no del codigo de P4. Se detuvo la corrida, se comprobo que
+4200/8080 quedaron libres y se repitio todo P4 (intento 2): 0 lineas EPERM y 6 passed.
+
+======================================================================
+5. COMPROBACION FUNCIONAL
+======================================================================
+--- P1: consola y log (func.cjs; DNI y clave reemplazados por [DNI]/[CLAVE]) ---
+BASE (16:53:51):
+ /login-paciente: "log: Intentando login paciente: [DNI]" y "log: Login exitoso {..., dni: [DNI]}"
+ /login-medico:   "log: Intentando login medico: [DNI]"  y "log: Login exitoso {...}"
+ /registro (paciente nuevo, DNI y clave generados por el script): contiene DNI=true CLAVE=true
+     "log: Registrando paciente: {..., dni: [DNI], clave: [CLAVE], ...}"
+ POST /api/cita sin cuerpo -> 500 {"message":"Required request body is missing: public ...CitaController.crear(...)","status":"error"}
+ lineas "Error no controlado en la API" en el log: antes=0 despues=0
+P1 (16:57:34):
+ /login-paciente: 3 mensajes (solo los de vite/Angular), DNI=false CLAVE=false, sin "Intentando"/"Login exitoso"
+ /login-medico:   igual
+ /registro:       3 mensajes, DNI=false CLAVE=false, sin "Registrando"; POST 200 y 1 fila en la BD
+ POST /api/cita sin cuerpo -> 500 con el MISMO cuerpo que la base
+ lineas "Error no controlado en la API": antes=1 despues=2 (la anterior es el 500 de P04 de la bateria)
+ Extracto del log del backend de P1:
+   2026-11-11T16:57:40.680-05:00 ERROR ... c.c.b.exception.GlobalExceptionHandler : Error no controlado en la API
+   org.springframework.http.converter.HttpMessageNotReadableException: Required request body is missing: ...
+   2026-11-11T16:56:06.214-05:00 ERROR ... Error no controlado en la API
+   org.springframework.orm.jpa.JpaSystemException: Cannot instantiate query result type '...ResumenMedico' ... (P04)
+ => P1 CUMPLE: la consola no muestra clave ni DNI y el error 500 queda en el log con la misma respuesta.
+
+--- P3: doble clic (func.cjs; cita pendiente creada por la API, PUT demorado 1500 ms con page.route) ---
+BASE (16:54:00):
+ a los 300 ms: {"textoBoton":"Confirmar Aceptación","botonDesactivado":false,"aceptarTablaDesactivado":false}
+ PUT enviados: 2 ; mensaje: "" ; contenedores role=status: 0 ; BD: Confirmada
+P3 (17:00:57):
+ a los 300 ms: {"textoBoton":"Guardando...","botonDesactivado":true,"aceptarTablaDesactivado":true}
+ PUT enviados: 1 ["/api/citas/medico/1/22/estado"]
+ mensaje: "Cita 22 confirmada." visible=true ; contenedores role=status (aria-live=polite): 1 ; modal cerrado
+ BD: 22 | Confirmada ; cita borrada por la API al terminar (200)
+ => P3 CUMPLE: doble clic = 1 peticion y mensaje visible.
+
+--- P4: idioma, titulo y anchos (func-p4.cjs) ---
+                          base (17:08:17)                         P4 (17:11:56)
+lang / title              en / "ProyectoValdiviezo"               es / "Posta Médica Valdiviezo"
+360  login-selection      scrollWidth 380 (desborda)              360
+360  medico pendientes    main 110, sidebar 250, tabla 10         main 360, sidebar 360, tabla 290
+360  admin reportes       content 100, sidebar 260                content 360, sidebar 360
+768  medico pendientes    main 518, tabla 418                     main 768, tabla 698
+768  admin reportes       content 508                             content 768
+1280 (las 3 pantallas)    main 1030 / content 1020                igual
+Capturas a 1280 px (sha256, base = P4):
+  admin-reportes          5a87a5be9f9c75ec76c00739f2b46c5600d195e4be4819e29847a847460d3540
+  login-selection         691c2e3772a28e7b64db5e1f0b6f66f5d79615d7142ce7d2a8c0397314fe6bdf
+  medico-citas-pendientes 80a823f2b58f302c091b46018a4eaf1e1a9689489a39ff4c00d128430e15a378
+  cmp: las 3 IDENTICAS byte a byte.
+ => P4 CUMPLE lo que dice su ficha.
+
+--- P5: no se hizo (en curso). Queda pendiente: sin variables P25 igual a develop; con
+    CORS_ORIGINS, el origen configurado recibe 200 y uno ajeno 403. ---
+
+======================================================================
+6. SIMULACION DE MERGE (git merge-tree; no modifica ramas ni la copia de trabajo)
+======================================================================
+16:50:00 (P1, P3, P5 con c5bb51f) y 17:09:41 (los 4, P5 con baa1a13):
+develop + P1 / P3 / P4 / P5 ...................... sin conflictos (los 4)
+P1+P3, P1+P4, P1+P5, P3+P4, P3+P5, P4+P5 .......... sin conflictos (los 6 pares)
+Secuencial develop -> P1 -> P3 -> P4 -> P5 ........ sin conflictos en cada paso
+Archivos tocados por mas de un PR: ninguno.
+Nota: la simulacion secuencial uso `git commit-tree`, que dejo commits sueltos sin ninguna rama que
+los apunte ("sim1", "sim2", "simulacion t22"); git los elimina solo con el tiempo (gc). No cambian nada.
+
+Orden de merge recomendado: P1 -> P3 -> P4 -> P5
+  - P1 primero: RFC-012 depende de la version de GlobalExceptionHandler que deja P1 (bitacora, tarea 18).
+  - P3 y P4: solo frontend, sin archivos en comun con nadie; P3 despues de corregir su base.
+  - P5 al final, cuando este completo: RFC-011 (H-048) se apoya en el WebSecurityConfig que deje P5.
+  Tecnicamente cualquier orden funciona (no hay conflictos).
+
+======================================================================
+7. VEREDICTO
+======================================================================
+P1 #50  PEDIR CAMBIOS (menor): 2 lineas de espacios en login-paciente.component.ts distintas de la ficha.
+        Todo lo demas cumple (autoria, alcance, commits, PR, pruebas, funcional).
+        Alternativa para el usuario: aprobar tal cual y corregir los espacios despues; el comportamiento
+        no cambia. Se recomienda pedir el cambio porque la regla de la tarea es "aplicado tal cual".
+P3 #51  PEDIR CAMBIOS: base master -> develop, y descripcion vacia (falta el texto de la ficha con
+        "Closes #44"). El codigo es identico a la ficha y pasa todo.
+        Commit 3 con mensaje mezclado: anotado; no se pide rehacerlo (decide el usuario).
+P4 #53  APROBAR: codigo identico a la ficha, todo pasa, funcional cumple.
+        Para el usuario: commits locales con "Co-Authored-By: Claude Opus 5.5" (seccion 1).
+P5 #52  SIN VEREDICTO (en curso): 2 de 4 commits, lo hecho es identico a la ficha.
+
+======================================================================
+8. COMENTARIOS PARA GITHUB (listos para pegar)
+======================================================================
+--- PR #50 (P1) ---
+Hola, gracias por el PR. Revisé todo y está casi perfecto: 4 de los 5 archivos quedaron idénticos a la ficha y todas las pruebas pasan (backend 67/67, frontend 32 y 49, Playwright 6/6, y la consola ya no muestra el DNI ni la clave).
+
+Solo falta un detalle de espacios en `frontend/src/app/features/auth/login-paciente/login-paciente.component.ts`:
+1. La línea 34 tiene 4 espacios. Debe quedar **vacía** (bórrale los espacios, sin borrar la línea).
+2. La línea 35 (`this.authService.login(this.dni, this.clave).subscribe({`) empieza con **5** espacios. Debe empezar con **4**, igual que la línea `if (this.error) return;` que está arriba.
+
+Cómo corregirlo:
+- En GitHub, elige tu rama `feature/rfc-014-p1-consola-y-log`, abre ese archivo y haz clic en el lápiz.
+- Corrige solo esas 2 líneas. No cambies nada más.
+- "Commit changes..." → mensaje: `P1: corregir espacios en login de paciente (RFC-014)` → "Commit directly to the `feature/rfc-014-p1-consola-y-log` branch".
+
+Cuando lo subas, lo vuelvo a revisar.
+
+--- PR #51 (P3) ---
+Hola, gracias por el PR. El código está perfecto: los 3 archivos son idénticos a la ficha y todo pasa (frontend 32 y 54, Playwright 6/6, y con doble clic ahora sale 1 sola petición y aparece "Cita N confirmada.").
+
+Faltan 2 cosas del PR (no del código):
+1. **La base está en `master` y debe ser `develop`.** Por eso GitHub muestra 8 commits en vez de 3. Arriba, junto al título, haz clic en **Edit**. Luego cambia `base: master` por `base: develop` y confirma con "Change base". Después debe decir 3 commits y 3 archivos.
+2. **La descripción está vacía.** Haz clic en los tres puntos `...` del primer comentario y luego en **Edit**. Pega el texto de la sección 6 de tu ficha, completo. Tiene que empezar con `Closes #44`. Guarda con "Update comment".
+
+No hace falta que cambies ningún archivo ni que hagas commits nuevos.
+
+--- PR #53 (P4) ---
+Hola, gracias por el PR. Revisado: los 4 archivos son idénticos a la ficha y todo pasa (frontend 32 y 49, Playwright 6/6). A 360 px la página ya no se sale y la tabla del médico pasa de 10 a 290 px. A 1280 px, las 3 capturas son idénticas a las de develop. Aprobado. No hagas nada más en esta rama.
+
+--- PR #52 (P5) - solo si el usuario quiere avisar del estado ---
+Hola, vi que el PR va avanzando: los 2 archivos que ya subiste (`application.properties` y `WebSecurityConfig.java`) están idénticos a la ficha. Faltan los pasos 4.3 (`frontend/vercel.json`) y 4.4 (`WebSecurityConfigCorsTest.java`). Cuando estén los 4 commits, avísame y lo reviso completo.
+
+======================================================================
+9. LIMPIEZA Y ESTADO FINAL
+======================================================================
+17:13:26 enlaces quitados (solo el enlace) en wt/{base,p1,p3,p4}: node_modules real 375 carpetas antes y despues.
+17:13:33-17:13:37 `git worktree remove` de base, p1, p3, p4 y p5: exit=0 en los 5, sin --force
+(git status de cada uno vacio). `git worktree list` -> solo el repo. Carpeta wt/ vacia.
+Backend y ng serve detenidos al terminar cada corrida; 4200 y 8080 libres. BD recargada al final
+(semilla del repo, 21 citas).
+Salidas completas (fuera del repo): scratchpad de la sesion 2af5bfe9..., carpeta t22/
+(base, p1, p3, p4 [intento 1], p4-intento2, verificador*.txt, prs.txt, merge-sim.txt).

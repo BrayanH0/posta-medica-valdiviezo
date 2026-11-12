@@ -1,4 +1,5 @@
 import { test, expect, APIRequestContext } from '@playwright/test';
+import { conToken } from './token';
 
 // RFC-003: las citas pendientes salen de la base y aceptar/cancelar se guardan en ella.
 // La prueba crea sus propias citas pendientes por la API y las borra al terminar.
@@ -8,12 +9,13 @@ const ID_PACIENTE = 1;
 const creadas: number[] = [];
 
 async function idEstado(request: APIRequestContext, nombre: string): Promise<number> {
-  const estados = await (await request.get(`${API}/api/estado_cita`)).json();
+  const estados = await (await request.get(`${API}/api/estado_cita`, { headers: await conToken(request, 'admin') })).json();
   return estados.find((e: any) => e.nombre_estado === nombre).id_estado_cita;
 }
 
 async function crearCitaPendiente(request: APIRequestContext, motivo: string, hora: string): Promise<number> {
   const resp = await request.post(`${API}/api/cita`, {
+    headers: await conToken(request, 'paciente'),
     data: {
       id_paciente: ID_PACIENTE,
       id_medico: ID_MEDICO,
@@ -29,7 +31,7 @@ async function crearCitaPendiente(request: APIRequestContext, motivo: string, ho
 }
 
 test.afterAll(async ({ request }) => {
-  for (const id of creadas) await request.delete(`${API}/api/cita/${id}`);
+  for (const id of creadas) await request.delete(`${API}/api/cita/${id}`, { headers: await conToken(request, 'admin') });
 });
 
 test('Medico Dashboard - Citas Pendientes Flow', async ({ page, request }) => {
@@ -55,7 +57,7 @@ test('Medico Dashboard - Citas Pendientes Flow', async ({ page, request }) => {
   await expect(page.locator('th:has-text("Motivo")')).toBeVisible();
 
   // 4. La tabla muestra exactamente las citas pendientes del médico que devuelve el servidor
-  const pendientes = await (await request.get(`${API}/api/citas/medico/${ID_MEDICO}?estado=Pendiente`)).json();
+  const pendientes = await (await request.get(`${API}/api/citas/medico/${ID_MEDICO}?estado=Pendiente`, { headers: await conToken(request, 'medico') })).json();
   await expect(page.locator('tbody tr:has(button.btn-accept)')).toHaveCount(pendientes.length);
   const fila = page.locator(`tr:has-text("${motivoAceptar}")`);
   await expect(fila).toContainText('Juan Perez Gomez');
@@ -71,7 +73,7 @@ test('Medico Dashboard - Citas Pendientes Flow', async ({ page, request }) => {
   await expect(page.locator(`td:has-text("${motivoAceptar}")`)).not.toBeVisible();
 
   // Se guardó en la base como "Confirmada"
-  const aceptada = await (await request.get(`${API}/api/cita/${idAceptar}`)).json();
+  const aceptada = await (await request.get(`${API}/api/cita/${idAceptar}`, { headers: await conToken(request, 'admin') })).json();
   expect(aceptada.estado_cita).toBe(await idEstado(request, 'Confirmada'));
 
   // 6. Test "Cancelar" Action
@@ -84,6 +86,6 @@ test('Medico Dashboard - Citas Pendientes Flow', async ({ page, request }) => {
   await expect(page.locator(`td:has-text("${motivoCancelar}")`)).not.toBeVisible();
 
   // Se guardó en la base como "Cancelada"
-  const cancelada = await (await request.get(`${API}/api/cita/${idCancelar}`)).json();
+  const cancelada = await (await request.get(`${API}/api/cita/${idCancelar}`, { headers: await conToken(request, 'admin') })).json();
   expect(cancelada.estado_cita).toBe(await idEstado(request, 'Cancelada'));
 });

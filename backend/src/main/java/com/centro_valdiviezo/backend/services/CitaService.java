@@ -33,6 +33,16 @@ public class CitaService implements ICitaService {
     }
 
     @Override
+    public List<Cita> citasDePaciente(Integer idPaciente) {
+        return citaRepository.findByIdPaciente(idPaciente);
+    }
+
+    @Override
+    public List<Cita> citasDeMedico(Integer idMedico) {
+        return citaRepository.findByIdMedico(idMedico);
+    }
+
+    @Override
     public Cita crearCita(Cita cita) {
         return citaRepository.save(cita);
     }

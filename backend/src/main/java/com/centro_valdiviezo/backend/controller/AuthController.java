@@ -1,5 +1,6 @@
 package com.centro_valdiviezo.backend.controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -11,15 +12,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.centro_valdiviezo.backend.autenticacion.AutenticadorRol;
+import com.centro_valdiviezo.backend.seguridad.TokenUtils;
 
 @RestController
 public class AuthController {
 
     // Spring la entrega ordenada por @Order: paciente -> médico -> administrador
     private final List<AutenticadorRol> autenticadores;
+    private final TokenUtils tokenUtils;
 
-    public AuthController(List<AutenticadorRol> autenticadores) {
+    public AuthController(List<AutenticadorRol> autenticadores, TokenUtils tokenUtils) {
         this.autenticadores = autenticadores;
+        this.tokenUtils = tokenUtils;
     }
 
     @PostMapping("/login")
@@ -37,7 +41,13 @@ public class AuthController {
             for (AutenticadorRol autenticador : autenticadores) {
                 Optional<Map<String, Object>> response = autenticador.autenticar(dni, clave);
                 if (response.isPresent()) {
-                    return ResponseEntity.ok(response.get());
+                    // RFC-011: además de los datos de siempre, el token con el id y el rol (el "tipo").
+                    // Sin id no hay a quién identificar en la API: no se emite token.
+                    Map<String, Object> cuerpo = new HashMap<>(response.get());
+                    if (cuerpo.get("id") instanceof Integer id && cuerpo.get("tipo") instanceof String tipo) {
+                        cuerpo.put("token", tokenUtils.generarToken(id, tipo));
+                    }
+                    return ResponseEntity.ok(cuerpo);
                 }
             }
 

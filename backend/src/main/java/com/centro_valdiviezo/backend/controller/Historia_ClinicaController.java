@@ -2,8 +2,10 @@ package com.centro_valdiviezo.backend.controller;
 
 import com.centro_valdiviezo.backend.model.Historia_Clinica;
 import com.centro_valdiviezo.backend.repository.Historia_ClinicaRepository;
+import com.centro_valdiviezo.backend.seguridad.UsuarioAutenticado;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/historia_clinica")
@@ -15,9 +17,10 @@ public class Historia_ClinicaController {
         this.repository = repository;
     }
 
+    // RFC-011 (H-013): los GET son solo del paciente (WebSecurityConfig) y devuelven solo su historia
     @GetMapping
     public List<Historia_Clinica> obtenerTodos() {
-        return repository.findAll();
+        return repository.findByIdPaciente(UsuarioAutenticado.actual().id());
     }
 
     @PostMapping
@@ -27,7 +30,10 @@ public class Historia_ClinicaController {
 
     @GetMapping("/{id}")
     public Historia_Clinica obtenerPorId(@PathVariable Integer id) {
-        return repository.findById(id).orElse(null);
+        Optional<Historia_Clinica> historia = repository.findById(id);
+        historia.ifPresent(h -> UsuarioAutenticado.exigirPropietario(
+                UsuarioAutenticado.actual().id().equals(h.getId_paciente())));
+        return historia.orElse(null);
     }
 
     @PutMapping("/{id}")

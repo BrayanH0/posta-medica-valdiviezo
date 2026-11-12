@@ -1,0 +1,76 @@
+Tarea 24B — RFC-012: impedir la doble reserva con una restricción en la BD (opción B)
+Rama feature/rfc-012-doble-reserva (desde develop d981f3b). Batería 2026-11-11 19:07:07–19:09:55 (cambios aún sin commit).
+Base: docs/evidencias/t24-base.txt (develop, 18:49–18:53). Salidas completas: scratchpad t24/b/ y t24/migracion.txt.
+
+== 1. Prueba de la migración (database/migraciones/), 19:03:37 (script t24/migracion.cjs)
+== 1. BD nueva con el SQL de la rama
+carga exit=0
+  `slot_activo` tinyint GENERATED ALWAYS AS (if((`estado_cita` = 3),NULL,1)) STORED,
+  UNIQUE KEY `uq_cita_medico_fecha_hora` (`id_medico`,`fecha_cita`,`hora_cita`,`slot_activo`),
+datos: 21	07201dfc72ce4a8dd775dc8f43609353
+== 2. BD de develop + migración
+carga develop exit=0 datos: 21	07201dfc72ce4a8dd775dc8f43609353
+migracion exit=0 salida(duplicados)="" err=""
+SHOW CREATE TABLE igual a la BD nueva: true
+datos tras migrar: 21	07201dfc72ce4a8dd775dc8f43609353 (iguales a la BD nueva: true)
+== 3. back-out
+revertir exit=0 err=""
+tras migrar y revertir, SHOW CREATE TABLE igual a develop: true; datos: 21	07201dfc72ce4a8dd775dc8f43609353
+== 4. BD de develop con una doble reserva activa (09:00 x2 activas; 09:20 una cancelada + una activa)
+migracion exit=1
+salida (duplicados listados): id_medico	fecha_cita	hora_cita	citas_activas	ids // 1	2026-12-07	09:00:00	2	22,23
+error: ERROR 1062 (23000) at line 20: Duplicate entry '1-2026-12-07-09:00:00-1' for key 'cita.uq_cita_medico_fecha_hora'
+tabla sin cambios: true
+
+Primera corrida (19:03:20), con el back-out del RFC original (solo DROP INDEX + DROP COLUMN):
+revertir exit=1 err="ERROR 1553 (HY000) at line 2: Cannot drop index 'uq_cita_medico_fecha_hora': needed in a foreign key constraint"
+-> la FK de id_medico usa el índice UNIQUE; el script de reversión ahora recrea antes el índice id_medico.
+
+== 2. Unitarias y E2E
+mvn-test:   Tests run: 75, Failures: 0, Errors: 0, Skipped: 0 / BUILD SUCCESS   (base: 69)
+  Tests run: 2 ... in com.centro_valdiviezo.backend.CitaDobleReservaIntegracionTest
+  Tests run: 4 ... in com.centro_valdiviezo.backend.exception.GlobalExceptionHandlerDobleReservaTest
+  Tests run: 1 ... in com.centro_valdiviezo.backend.exception.GlobalExceptionHandlerTest   (P1, sin cambios, pasa)
+fe-32:      TOTAL: 32 SUCCESS
+fe-todas:   TOTAL: 56 SUCCESS   (base: 49; +7 de doble-reserva.unitaria.spec.ts)
+playwright: 7 passed (9.7s)     (base: 6)
+  ok 7 tests\registrar-cita-doble-reserva.spec.ts:60:5 › RFC-012: la segunda pestaña recibe 409 con mensaje, y cancelar libera el horario (2.8s)
+
+== 3. Batería: diff contra la base (sin las líneas "# hora"); bateria-apagado.txt sin diferencias
+< P13 POST duplicado 200 idCita:23
+< P13 BD reservas: 2
+< P14 total=23 paciente1=4 distintos=13 BD=23|4
+> P13 POST duplicado 409 idCita:undefined
+> P13 BD reservas: 1
+> P14 total=22 paciente1=3 distintos=13 BD=22|3
+< P16 recibidas=23 delPaciente1=4 tarjetas=4 peticiones=9 {...,"200 GET /api/especialidad/1":4,"200 GET /api/medico/codigo/1":3,...}
+> P16 recibidas=22 delPaciente1=3 tarjetas=3 peticiones=7 {...,"200 GET /api/especialidad/1":3,"200 GET /api/medico/codigo/1":2,...}
+< P20 pantalla: 22 | ... control general | AceptarCancelar // 23 | ... doble reserva (pestana B) | AceptarCancelar
+< P20 SELECT: 22 | ... control general // 23 | ... doble reserva (pestana B)
+> P20 pantalla: 22 | Juan Perez Gomez | 12345678 | 2026-10-26 | 10:00:00 | Prueba LB-0: control general | AceptarCancelar
+> P20 SELECT: 22 | Juan Perez Gomez | 12345678 | 2026-10-26 | 10:00:00 | Prueba LB-0: control general
+< P21 pendientes: 23 | ... doble reserva (pestana B) | AceptarCancelar
+> P21 pendientes: No hay citas pendientes.
+< P22 red: 200 PUT /api/citas/medico/1/23/estado
+< P22 BD: 23 | 1 | 3 | Cancelada | Prueba LB-0: doble reserva (pestana B)
+> P22 NO EJECUTABLE: la cita 23 no está en Citas Pendientes
+> P22 BD: 0 filas con idCita=23
+< P23 medico 1 Cancelada: API [23] BD [23] igual
+> P23 medico 1 Cancelada: API [] BD [] igual
+< P26 codigos {"200":10}
+< P26 cuerpo-no-200: (ninguno)
+< P26 BD filas: 10
+> P26 codigos {"200":1,"409":9}
+> P26 cuerpo-no-200: {"message":"Ese horario ya fue reservado. Elija otra hora.","status":"error"}
+> P26 BD filas: 1
+< P27 duplicado-antes-de-cancelar 200
+< P27 pantalla ofrece 11:40 tras cancelar: false
+< P27 BD: 3,1,1 (estados en orden de idCita)
+> P27 duplicado-antes-de-cancelar 409
+> P27 pantalla ofrece 11:40 tras cancelar: true
+> P27 BD: 3,1 (estados en orden de idCita)
+Sin cambios: P01-P12, P15, P17-P19, P23 (20/20 iguales), P24, P25, "P26 texto-SQL-en-respuestas: false", P11/P18 apagado.
+
+== 4. Observación: log del servidor
+Cada 409 deja en el log una línea de Hibernate "ERROR ... SqlExceptionHelper : Duplicate entry '…' for key 'cita.uq_cita_medico_fecha_hora'"
+más el WARN propio "Reserva rechazada: el horario ya tiene una cita activa (uq_cita_medico_fecha_hora)". La respuesta al cliente no lleva texto SQL.

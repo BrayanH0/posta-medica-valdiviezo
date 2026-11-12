@@ -5,6 +5,9 @@ import { RouterModule, Router } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { calcularHorariosDisponibles, diaDeLaSemana, horaAMinutos, minutosAHora } from './horarios-cita';
 
+// Por si el 409 llega sin cuerpo (el backend manda este mismo texto en "message")
+export const MENSAJE_HORARIO_OCUPADO = 'Ese horario ya fue reservado. Elija otra hora.';
+
 @Component({
   selector: 'app-registrar-cita',
   standalone: true,
@@ -111,6 +114,13 @@ export class RegistrarCitaComponent implements OnInit {
         },
         error: (err) => {
              console.error(err);
+             if (err?.status === 409) {
+                 // RFC-012: otra persona reservó ese horario; se muestra el mensaje del servidor y se recargan las horas
+                 alert(err.error?.message || MENSAJE_HORARIO_OCUPADO);
+                 this.cita.hora_cita = '';
+                 this.cargarHorarios();
+                 return;
+             }
              alert('Error al registrar cita');
         }
     });

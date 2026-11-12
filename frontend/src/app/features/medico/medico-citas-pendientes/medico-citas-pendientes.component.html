@@ -3,6 +3,10 @@
 
     <div *ngIf="error" class="error-message">{{ error }}</div>
 
+    <div role="status" aria-live="polite">
+        <div *ngIf="mensaje" class="alert alert-success">{{ mensaje }}</div>
+    </div>
+
     <div class="table-container" *ngIf="citas">
         <table>
             <thead>
@@ -25,8 +29,8 @@
                     <td>{{ cita.hora }}</td>
                     <td>{{ cita.motivo }}</td>
                     <td class="actions-cell">
-                        <button class="btn-action btn-accept" (click)="confirmAction(cita, 'aceptar')">Aceptar</button>
-                        <button class="btn-action btn-cancel" (click)="confirmAction(cita, 'cancelar')">Cancelar</button>
+                        <button class="btn-action btn-accept" [disabled]="procesando" (click)="confirmAction(cita, 'aceptar')">Aceptar</button>
+                        <button class="btn-action btn-cancel" [disabled]="procesando" (click)="confirmAction(cita, 'cancelar')">Cancelar</button>
                     </td>
                 </tr>
                 <tr *ngIf="citas.length === 0">
@@ -42,7 +46,7 @@
     <div class="modal-content">
         <div class="modal-header" [ngClass]="{'header-accept': actionType === 'aceptar', 'header-cancel': actionType === 'cancelar'}">
             <h3>{{ actionType === 'aceptar' ? 'Aceptar Cita' : 'Cancelar Cita' }}</h3>
-            <button class="close-btn" (click)="closeModal()">×</button>
+            <button class="close-btn" [disabled]="procesando" (click)="closeModal()">×</button>
         </div>
         <div class="modal-body">
             <p>¿Estás seguro que deseas <strong>{{ actionType === 'aceptar' ? 'aceptar' : 'cancelar' }}</strong> la siguiente cita?</p>
@@ -53,9 +57,9 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn-secondary" (click)="closeModal()">Volver</button>
-            <button [class]="actionType === 'aceptar' ? 'btn-confirm-accept' : 'btn-confirm-cancel'" (click)="executeAction()">
-                Confirmar {{ actionType === 'aceptar' ? 'Aceptación' : 'Cancelación' }}
+            <button class="btn-secondary" [disabled]="procesando" (click)="closeModal()">Volver</button>
+            <button [class]="actionType === 'aceptar' ? 'btn-confirm-accept' : 'btn-confirm-cancel'" [disabled]="procesando" (click)="executeAction()">
+                {{ procesando ? 'Guardando...' : 'Confirmar ' + (actionType === 'aceptar' ? 'Aceptación' : 'Cancelación') }}
             </button>
         </div>
     </div>

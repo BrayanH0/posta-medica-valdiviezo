@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test';
+import { conToken } from './token';
 
 // RFC-003: la pantalla de pacientes muestra solo los pacientes del médico, con campos que existen en la base
 const API = 'http://localhost:8080';
 const ID_MEDICO = 1;
 
 test('Medico Dashboard - Pacientes View', async ({ page, request }) => {
-  const pacientes = await (await request.get(`${API}/api/citas/medico/${ID_MEDICO}/pacientes`)).json();
+  const pacientes = await (await request.get(`${API}/api/citas/medico/${ID_MEDICO}/pacientes`, { headers: await conToken(request, 'medico') })).json();
   expect(pacientes.length).toBeGreaterThan(0);
 
   // 1. Login real del médico 1

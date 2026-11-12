@@ -104,12 +104,9 @@ export class RegistroComponent {
       return;
     }
     
-    console.log('Registrando paciente:', this.paciente);
-    
     // Llamar al servicio para guardar en la base de datos
     this.servicePaciente.crearPaciente(this.paciente).subscribe({
-      next: (response) => {
-        console.log('Paciente registrado exitosamente:', response);
+      next: () => {
         alert('Registro exitoso. Ahora puede iniciar sesión con su DNI y contraseña.');
         this.router.navigate(['/login-paciente']);
       },

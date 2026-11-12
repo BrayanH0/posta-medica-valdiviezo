@@ -1,0 +1,289 @@
+TAREA 23 - RE-REVISION DE LOS PR #50 (P1), #51 (P3) Y #52 (P5) (sin merge, sin push)
+Fecha: 2026-11-11. Horas tomadas de `date` y de los registros de cada corrida (-0500).
+Metodologia: la de la tarea 22 (docs/evidencias/t22-revision-prs.txt).
+Rama de esta evidencia: docs/t22-revision-prs, con develop (463ca1d) traido por merge (commit 2319db2).
+
+======================================================================
+0. ESTADO AL REVISAR
+======================================================================
+18:01:59 git checkout develop + git pull: develop 731d5e1 -> 463ca1d (merge del PR #53, P4: 4 archivos,
+         +61 -3). develop = origin/develop.
+18:02:01 git fetch + gh pr list:
+  #53 P4  MERGED
+  #52 P5  OPEN  base develop  head 73cec2a  (4 commits; en la tarea 22 tenia 2, baa1a13)
+  #51 P3  OPEN  base develop  head 2280d9d  (sin commits nuevos; la base era master en la tarea 22)
+  #50 P1  OPEN  base develop  head 0cf8c0b  (sin commits nuevos)
+18:13:17 fetch final: los 3 heads siguen iguales (0cf8c0b, 2280d9d, 73cec2a).
+`git diff --stat LB-10 develop -- . ':!docs'` -> solo los 4 archivos de P4 (CSS e index.html).
+`git diff --stat 731d5e1 develop -- backend frontend/vercel.json` -> vacio: los archivos de la ficha P5
+no cambiaron en develop, asi que el verificador puede comparar contra el develop de hoy.
+
+======================================================================
+1. PR #52 (P5) - REVISION COMPLETA
+======================================================================
+--- 1.1 Autoria (git log origin/develop..rama) ---
+  c5bb51f 16:17:14 | baa1a13 16:54:36 | 1931e4d 17:17:20 | 73cec2a 17:25:14   (2026-11-11 -0500)
+  autor     Rashidchz <166431729+Rashidchz@users.noreply.github.com>
+  committer GitHub <noreply@github.com>   (editor web, como pide la ficha)
+  trailers: ninguno (sin Co-Authored-By).
+  => ningun commit es de BrayanH0 (item 14.2).
+
+--- 1.2 Base ---
+  gh: baseRefName = develop. merge-base(rama, origin/develop) = 731d5e1 (sale de develop).
+  develop avanzo 5 commits despues (P4); la rama no los tiene, pero no hay conflicto (seccion 3).
+
+--- 1.3 Mensajes de commit y PR ---
+  Los 4 titulos son identicos a la ficha, seccion 5, y en el mismo orden. Sin cuerpo extra.
+  Titulo del PR = ficha. Descripcion del PR vs bloque de la ficha (sin CR): `diff` -> IDENTICA
+  (15 lineas), empieza con "Closes #46".
+
+--- 1.4 Archivos vs ficha (verificar-ficha-eol.cjs del scratchpad de la tarea 22, copiado sin cambios;
+        18:03:12) ---
+OK    ANTES (archivo completo) igual a develop: backend/src/main/resources/application.properties
+OK    ANTES (archivo completo) igual a develop: backend/src/main/java/com/centro_valdiviezo/backend/seguridad/WebSecurityConfig.java
+fatal: path 'frontend/vercel.json' does not exist in 'develop'
+OK    archivo nuevo no existe en develop: frontend/vercel.json
+fatal: path 'backend/src/test/java/com/centro_valdiviezo/backend/seguridad/WebSecurityConfigCorsTest.java' does not exist in 'develop'
+OK    archivo nuevo no existe en develop: backend/src/test/java/com/centro_valdiviezo/backend/seguridad/WebSecurityConfigCorsTest.java
+OK    DESPUES de la ficha == archivo del PR: backend/src/main/resources/application.properties
+OK    DESPUES de la ficha == archivo del PR: backend/src/main/java/com/centro_valdiviezo/backend/seguridad/WebSecurityConfig.java
+OK    DESPUES de la ficha == archivo del PR: frontend/vercel.json
+OK    DESPUES de la ficha == archivo del PR: backend/src/test/java/com/centro_valdiviezo/backend/seguridad/WebSecurityConfigCorsTest.java
+bloques: 6, archivos: 4, fallos: 0
+(Las 2 lineas "fatal:" son la salida esperada de `git show` al comprobar que el archivo nuevo no existe.)
+Archivos del PR (git diff --stat develop...rama): 4, los 4 de la ficha. Ninguno fuera de la ficha.
+
+--- 1.5 Pruebas (worktrees temporales; ninguna rama se modifico) ---
+Worktrees `git worktree add --detach` en el scratchpad de esta sesion (18:02:56):
+  wt/base = develop 463ca1d (LB-10 + P4) | wt/p5 = origin/feature/rfc-016-p5-config-despliegue 73cec2a
+frontend/node_modules: enlace (junction) al del repo (375 carpetas).
+Orquestador correr23.cjs: misma secuencia que correr.cjs de la tarea 22 (ng build; unitarias 32 y todas
+con los comandos de PRUEBAS.md; BD recargada + mvnw test; BD recargada + backend y ng serve DEL WORKTREE;
+Playwright desde e2e/ del repo; BD recargada + bateria P01-P25 con el MISMO bateria.cjs de la tarea 19;
+backend apagado + P11/P18), sin las comprobaciones de P1/P3/P4 y con la prueba CORS (cors.cjs, 1.6).
+La BD se recargo (DROP DATABASE + database/BDPostaMedica.sql, 21 citas) antes de mvnw test, antes de
+levantar el backend, antes de la bateria, antes de cada arranque con variables y al final.
+Corridas: base 18:04:34-18:08:35 | p5 18:09:00-18:12:42.
+
+                          | LB-10 (t19/t22) | base hoy (develop) | P5
+ng build                  | exit 0, 2 WARN  | exit 0, 2 WARNING  | exit 0, 2 WARNING (las 2 de siempre)
+mvnw test                 | 66/66           | 66/66 BUILD SUCCESS| 68/68 BUILD SUCCESS (+2 WebSecurityConfigCorsTest)
+unitarias frontend 32     | 32 SUCCESS      | 32 SUCCESS         | 32 SUCCESS
+unitarias frontend todas  | 49 SUCCESS      | 49 SUCCESS         | 49 SUCCESS
+Playwright                | 6 passed        | 6 passed           | 6 passed
+Bateria P01-P25 (on)      | -               | IDENTICA a LB-10   | IDENTICA a LB-10 y a la base
+P11/P18 (backend apagado) | -               | IDENTICA a LB-10   | IDENTICA a LB-10 y a la base
+Comparacion: `diff <(grep -v '^# hora' LB-10/bateria.txt) <(grep -v '^# hora' X/bateria.txt)` y lo mismo
+con bateria-apagado.txt; LB-10 = salida de la tarea 19 (scratchpad 238a9e3b..., carpeta hotfix/).
+WebSecurityConfigCorsTest: "Tests run: 2, Failures: 0, Errors: 0, Skipped: 0".
+Siguen fallando en la bateria las mismas de LB-10 (P04, P13, P14, P15, P16): ninguna cambia.
+ng build de P5: dist/proyecto_valdiviezo/browser/index.html existe (= outputDirectory de vercel.json).
+No se probo en Vercel.
+
+--- 1.6 CORS, puerto y show-sql, sin y con variables (cors.cjs) ---
+Origenes probados: http://localhost:4200, https://posta-valdiviezo.vercel.app, http://sitio-ajeno.example.
+Peticiones: OPTIONS (preflight POST /api/cita) y GET /api/especialidad con Origin; se anota el codigo y
+la cabecera Access-Control-Allow-Origin (ACAO). "Hibernate:" = lineas del log del backend.
+
+SIN variables (P25 de la bateria IDENTICO a LB-10 en base y P5; ademas cors.cjs):
+                                   base (18:07:32)        P5 (18:11:39)
+  responde en                      8080                   8080        (8081: sin respuesta en los dos)
+  localhost:4200  OPTIONS / GET    200 / 200              200 / 200   ACAO=http://localhost:4200
+  vercel.app      OPTIONS / GET    403 / 403              403 / 403   sin ACAO
+  sitio-ajeno     OPTIONS / GET    403 / 403              403 / 403   sin ACAO
+  sin Origin GET                   200                    200
+  lineas Hibernate:                239                    239
+
+CON PORT=8081, SHOW_SQL=false, CORS_ORIGINS="http://localhost:4200,https://posta-valdiviezo.vercel.app":
+                                   base (18:07:59)        P5 (18:12:05)
+  "Tomcat started on port"         8080 (ignora PORT)     8081        (el otro puerto: sin respuesta)
+  localhost:4200  OPTIONS / GET    200 / 200              200 / 200   ACAO=http://localhost:4200
+  vercel.app      OPTIONS / GET    403 / 403              200 / 200   ACAO=https://posta-valdiviezo.vercel.app
+  sitio-ajeno     OPTIONS / GET    403 / 403              403 / 403   sin ACAO
+  sin Origin GET                   200                    200
+  lineas Hibernate:                7  (ignora SHOW_SQL)   0
+
+Igual que la anterior pero con un espacio despues de la coma
+(CORS_ORIGINS="http://localhost:4200, https://posta-valdiviezo.vercel.app"; prueba agregada, no esta en la ficha):
+  base (18:08:17): igual que la fila anterior (ignora las variables).
+  P5   (18:12:24): mismos resultados que sin espacio: 8081, vercel 200 con ACAO, ajeno 403, 0 Hibernate:.
+  => el espacio no rompe la lista (Spring recorta cada elemento al convertir a String[]).
+
+La base sirve de control: con las mismas variables develop sigue en 8080, rechaza a Vercel y escribe SQL
+en el log. El cambio de comportamiento lo produce el codigo de P5.
+DB_URL: no se probo con otro valor (la ficha tampoco lo pide); con el valor por defecto todo arranca y
+la bateria es identica.
+
+--- 1.7 Resultado P5 ---
+Cumple la ficha completa: autoria, base, 4 commits, PR, archivos, pruebas y comprobacion funcional.
+
+======================================================================
+2. PR #50 (P1) Y #51 (P3) - SOLO LO PEDIDO EN LA TAREA 22
+======================================================================
+--- P1 #50: espacios en login-paciente.component.ts ---
+Head 0cf8c0b, el mismo de la tarea 22: no hay commits nuevos.
+`git show origin/feature/rfc-014-p1-consola-y-log:frontend/src/app/features/auth/login-paciente/login-paciente.component.ts | tr -d '\r' | sed -n '33,36p' | cat -A`
+    if (this.error) return;$
+    $                                                           <- linea 34: 4 espacios (debe estar vacia)
+     this.authService.login(this.dni, this.clave).subscribe({$  <- linea 35: 5 espacios (deben ser 4)
+        next: (res: any) => {$
+Revision en GitHub: BrayanH0 CHANGES_REQUESTED 2026-11-11T22:49:50Z (17:49:50 -0500). Estado de GitHub:
+mergeable=MERGEABLE, mergeStateStatus=BLOCKED (por la revision con cambios pedidos).
+=> TODAVIA NO CORRIGIO.
+
+--- P3 #51: descripcion con "Closes #44" ---
+Head 2280d9d, el mismo de la tarea 22: no hay commits nuevos.
+`gh pr view 51 --json body` -> body len=0: la descripcion sigue VACIA.
+Base: ahora es develop. Linea de tiempo del PR (gh api .../issues/51/timeline):
+  base_ref_changed 2026-11-11T22:51:19Z actor BrayanH0     <- el cambio de base lo hizo BrayanH0, no P3
+  reviewed (CHANGES_REQUESTED) 2026-11-11T22:52:48Z BrayanH0
+GitHub muestra ahora 3 commits y 3 archivos. mergeable=MERGEABLE, mergeStateStatus=BLOCKED.
+=> TODAVIA NO CORRIGIO lo que le toca (la descripcion). La base ya no hace falta pedirla.
+
+======================================================================
+3. SIMULACION DE MERGE SOBRE DEVELOP ACTUALIZADO (git merge-tree; 18:13:41)
+======================================================================
+develop = 463ca1d. Las 3 ramas salen de 731d5e1; develop les lleva 5 commits (P4).
+  P1: 5 commits | P3: 3 commits | P5: 4 commits
+develop + P1 .............. exit=0, sin conflictos
+develop + P3 .............. exit=0, sin conflictos
+develop + P5 .............. exit=0, sin conflictos
+P1+P3, P1+P5, P3+P5 ....... exit=0, sin conflictos
+Secuencial (git commit-tree, sin tocar ramas):
+  P1 -> P3 -> P5  : 0, 0, 0  arbol final 96f3aee
+  P5 -> P3 -> P1  : 0, 0, 0  arbol final 96f3aee
+  P3 -> P1 -> P5  : 0, 0, 0  arbol final 96f3aee
+  => el arbol final es el mismo en cualquier orden.
+Archivos en comun entre los 3 PR: ninguno (cada archivo aparece en 1 solo PR). Ninguno toca los
+archivos de P4.
+GitHub (18:14): #52 mergeable=MERGEABLE state=CLEAN | #50 y #51 MERGEABLE pero BLOCKED (cambios pedidos).
+Limite: la simulacion comprueba conflictos de texto; las pruebas se corrieron sobre cada PR por separado
+(P1 y P3 en la tarea 22 sobre 731d5e1, P5 hoy), no sobre el arbol combinado 96f3aee.
+Nota: los commits de la simulacion ("sim t23 ...", "sim") quedan sueltos, sin rama; git los elimina solo.
+
+Orden recomendado: P5 -> P1 -> P3
+  - P5 primero porque es el unico listo; no hace falta esperar a los otros (sin conflictos, mismo arbol).
+  - P1 y P3 cuando corrijan, en cualquier orden. La dependencia de RFC-012 con P1 y de RFC-011 con P5
+    es para trabajos posteriores: se cumple con cualquier orden entre estos 3.
+  - Si el usuario prefiere el orden de la tarea 22 (P1 -> P3 -> P5), el resultado es el mismo arbol;
+    solo obliga a esperar a P1 y P3 para unir P5.
+
+======================================================================
+4. VEREDICTO
+======================================================================
+P5 #52  APROBAR. Codigo identico a la ficha (0 fallos), 68/68, 32/49, 6/6, bateria y P11/P18 identicas a
+        LB-10, y CORS/puerto/show-sql funcionan con y sin variables.
+P1 #50  SIGUE PEDIR CAMBIOS: los 2 renglones de espacios no se corrigieron (sin commits nuevos).
+P3 #51  SIGUE PEDIR CAMBIOS: la descripcion sigue vacia (falta "Closes #44"). La base ya es develop
+        (la cambio BrayanH0).
+
+======================================================================
+5. COMENTARIOS PARA GITHUB (listos para pegar)
+======================================================================
+--- PR #52 (P5) ---
+Hola, gracias por el PR. Lo revisé completo: los 4 archivos son idénticos a la ficha, los 4 commits y la descripción también, y todo pasa (backend 68/68 con las 2 pruebas nuevas, frontend 32 y 49, Playwright 6/6). La batería completa da lo mismo que la línea base.
+
+También lo probé con y sin variables:
+- Sin variables funciona igual que antes: puerto 8080 y solo se acepta `http://localhost:4200`.
+- Con `PORT=8081`, `SHOW_SQL=false` y `CORS_ORIGINS="http://localhost:4200,https://posta-valdiviezo.vercel.app"`: arranca en 8081, el dominio de Vercel recibe 200, un origen ajeno sigue recibiendo 403 y el log no tiene ninguna línea `Hibernate:`.
+
+Aprobado. No hagas nada más en esta rama.
+
+--- PR #50 (P1) ---
+Hola, volví a revisar y la rama sigue igual que en la revisión anterior (no hay commits nuevos). Falta el mismo detalle en `frontend/src/app/features/auth/login-paciente/login-paciente.component.ts`:
+1. La línea 34 tiene 4 espacios. Debe quedar **vacía** (bórrale los espacios, sin borrar la línea).
+2. La línea 35 (`this.authService.login(this.dni, this.clave).subscribe({`) empieza con **5** espacios. Debe empezar con **4**, igual que `if (this.error) return;`, que está arriba.
+
+Cómo corregirlo:
+- En GitHub, elige tu rama `feature/rfc-014-p1-consola-y-log`, abre ese archivo y haz clic en el lápiz.
+- Corrige solo esas 2 líneas. No cambies nada más.
+- "Commit changes..." → mensaje: `P1: corregir espacios en login de paciente (RFC-014)` → "Commit directly to the `feature/rfc-014-p1-consola-y-log` branch".
+
+Es lo único que falta; todo lo demás ya está aprobado.
+
+--- PR #51 (P3) ---
+Hola, volví a revisar. La base ya está en `develop` (la cambié yo), así que eso ya no tienes que hacerlo. Ahora el PR muestra 3 commits y 3 archivos, como debe ser.
+
+Solo falta una cosa: **la descripción sigue vacía.** Haz clic en los tres puntos `...` del primer comentario del PR y luego en **Edit**. Pega el texto completo de la sección 6 de tu ficha. Debe empezar con `Closes #44`. Guarda con "Update comment".
+
+No cambies ningún archivo ni hagas commits nuevos.
+
+======================================================================
+6. LIMPIEZA Y ESTADO FINAL
+======================================================================
+18:14:10 enlaces node_modules quitados (solo el enlace) en wt/base y wt/p5; el node_modules real del repo
+         sigue con 375 carpetas. `git status --porcelain` de los 2 worktrees: 0 lineas.
+18:14:23 `git worktree remove` de base y p5: exit=0 en los 2, sin --force. `git worktree list` -> solo el repo.
+Backend y ng serve detenidos al terminar cada corrida; 4200, 8080 y 8081 libres (Get-NetTCPConnection
+sin resultados a las 18:14:10). BD recargada al final (18:12:42, 21 citas).
+18:14:34 git checkout docs/t22-revision-prs + `git merge --no-edit develop` -> commit de merge; se
+         corrigio el mensaje con `git commit --amend` para agregar la linea Co-Authored-By (local, sin
+         push) -> 2319db2 (padres 169743c y 463ca1d).
+No hubo merge de PR, push ni comentarios en GitHub.
+Salidas completas (fuera del repo): scratchpad de la sesion c74b1801..., carpeta t23/ (base/, p5/,
+verificador-p5.txt, p5-body.txt, p5-ficha-body.txt, merge-sim.txt, correr23.cjs, cors.cjs).
+
+======================================================================
+7. RE-REVISION DE P1 #50 (pedida por el usuario despues del commit 57cdfd9)
+======================================================================
+18:29:47 git fetch: feature/rfc-014-p1-consola-y-log 0cf8c0b..9d59c01 (1 commit nuevo).
+--- 7.1 Commit nuevo ---
+  9d59c01 2026-11-11 18:27:28 -0500
+  autor pfaberio27-png <pfaberio27@gmail.com>, committer GitHub <noreply@github.com> (editor web). Sin trailers.
+  Asunto exacto (git log --format='[%s]' | cat -A):
+    [ P1: corregir espacios en login de paciente (RFC-014)]$
+  -> el mensaje es el pedido, pero empieza con UN ESPACIO. Es solo estetico; quitarlo exige reescribir la
+     historia de la rama (force push). No se pide (decide el usuario).
+  Diff (git show 9d59c01 | cat -A): 1 archivo, +2 -2, solo las 2 lineas pedidas:
+    -    $                                                       (4 espacios)
+    -     this.authService.login(this.dni, this.clave).subscribe({$ (5 espacios)
+    +$                                                           (vacia)
+    +    this.authService.login(this.dni, this.clave).subscribe({$  (4 espacios)
+  PR: base develop, 6 commits, 5 archivos (los de la ficha). merge-base con develop = 731d5e1.
+--- 7.2 Archivos vs ficha (verificar-ficha-eol.cjs; 18:30:03) ---
+OK    ANTES aparece 1 vez/veces en develop: .../login-paciente/login-paciente.component.ts
+OK    ANTES aparece 1 vez/veces en develop: .../login-medico/login-medico.component.ts
+OK    ANTES aparece 1 vez/veces en develop: .../registro/registro.component.ts
+OK    ANTES (archivo completo) igual a develop: .../exception/GlobalExceptionHandler.java
+OK    archivo nuevo no existe en develop: .../exception/GlobalExceptionHandlerTest.java
+OK    DESPUES de la ficha == archivo del PR: (los 5 archivos)
+bloques: 9, archivos: 5, fallos: 0          (en la tarea 22: fallos 1, login-paciente lineas 34-35)
+--- 7.3 Pruebas (worktrees wt/base = develop 463ca1d y wt/p1 = 9d59c01; correr23.cjs con FUNC=1 y
+        SIN_CONVAR=1: agrega func.cjs de la tarea 22, sin cambios, y omite la prueba con variables, que es de P5) ---
+Corridas: base 18:30:50-18:34:28 (carpeta t23/base-func) | P1 18:34:28-18:38:04 (carpeta t23/p1)
+                          | base hoy (develop) | P1 (9d59c01)
+ng build                  | exit 0, 2 WARNING  | exit 0, 2 WARNING
+mvnw test                 | 66/66 BUILD SUCCESS| 67/67 BUILD SUCCESS (+1 GlobalExceptionHandlerTest)
+unitarias frontend 32     | 32 SUCCESS         | 32 SUCCESS
+unitarias frontend todas  | 49 SUCCESS         | 49 SUCCESS
+Playwright                | 6 passed           | 6 passed
+Bateria P01-P25 (on)      | IDENTICA a LB-10   | IDENTICA a LB-10
+P11/P18 (backend apagado) | IDENTICA a LB-10   | IDENTICA a LB-10
+--- 7.4 Comprobacion funcional (func.cjs; DNI y clave reemplazados por [DNI]/[CLAVE]) ---
+BASE (18:33:50):
+  /login-paciente: 5 mensajes, DNI=true; "Intentando login paciente: [DNI]" y "Login exitoso {..., dni: [DNI]}"
+  /login-medico:   5 mensajes, DNI=true; "Intentando login medico: [DNI]" y "Login exitoso {...}"
+  /registro:       5 mensajes, DNI=true CLAVE=true; "Registrando paciente: {..., clave: [CLAVE], ...}"
+  POST /api/cita sin cuerpo -> 500 {"message":"Required request body is missing: ...","status":"error"}
+  log "Error no controlado en la API": antes=0 despues=0
+P1 (18:37:26):
+  /login-paciente, /login-medico, /registro: 3 mensajes cada uno (solo vite/Angular), DNI=false CLAVE=false;
+    los logins llegan a /welcome y /medico-dashboard; el registro da POST 200 y 1 fila en la BD
+  POST /api/cita sin cuerpo -> 500 con el MISMO cuerpo que la base
+  log "Error no controlado en la API": antes=1 despues=2 (la anterior es el 500 de P04 de la bateria)
+  => mismo resultado que P1 en la tarea 22: CUMPLE.
+(func.cjs tambien corre la parte de P3; en base y en P1 da 2 PUT y sin mensaje, lo esperado sin P3.)
+--- 7.5 Simulacion de merge con el head nuevo (18:38:34) ---
+develop 463ca1d | P1 9d59c01 | P3 2280d9d | P5 73cec2a
+develop+P1, P1+P3, P1+P5: exit=0, sin conflictos.
+P5 -> P1 -> P3 y P1 -> P3 -> P5: 0, 0, 0 en cada paso; arbol final 1cda20f en los dos ordenes
+(cambia respecto de 96f3aee de la seccion 3 porque cambio P1).
+GitHub: #50 MERGEABLE, BLOCKED (la revision CHANGES_REQUESTED de BrayanH0 sigue vigente hasta que se apruebe).
+--- 7.6 Veredicto P1 #50: APROBAR ---
+Orden recomendado: P5 -> P1 (los dos listos) -> P3 cuando ponga la descripcion.
+--- 7.7 Comentario para GitHub (PR #50, listo para pegar) ---
+Hola, gracias por la corrección. Revisé el commit nuevo: cambia solo las 2 líneas pedidas y ahora los 5 archivos son idénticos a la ficha. Volví a correr todo y pasa (backend 67/67, frontend 32 y 49, Playwright 6/6); la consola ya no muestra el DNI ni la clave y el error 500 queda en el log del servidor. Aprobado. No hagas nada más en esta rama.
+--- 7.8 Limpieza ---
+18:38:50 enlaces node_modules quitados (375 carpetas reales intactas); git status de los 2 worktrees: 0
+lineas; `git worktree remove` base y p1: exit 0, sin --force; `git worktree list` -> solo el repo.
+4200/8080/8081 libres. BD recargada al final (18:38:04, 21 citas).

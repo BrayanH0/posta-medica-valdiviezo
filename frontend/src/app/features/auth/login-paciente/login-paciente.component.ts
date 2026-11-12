@@ -32,10 +32,8 @@ export class LoginPacienteComponent {
     this.error = validarFormularioLogin(this.dni, this.clave);
     if (this.error) return;
 
-    console.log('Intentando login paciente:', this.dni);
     this.authService.login(this.dni, this.clave).subscribe({
         next: (res: any) => {
-            console.log('Login exitoso', res);
             const resultado = resolverRespuestaLogin(res, LOGIN_PACIENTE);
             if ('ruta' in resultado) {
                 // La sesión se guarda solo si el usuario es paciente
