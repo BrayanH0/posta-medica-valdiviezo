@@ -1155,3 +1155,9 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - **Nuevas:** U93 `TokenUtilsTest` (7), U94 `SeguridadApiIntegracionTest` (15: login de 3 roles con token, 401 sin token / inválido / vencido en 21 endpoints, 403 por rol, IDOR de paciente y de médico, listados filtrados, `/fecha` reducida para el paciente, alta pública sin *mass assignment*, H-048), U95 interceptor (6), U96 guarda (3), U97 token de sesión y aviso (3), E02 `sesion-token.spec.ts` (4).
 - Para las E2E se levantaron backend y `ng serve` a mano con un `JWT_SECRET` aleatorio generado con `crypto.randomBytes(48)` dentro del comando, sin imprimirlo ni escribirlo en archivos.
 - Evidencia: `mvnw test` → `Tests run: 97, Failures: 0, Errors: 0` (75 + 7 + 15); frontend `TOTAL: 73 SUCCESS` (61 + 6 + 3 + 3); Playwright `11 passed (16.7s)` (7 + 4).
+
+### [2026-11-12 12:36–12:45] Script de la batería en el repositorio (EC-19, commit aparte)
+- Por qué: el usuario pidió que el script de P01–P27 no viva solo en el scratchpad (ya se perdió una vez: tarea 19).
+- Qué: `e2e/bateria/correr.cjs` (corrida completa; rutas relativas a la raíz; exige `DB_PASSWORD`; si `JWT_SECRET` no está definida genera una aleatoria solo en memoria), `e2e/bateria/bateria.cjs` (P01–P28) y `e2e/bateria/LEEME.md`. Registrado como **EC-19** en `docs/ELEMENTOS_CONFIGURACION.md`.
+- Cambios respecto de la copia de la tarea 25: rutas relativas; cada llamada a la API envía el token del rol que puede hacerla (detalle por prueba en `docs/PRUEBAS.md`); la salida enmascara los tokens (`eyJ` + 7 caracteres + `…`); P09 muestra además el contenido del token (`sub`, `rol`, duración); P15 compara con la BD; P28 nueva (matriz de autorización); se quitaron las líneas "X" de RFC-017 (observaciones de esa tarea, no pruebas de PRUEBAS.md).
+- Comprobación: `grep -rnE "eyJ|JWT_SECRET=|DB_PASSWORD="` en `e2e/bateria/` → solo la expresión regular que enmascara.
