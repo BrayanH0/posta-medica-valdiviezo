@@ -6,6 +6,7 @@ import { LoginAdminComponent } from './features/auth/login-admin/login-admin.com
 import { RegistroComponent } from './features/auth/registro/registro.component';
 import { WelcomeComponent } from './features/paciente/welcome/welcome.component';
 import { MedicoDashboardComponent } from './features/medico/medico-dashboard.component';
+import { rolGuard } from './core/guards/rol.guard';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'login-selection', pathMatch: 'full' },
@@ -14,10 +15,11 @@ export const routes: Routes = [
     { path: 'login-medico', component: LoginMedicoComponent },
     { path: 'login-admin', component: LoginAdminComponent },
     { path: 'registro', component: RegistroComponent },
-    { path: 'welcome', component: WelcomeComponent },
+    { path: 'welcome', component: WelcomeComponent, canActivate: [rolGuard('paciente')] },
     {
         path: 'medico-dashboard',
         component: MedicoDashboardComponent,
+        canActivate: [rolGuard('medico')],
         children: [
             { path: '', loadComponent: () => import('./features/medico/medico-inicio/medico-inicio.component').then(m => m.MedicoInicioComponent) },
             { path: 'pacientes', loadComponent: () => import('./features/medico/medico-pacientes/medico-pacientes.component').then(m => m.MedicoPacientesComponent) },
@@ -28,9 +30,9 @@ export const routes: Routes = [
     },
 
     // Patient Routes
-    { path: 'paciente/registrar-cita', loadComponent: () => import('./features/paciente/registrar-cita/registrar-cita.component').then(m => m.RegistrarCitaComponent) },
-    { path: 'paciente/mis-citas', loadComponent: () => import('./features/paciente/mis-citas/mis-citas.component').then(m => m.MisCitasComponent) },
-    { path: 'paciente/historial-medico', loadComponent: () => import('./features/paciente/historial-medico/historial-medico.component').then(m => m.HistorialMedicoComponent) },
+    { path: 'paciente/registrar-cita', canActivate: [rolGuard('paciente')], loadComponent: () => import('./features/paciente/registrar-cita/registrar-cita.component').then(m => m.RegistrarCitaComponent) },
+    { path: 'paciente/mis-citas', canActivate: [rolGuard('paciente')], loadComponent: () => import('./features/paciente/mis-citas/mis-citas.component').then(m => m.MisCitasComponent) },
+    { path: 'paciente/historial-medico', canActivate: [rolGuard('paciente')], loadComponent: () => import('./features/paciente/historial-medico/historial-medico.component').then(m => m.HistorialMedicoComponent) },
 
     // Old routes kept if needed, but 'paciente' might conflict if not careful.
     {
@@ -49,6 +51,7 @@ export const routes: Routes = [
     // Admin Routes
     {
         path: 'admin',
+        canActivate: [rolGuard('administrador')],
         loadComponent: () => import('./features/admin/dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
         children: [
             { path: '', pathMatch: 'full', redirectTo: 'inicio' },

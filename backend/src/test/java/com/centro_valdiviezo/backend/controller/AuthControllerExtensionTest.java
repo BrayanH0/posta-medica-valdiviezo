@@ -23,6 +23,7 @@ import com.centro_valdiviezo.backend.autenticacion.AutenticadorRol;
 import com.centro_valdiviezo.backend.repository.MedicoRepository;
 import com.centro_valdiviezo.backend.repository.PacienteRepository;
 import com.centro_valdiviezo.backend.repository.UsuarioRepository;
+import com.centro_valdiviezo.backend.seguridad.TokensDePrueba;
 
 // RFC-007 (LB-7). Abierto/Cerrado: un rol nuevo se agrega con una clase nueva y AuthController
 // no se modifica. El cuarto rol es inventado aquí; no existe en la aplicación.
@@ -64,7 +65,7 @@ class AuthControllerExtensionTest {
                 new AutenticadorPaciente(pacienteRepository, encoder),
                 new AutenticadorMedico(medicoRepository, encoder),
                 new AutenticadorAdministrador(usuarioRepository, encoder),
-                new AutenticadorRolDeEjemplo()));
+                new AutenticadorRolDeEjemplo()), TokensDePrueba.tokenUtils());
 
         Map<String, String> credenciales = new HashMap<>();
         credenciales.put("dni", "55556666");

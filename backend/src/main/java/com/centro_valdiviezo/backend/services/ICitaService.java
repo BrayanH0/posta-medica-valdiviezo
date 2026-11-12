@@ -14,6 +14,11 @@ public interface ICitaService {
 
     List<Cita> listarCitas();
 
+    // RFC-011: citas de un paciente / de un médico (el id sale del token)
+    List<Cita> citasDePaciente(Integer idPaciente);
+
+    List<Cita> citasDeMedico(Integer idMedico);
+
     Cita crearCita(Cita cita);
 
     Optional<Cita> obtenerCitaPorId(Integer id);

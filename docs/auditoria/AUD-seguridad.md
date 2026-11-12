@@ -70,6 +70,7 @@ Ejecución: 2026-11-09 16:59:13 – 17:21:39 (-05:00). Entorno: repo `Proyecto` 
 - Esfuerzo estimado: Medio.
 - Archivos involucrados: `PacienteController.java`, `PacienteService.java`, `UsuarioController.java`, `UsuarioService.java`, `MedicoService.java` (mismo patrón `save`).
 - Apto para integrante: No (toca varios archivos y lógica de datos).
+- **Seguimiento (tarea 26, 2026-11-12, RFC-011, rama `feature/rfc-011-autenticacion-api`, pendiente de merge):** el **alta pública de paciente** quedó corregida (decisión D3 del usuario): `PacienteService.crearPaciente` pone `idPaciente = null` antes de guardar, así que `POST /api/paciente/crear` siempre crea un paciente nuevo. Prueba U94 `elAltaPublicaIgnoraElIdPacienteYNoSobrescribeOtraCuenta`: con el id de un paciente existente se crea otro id y la clave y los nombres del existente no cambian. `POST /usuarios/nuevo` y `POST /api/medico/crear` **conservan** el patrón, pero desde RFC-011 solo los llama un administrador (sin token → 401; otro rol → 403); queda registrado en `docs/HALLAZGOS.md` (observaciones de la tarea 26). AUD-SEG-01, SEG-02 y SEG-03 también quedan atendidas por RFC-011 (P28, U94).
 
 ### AUD-SEG-05 — Contraseñas en texto plano guardadas y devueltas por la API
 - Severidad / Categoría OWASP: Crítica / A02 Cryptographic Failures.

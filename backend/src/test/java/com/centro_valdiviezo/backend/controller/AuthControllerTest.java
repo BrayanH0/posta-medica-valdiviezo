@@ -10,6 +10,7 @@ import com.centro_valdiviezo.backend.model.Medico;
 import com.centro_valdiviezo.backend.repository.MedicoRepository;
 import com.centro_valdiviezo.backend.repository.PacienteRepository;
 import com.centro_valdiviezo.backend.repository.UsuarioRepository;
+import com.centro_valdiviezo.backend.seguridad.TokensDePrueba;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -45,7 +46,7 @@ public class AuthControllerTest {
         authController = new AuthController(List.of(
                 new AutenticadorPaciente(pacienteRepository, encoder),
                 new AutenticadorMedico(medicoRepository, encoder),
-                new AutenticadorAdministrador(usuarioRepository, encoder)));
+                new AutenticadorAdministrador(usuarioRepository, encoder)), TokensDePrueba.tokenUtils());
     }
 
     @Test

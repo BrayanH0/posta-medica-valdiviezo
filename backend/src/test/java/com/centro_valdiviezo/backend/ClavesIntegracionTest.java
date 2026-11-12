@@ -66,11 +66,17 @@ class ClavesIntegracionTest {
         }
     }
 
+    // RFC-011 (tarea 26): los listados exigen token; se usa uno de administrador (id 1), que puede pedir todos
+    @Autowired
+    private com.centro_valdiviezo.backend.seguridad.TokenUtils tokenUtils;
+
     @Test
     void losListadosNoDevuelvenLaClave() throws Exception {
+        String token = tokenUtils.generarToken(1, "administrador");
         for (String ruta : List.of("/api/paciente", "/api/medico", "/usuarios", "/api/paciente/codigo/1",
                 "/api/medico/codigo/1")) {
-            String cuerpo = mvc.perform(get(ruta)).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+            String cuerpo = mvc.perform(get(ruta).header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
             assertFalse(cuerpo.contains("\"clave\""), ruta);
             assertFalse(cuerpo.contains("$2a$"), ruta);
         }

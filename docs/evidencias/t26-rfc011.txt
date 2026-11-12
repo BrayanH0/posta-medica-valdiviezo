@@ -1,0 +1,187 @@
+TAREA 26 - RFC-011 Autenticacion JWT y autorizacion por rol y propietario
+=======================================================================
+Fecha: 2026-11-12. Horas reales: `date`, `git log` y el resumen del runner.
+Regla de esta evidencia: ningun token se escribe completo (solo los primeros caracteres y "...").
+
+0. Parte 0 - rama docs/t22-revision-prs
+---------------------------------------
+11:46:06  git fetch; develop = origin/develop = 897bdbb; la rama no existe en origin
+          (git ls-remote --heads origin docs/t22-revision-prs -> vacio).
+          git log develop..docs/t22-revision-prs -> 4 commits (169743c, 2319db2, 57cdfd9, d0eca11)
+          git merge develop:
+            CONFLICT (content): Merge conflict in docs/BITACORA.md
+            CONFLICT (content): Merge conflict in docs/HALLAZGOS.md
+          Resolucion con Edit, conservando ambas partes (detalle en BITACORA, "Tarea 26 - Parte 0").
+          grep -c "^<<<<<<<\|^>>>>>>>\|^=======$" -> 0 en los dos archivos.
+          commit e7fdf0c "Merge develop en docs/t22-revision-prs (tarea 26, parte 0)"
+          git diff --stat develop docs/t22-revision-prs:
+            docs/BITACORA.md                       | 154 ++++
+            docs/HALLAZGOS.md                      |  11 ++
+            docs/evidencias/t22-revision-prs.txt   | 312 ++++
+            docs/evidencias/t23-rerevision-prs.txt | 289 ++++
+            4 files changed, 766 insertions(+)
+          -> la rama solo agrega documentacion respecto de develop.
+
+1. Parte 1 - bateria base (develop 897bdbb, rama feature/rfc-011-autenticacion-api recien creada)
+-----------------------------------------------------------------------------------------------
+Runner: copia del de la tarea 25 (scratchpad t26/correr24.cjs + bateria.cjs; solo cambia la carpeta).
+[11:48:58] rama feature/rfc-011-autenticacion-api, HEAD 897bdbb, cambios sin commit: 0
+[11:49:10] ng build exit=0
+[11:49:21] frontend caracterizacion: TOTAL: 32 SUCCESS
+[11:49:28] frontend todas:           TOTAL: 61 SUCCESS   (56 en la tarea 25 + 5 de P3, ya en develop)
+[11:49:55] mvnw test: Tests run: 75, Failures: 0, Errors: 0, Skipped: 0 / BUILD SUCCESS
+[11:50:26] Playwright: 7 passed (18.1s)
+[11:50:27-11:51:55] P01-P27 (BD recargada: 21 citas)
+[11:51:59-11:52:18] P11/P18 con el backend apagado
+[11:52:19] BD recargada (21 citas); backend y frontend detenidos
+
+Lineas clave:
+P01 14/14 en 200 (cita 2811B, historia_clinica 746B, paciente 2743B, usuarios 82B, ...); clave:false en todos
+P02 6/6 en 200 ; P03 11/11 en 200, sin clave
+P04 500 {"message":"Cannot instantiate query result type '...ResumenMedico' ...   -> FALLA (H-005)
+P05-P10, P17, P19 iguales a la tarea 25
+P13 POST duplicado 409, BD reservas: 1
+P14 total=22 paciente1=3 distintos=13 BD=22|3                                     -> FALLA (H-013)
+P15 total=5 paciente1=1                                                          -> FALLA (H-013)
+P16 recibidas=22 delPaciente1=3 tarjetas=3 peticiones=7                          -> FALLA (H-013)
+P20-P24 PASA (P22 crea la cita 24 y la cancela; P23 20/20)
+P25 4200 -> 200 en 6 preflight + GET; otro-origen -> 403 en los 7
+P26 {"200":1,"409":9}, 1 fila ; P27 409 / ofrece 11:40 / 200, estados 3,1
+P11 apagado: mensaje de conexion en las 4 pantallas ; P18 ERR_CONNECTION_REFUSED, ls {}
+Resumen base: 23 PASA, 4 FALLA (P04, P14, P15, P16). Igual a la tarea 25.
+
+2. Codigo JWT existente (H-025)
+-------------------------------
+- seguridad/TokenUtils.java: estatico; secreto escrito en el codigo (linea 15, valor no se copia aqui);
+  generarToken(nombre, correo) sin id ni rol; 3600 s; validarToken da siempre ROLE_USER.
+- seguridad/JWTAuthorizationFilter.java: lee "Authorization: Bearer", valida y pone la autenticacion.
+  Comentado en WebSecurityConfig. Reutilizable si se le da el rol y el id.
+- seguridad/JWTAuthenticationFilter.java + UserDetailServiceImpl: solo buscan administrador y paciente
+  (NO medico) y responden solo {"token":...}. No sirve para los 3 roles: /login seguira en AuthController.
+- WebSecurityConfig: anyRequest().permitAll(); bean passwordEncoder = NoOpPasswordEncoder (H-048).
+- jjwt 0.11.5 en el pom.
+
+3. Bateria completa en la rama (script del repositorio, EC-19: node e2e/bateria/correr.cjs <salida>)
+-------------------------------------------------------------------------------------------------
+Corrida A: HEAD 1b6aa54, 12:39:32-12:42:40, cambios sin commit: 0. JWT_SECRET generado por el runner (no se muestra).
+Corrida B: HEAD 4b473a5 (correccion de seguridad del script), 15:16:54-15:20:15; "cambios sin commit: 4" = SETUP.md,
+           docs/BITACORA.md, docs/PRUEBAS.md (documentacion en curso) y e2e/bateria/bateria.cjs.bak (sin versionar).
+           Ningun cambio de codigo. Salida de P01-P28 y P11/P18 IDENTICA a la corrida A
+           (diff sin horas ni idCita autogenerados -> sin diferencias; 0 "ERROR DEL SCRIPT").
+
+ng build exit=0 (las 2 advertencias de siempre: presupuesto 809.95 kB, jquery no ESM)
+frontend caracterizacion: TOTAL: 32 SUCCESS            (base 32)
+frontend todas:           TOTAL: 73 SUCCESS            (base 61; +U95 x6, U96 x3, U97 x3)
+mvnw test: Tests run: 97, Failures: 0, Errors: 0       (base 75; +U93 x7, U94 x15)
+Playwright: 11 passed                                  (base 7; +E02 x4)
+
+Comparacion P01-P28 (base = seccion 1; rama = corrida A/B):
+P01  base: 14/14 200 sin token (cita 2811B, historia 746B, evolucion 1443B)
+     rama: 14/14 200 con token (cita 2811B con admin; historia 148B y evolucion 390B con el paciente 1: solo lo suyo)
+           sin token: 401 en 13 de 14; /api/especialidad (publico) 200
+P02  6/6 200 (igual; /fecha del medico 1 con su token: respuesta completa igual)
+P03  11/11 200 (igual; /codigo/1 sin clave)
+P04  500 Cannot instantiate ... ResumenMedico   (igual, FALLA, H-005)
+P05  ls:{"token":"eyJhbGciOi…","userId":"1","userName":"Juan Perez Gomez","userType":"paciente"} -> /welcome
+P06  ls:{"token":"eyJhbGciOi…","userId":"1",...,"userType":"medico"} -> /medico-dashboard
+P07  ls:{"token":"eyJhbGciOi…","userId":"1",...,"userType":"administrador"} -> /admin/inicio
+     (P05-P07: unica diferencia con la base = la clave "token", esperado por RFC-011)
+P08, P10, P19   iguales (401 -> ls {} y mismos mensajes; roles cruzados igual)
+P09  igual + "token":"eyJhbGciOi…" token{sub:1,rol:paciente|medico|administrador,duracion_s:7200}; invalido 401
+P12, P13 iguales (P13 duplicado 409, 1 reserva)
+P14  base: total=22 paciente1=3 distintos=13 BD=22|3   -> FALLA
+     rama: total=3  paciente1=3 distintos=1  BD=22|3   -> PASA (H-013)
+P15  base: total=5 paciente1=1                         -> FALLA
+     rama: total=1 paciente1=1 BD=5|1                  -> PASA (H-013)
+P16  base: recibidas=22 delPaciente1=3 tarjetas=3 peticiones=7 -> FALLA
+     rama: recibidas=3  delPaciente1=3 tarjetas=3 peticiones=7 -> PASA (H-013; las 7 peticiones son H-014)
+P17  igual (3 roles: tras cerrar sesion ls {}; mis-citas -> /login-paciente); "antes" incluye el token
+P20-P24 iguales (P22 crea y cancela la 24; P23 20/20 con el token de cada medico; P24 sin clave)
+P25  igual (6 preflight + GET 200 desde 4200; 403 desde otro origen)
+P26  {"200":1,"409":9}, 1 fila, sin texto SQL (igual)
+P27  409 / ofrece 11:40 / 200, estados 3,1 (igual)
+P28  (nueva) 17/17 como se esperaba
+P11/P18 apagado: iguales
+Resumen: base 23 PASA / 4 FALLA (P04,P14,P15,P16) sobre P01-P27 -> rama 27 PASA / 1 FALLA (P04) sobre P01-P28.
+
+4. Evidencia con curl (15:25:20-15:25:27)
+-----------------------------------------
+Backend arrancado en el mismo comando que el script, con un JWT_SECRET aleatorio en memoria (crypto.randomBytes(48));
+el token vencido se firma con ese mismo secreto. Ningun token se imprime completo (sed enmascara "eyJ" + 7 caracteres).
+grep -cE "eyJ[A-Za-z0-9_-]{20,}" sobre la salida -> 0. BD recargada antes y despues.
+
+## 1. Login de los 3 roles (token enmascarado; contenido decodificado sin el secreto)
+$ curl -X POST /login -d '{"dni":"12345678","clave":"***"}'
+  -> {"apellidos":"Perez Gomez","tipo":"paciente","success":true,"id":1,"dni":"12345678","nombres":"Juan","token":"eyJhbGciOi…"}
+     contenido del token: sub=1 rol=paciente exp-iat=7200 s
+$ curl -X POST /login -d '{"dni":"10000001","clave":"***"}'
+  -> {"apellidos":"Santos Ruiz","tipo":"medico","success":true,"cmp":"CMP12345","id":1,"dni":"10000001","nombres":"Jorge","token":"eyJhbGciOi…"}
+     contenido del token: sub=1 rol=medico exp-iat=7200 s
+$ curl -X POST /login -d '{"dni":"87654321","clave":"***"}'
+  -> {"apellidos":"Principal","tipo":"administrador","success":true,"id":1,"dni":"87654321","rol":"ADMIN","nombres":"Admin","token":"eyJhbGciOi…"}
+     contenido del token: sub=1 rol=administrador exp-iat=7200 s
+$ curl -X POST /login  -d '{"dni":"12345678","clave":"malaclave"}'
+  -> {"error":"Credenciales inválidas"} HTTP 401
+## 2. 401 sin token / token inválido / token vencido
+$ curl -X GET /api/cita
+  -> {"error":"Debe iniciar sesión"} HTTP 401
+$ curl -X GET /api/historia_clinica
+  -> {"error":"Debe iniciar sesión"} HTTP 401
+$ curl -X GET /usuarios
+  -> {"error":"Debe iniciar sesión"} HTTP 401
+$ curl -X POST /usuarios/nuevo  -d '{"nombre":"x","rol":"ADMIN"}'
+  -> {"error":"Debe iniciar sesión"} HTTP 401
+$ curl -X GET /api/cita -H 'Authorization: Bearer <token inválido>'
+  -> {"error":"Debe iniciar sesión"} HTTP 401
+  (token vencido: firmado con el JWT_SECRET de esta sesión, exp hace 100 s)
+$ curl -X GET /api/cita -H 'Authorization: Bearer <token vencido>'
+  -> {"error":"Debe iniciar sesión"} HTTP 401
+## 3. 403 por rol
+$ curl -X GET /api/paciente -H 'Authorization: Bearer <token paciente>'
+  -> {"error":"No tiene permiso para este recurso"} HTTP 403
+$ curl -X GET /usuarios -H 'Authorization: Bearer <token paciente>'
+  -> {"error":"No tiene permiso para este recurso"} HTTP 403
+$ curl -X GET /api/reportes/dashboard -H 'Authorization: Bearer <token médico>'
+  -> {"error":"No tiene permiso para este recurso"} HTTP 403
+$ curl -X GET /api/historia_clinica -H 'Authorization: Bearer <token médico>'
+  -> {"error":"No tiene permiso para este recurso"} HTTP 403
+$ curl -X GET /api/historia_clinica -H 'Authorization: Bearer <token admin>'
+  -> {"error":"No tiene permiso para este recurso"} HTTP 403
+## 4. IDOR: el id sale del token, no de la URL
+$ curl -X GET /api/cita/2 -H 'Authorization: Bearer <token paciente 1>'
+  -> {"error":"No tiene permiso para este recurso"} HTTP 403
+$ curl -X GET /api/historia_clinica/2 -H 'Authorization: Bearer <token paciente 1>'
+  -> {"error":"No tiene permiso para este recurso"} HTTP 403
+$ curl -X GET /api/paciente/codigo/2 -H 'Authorization: Bearer <token paciente 1>'
+  -> {"error":"No tiene permiso para este recurso"} HTTP 403
+$ curl -X DELETE /api/cita/2 -H 'Authorization: Bearer <token paciente 1>'
+  -> {"error":"No tiene permiso para este recurso"} HTTP 403
+$ curl -X POST /api/cita -H 'Authorization: Bearer <token paciente 1>' -d '{"id_paciente":2,"id_medico":1,"fecha_cita":"2099-12-27","hora_cita":"08:00:00","motivo":"curl ajena","estado_cita":1}'
+  -> {"error":"No tiene permiso para este recurso"} HTTP 403
+$ curl -X GET /api/citas/medico/2?estado=Atendida -H 'Authorization: Bearer <token médico 1>'
+  -> {"error":"No tiene permiso para este recurso"} HTTP 403
+$ curl -X PUT /api/citas/medico/2/2/estado -H 'Authorization: Bearer <token médico 1>' -d '{"estado":"Cancelada"}'
+  -> {"error":"No tiene permiso para este recurso"} HTTP 403
+## 5. Lo propio sí (listados filtrados por el token)
+$ curl -X GET /api/cita -H 'Authorization: Bearer <token paciente 1>'
+  -> [{"idCita":1,"id_paciente":1,"id_medico":1,"fecha_cita":"2023-07-01","hora_cita":"09:00:00","motivo":"Chequeo general","estado_cita":4},{"idCita":6,"id_paciente":1,"id_medico":6,"fecha_cita":"2023-07-06","hora_cita":"09:00:00","mo  (recortado a 230 caracteres)
+$ curl -X GET /api/historia_clinica -H 'Authorization: Bearer <token paciente 1>'
+  -> [{"idhistoria_Clinica":1,"id_paciente":1,"fecha_creacion":"2023-01-10","observaciones":"Sin observaciones","tipo_sangre":"O+","alergias":"Ninguna"}] HTTP 200
+$ curl -X GET /api/paciente/codigo/1 -H 'Authorization: Bearer <token paciente 1>'
+  -> {"idPaciente":1,"nombres":"Juan","apellidos":"Perez Gomez","dni":"12345678","fecha_nacimiento":"1990-05-10","sexo":"M","telefono":"999888777","id_estado_paciente":1,"id_ubigeo":1} HTTP 200
+$ curl -X GET /api/citas/medico/1?estado=Confirmada -H 'Authorization: Bearer <token médico 1>'
+  -> [] HTTP 200
+## 6. /fecha: paciente (solo hora y estado) vs. médico dueño (completo)
+$ curl -X GET /api/citas/medico/2/fecha/2023-07-02 -H 'Authorization: Bearer <token paciente 1>'
+  -> [{"hora_cita":"10:00:00","estado_cita":2}] HTTP 200
+$ curl -X GET /api/citas/medico/2/fecha/2023-07-02 -H 'Authorization: Bearer <token médico 2>'
+  -> [{"idCita":2,"id_paciente":2,"id_medico":2,"fecha_cita":"2023-07-02","hora_cita":"10:00:00","motivo":"Consulta pediátrica","estado_cita":2}] HTTP 200
+## 7. Público
+$ curl -X GET /api/especialidad/1
+  -> {"id_especialidad":1,"nombre_especialidad":"Medicina General","descripcion":"Atención médica básica","precio":50.0} HTTP 200
+## 8. Alta pública con idPaciente existente (AUD-SEG-04): crea otro id
+$ curl -X POST /api/paciente/crear  -d '{"idPaciente":2,"nombres":"Curl","apellidos":"Evidencia","dni":"99887766","clave":"clave-curl","sexo":"M"}'
+  -> {"idPaciente":16,"nombres":"Curl","apellidos":"Evidencia","dni":"99887766","fecha_nacimiento":null,"sexo":"M","telefono":null,"id_estado_paciente":null,"id_ubigeo":null} HTTP 200
+  BD: paciente 2 sigue siendo Maria Lopez Quispe
+  BD: nuevo id 16   (el paciente de prueba se borro al terminar; la BD se recargo despues)
+# fin 15:25:27

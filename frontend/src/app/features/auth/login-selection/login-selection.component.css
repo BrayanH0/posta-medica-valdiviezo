@@ -1,3 +1,12 @@
+/* RFC-011: aviso de sesión vencida */
+.aviso-sesion {
+    color: #842029;
+    background: #f8d7da;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+}
+
 .selection-container {
     display: flex;
     align-items: center;
