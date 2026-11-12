@@ -1352,3 +1352,93 @@ Evidencia: `docs/evidencias/t23-rerevision-prs.txt`, sección 7.
   - Comparación por líneas (script de Node en el scratchpad, sin contar líneas vacías ni `---`) de la bitácora resuelta contra `HEAD` y contra `origin/develop`: líneas de la rama ausentes 0, de `develop` ausentes 0, repetidas de más 0, líneas nuevas fuera de esta entrada 0.
   - `git diff --cached --stat origin/develop` (se compara con `origin/develop` porque el `develop` local seguía en `897bdbb`, anterior al PR #57): `docs/BITACORA.md` +165, `docs/HALLAZGOS.md` +11, `docs/evidencias/t22-revision-prs.txt` +312, `docs/evidencias/t23-rerevision-prs.txt` +289; 4 archivos, 777 inserciones, **0 líneas borradas**, **0 archivos fuera de `docs/`**.
 - Sin push (lo hace el usuario). No se tocó código ni pruebas.
+
+---
+
+## Tarea 27 — Release v1.1.0 (GitFlow, rama `release/1.1`)
+
+> El PR #58 (conflicto resuelto en la entrada anterior) ya está unido a `develop` (`b947a75`), así que esa entrada llega a la release.
+
+### [2026-11-12 15:46] Preparación
+- `JWT_SECRET` existe en el proceso y en el usuario: longitud 64 (no se mostró el valor). `DB_PASSWORD` existe.
+- `git checkout develop` + `git pull` (fast-forward `897bdbb..b947a75`); `git checkout -b release/1.1` desde `b947a75` ("Merge pull request #58").
+- El código de `develop` es el mismo que se probó en la tarea 26 (`4b473a5`): `git diff --stat 4b473a5 HEAD` → solo `SETUP.md` y `docs/`.
+- Versiones antes del cambio: `backend/pom.xml` **0.0.1-SNAPSHOT**, `frontend/package.json` **0.0.0** (también en `package-lock.json`, líneas 3 y 9).
+
+### [2026-11-12 15:46:49–15:51:11] Batería completa antes del cambio de versión
+- `node e2e/bateria/correr.cjs <scratchpad>/t27-base` (EC-19, sin modificar) con HEAD `b947a75` y 0 cambios sin commit. `ng build` (configuración por defecto = `production`) exit 0, con las 2 advertencias de siempre; frontend 32/32 y 73/73; `mvnw test` 97/97; Playwright 11/11; P01–P28: **27 PASA · 1 FALLA (P04, H-005)**; P11/P18 con el backend apagado, iguales. Comparado línea por línea con la tarea 26: solo cambian horas e ids autogenerados (P27). Tokens completos en la salida: 0.
+- `mvnw package` (15:50:46–15:51:11): exit 0, surefire 97/97, `backend-0.0.1-SNAPSHOT.jar`.
+- Resultado: **igual a la tarea 26**; se sigue con la release. Evidencia: `docs/evidencias/t27-release-v1.1.0.txt`, sección 1.
+
+### [2026-11-12 15:51–15:52] Cambio de versión a 1.1.0 y verificación
+- Qué (Edit): `backend/pom.xml` línea 17 → `1.1.0`; `frontend/package.json` línea 3 → `1.1.0`; `frontend/package-lock.json` líneas 3 y 9 (raíz) → `1.1.0`.
+- Por qué: la release v1.1.0 necesita que el número de versión del producto coincida con el tag. Se usa **1.1.0** sin `-SNAPSHOT` porque es una versión publicada (MENOR: correcciones y mejoras compatibles, después del parche 1.0.1).
+- Por qué también `package-lock.json`: repite la versión del `package.json` en su raíz; si no se cambia, el lock queda distinto del `package.json` hasta el próximo `npm install`. No cambia ninguna dependencia.
+- Alternativas descartadas: `npm version 1.1.0` y `mvn versions:set` (modifican archivos desde la terminal, lo que prohíbe CLAUDE.md; además `npm version` crea un commit y un tag por su cuenta, y la tarea no permite tags); `1.1.0-SNAPSHOT` (es la convención para desarrollo, no para una versión publicada).
+- Evidencia después del cambio (15:51:46–15:52:46): `ng build` exit 0 (mismas 2 advertencias); frontend 32/32 y 73/73; BD recargada (21 citas); `mvnw package` exit 0, `Tests run: 97, Failures: 0, Errors: 0, Skipped: 0`, `Building jar: …\backend-1.1.0.jar`, `BUILD SUCCESS`; BD recargada al terminar (21 citas). Sección 3 de la evidencia.
+
+### [2026-11-12 15:52–15:56] Documentación de la release
+- (Fallo propio, corregido antes del commit: el título de esta entrada decía primero "15:52–15:58", una hora de cierre escrita por adelantado. Se reemplazó por la hora real de `date`, 15:56:27.)
+- `CHANGELOG.md` (nuevo, EC-20): v1.0.1 (RFC-010, issue #7, PR #48 y #49) y v1.1.0 (RFC-011 a RFC-017, issues #12, #13, #16, #42–#46 y #54; PR #49–#53 y #55–#58), en lenguaje sencillo, con lo que sigue pendiente (P04/H-005, RFC-018/H-047, el secreto JWT viejo en el historial).
+- `docs/HALLAZGOS.md`: H-012, H-013, H-016, H-025, H-042 y H-048 decían "pendiente de merge", y H-043 a H-046 decían "Abierto", aunque sus PR ya estaban en `develop`. Pasan a "en `develop` y en `release/1.1`, sale en v1.1.0". No se marcan "Cerrado" hasta el merge en `master` y LB-11. Nota "Tarea 27" sobre los issues que siguen abiertos.
+- `docs/ELEMENTOS_CONFIGURACION.md`: la versión 1.1.0 en EC-01, EC-02, EC-05 y EC-06; los cambios de RFC-011 a RFC-017 en EC-01 a EC-04, EC-08 y EC-18 (que estaban sin registrar desde RFC-010); EC-20 nuevo (`CHANGELOG.md`); nota sobre el remoto de GitHub en el encabezado.
+- **Por qué los issues siguen abiertos:** GitHub solo cierra un issue por "Closes #N" cuando el cambio llega a la rama por defecto (`master`). Los PR #50–#57 se unieron a `develop`, y en los PR #50–#53 el "Closes" estaba en la descripción del PR, no en los commits. Por eso el PR de `release/1.1` a `master` debe llevar "Closes" de los 9 issues.
+- No se tocó código funcional ni pruebas: los únicos archivos fuera de `docs/` son `backend/pom.xml`, `frontend/package.json`, `frontend/package-lock.json` (versión) y `CHANGELOG.md`.
+
+### Estado y pendientes (tarea 27)
+- Rama `release/1.1` con el commit "Release v1.1.0" (hash en `git log`; no se escribe aquí porque este archivo forma parte de ese commit). Sin push, merge ni tags: los hace el usuario (comandos en el reporte del chat).
+- Entorno al terminar: BD local recargada con `database/BDPostaMedica.sql` (21 citas); el runner detuvo backend y frontend. `backend/target/` contiene los jar `backend-0.0.1-SNAPSHOT.jar` (corrida previa) y `backend-1.1.0.jar` (no versionados).
+- Pendientes del usuario, en orden: (a) push de `release/1.1` y PR a `master` con "Closes" de los 9 issues; (b) después del merge en GitHub, tags anotados `LB-11` y `v1.1.0` sobre el commit de merge de `master`, y su push; (c) PR de `master` a `develop` para devolver los cambios de la release. Después del merge: pasar a "Cerrado (…, LB-11)" los 10 hallazgos de HALLAZGOS y su "Estado en GitHub", y publicar el GitHub Release v1.1.0.
+- Cumplimiento de CLAUDE.md: archivos modificados solo con Edit/Write; horas de `date` y del runner; batería completa antes y compilación más unitarias después del cambio; sin push ni comandos destructivos de Git; ninguna prueba modificada.
+- Commit: "Release v1.1.0" se creó a las 15:56:52 y se enmendó (`--amend`, sin push) para agregar estos comandos y el texto del Release. Así queda un solo commit de release.
+
+#### Comandos para el usuario (cmd, uno por línea)
+a) Push de `release/1.1` y PR a `master` (unir con **"Create a merge commit"**, no squash, para que el tag quede sobre el merge):
+```
+git push -u origin release/1.1 && gh pr create --base master --head release/1.1 --title "Release v1.1.0" --body "Release v1.1.0 (GitFlow). Detalle en CHANGELOG.md. Bateria completa en release/1.1: P01-P28 27 PASA / 1 FALLA (P04, H-005, conocido); frontend 32/32 y 73/73; backend 97/97; Playwright 11/11; ng build y mvnw package sin errores. Closes #12, Closes #13, Closes #16, Closes #42, Closes #43, Closes #44, Closes #45, Closes #46, Closes #54"
+```
+b) Después del merge en GitHub, tags anotados sobre el commit de merge de `master` y su push (`git log -1` muestra el commit antes de etiquetar; debe ser "Merge pull request #… from BrayanH0/release/1.1"):
+```
+git checkout master && git pull && git log -1 --format="%h %s" && git tag -a LB-11 -m "LB-11: release v1.1.0 (RFC-011 a RFC-017)" && git tag -a v1.1.0 -m "v1.1.0: autenticacion JWT, sin doble reserva, paquetes P1-P5 y datos ficticios" && git push origin LB-11 v1.1.0
+```
+c) PR de `master` a `develop` para devolver los cambios de la release:
+```
+gh pr create --base develop --head master --title "Merge master (v1.1.0) en develop" --body "Devuelve a develop el merge de release/1.1 (v1.1.0): version 1.1.0 en pom.xml y package.json, CHANGELOG.md y documentacion de la tarea 27. Sin cambios de codigo funcional."
+```
+
+#### Texto para el GitHub Release v1.1.0
+Tag `v1.1.0`. Título: **v1.1.0 – Seguridad, reservas y uso en el celular**. Cuerpo:
+```
+## Qué cambia
+**Seguridad**
+- Hay que iniciar sesión para usar la API; el token vence a las 2 horas (RFC-011, #57).
+- Cada usuario ve solo lo suyo y cada rol entra solo a sus pantallas (RFC-011, #57).
+- La clave secreta de los tokens ya no está en el código: se lee de JWT_SECRET (RFC-011).
+- Nada sensible en la consola del navegador; los errores del servidor quedan en el log (RFC-014, #50).
+
+**Correcciones**
+- Ya no se puede reservar dos veces el mismo horario con el mismo médico (RFC-012, #56).
+- El médico no puede aceptar o cancelar una cita dos veces por error y ve un mensaje de confirmación (RFC-015, #51).
+- Los datos de ejemplo usan nombres inventados y se arreglaron las tildes (RFC-017, #55).
+
+**Mejoras**
+- Pantallas usables en el celular; idioma español y título correcto (RFC-013, #53).
+- Backend configurable por variables de entorno y vercel.json para el frontend (RFC-016, #52).
+
+## Issues cerrados
+#12, #13, #16, #42, #43, #44, #45, #46, #54
+
+## Antes de actualizar
+- **JWT_SECRET es obligatoria**: sin ella (o con menos de 32 bytes) el backend no arranca. Ver SETUP.md.
+- Para una base de datos ya creada, aplicar database/migraciones/RFC-012-slot-activo.sql.
+
+## Pendiente
+- P04: /api/medico/resumenMedico sigue respondiendo 500 (H-005, #5).
+- RFC-018 (formulario Registrar Cita a prueba de doble clic, #47) no entra en esta versión.
+- La clave JWT antigua sigue en el historial de Git (H-025).
+
+## Pruebas
+P01-P28: 27 PASA / 1 FALLA (P04, conocido). Frontend 32/32 y 73/73, backend 97/97, Playwright 11/11, ng build y mvnw package sin errores.
+
+Detalle completo: CHANGELOG.md
+```
