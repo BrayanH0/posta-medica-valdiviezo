@@ -1,6 +1,9 @@
 // Lógica común de los 3 logins (RFC-005, R1 DRY): validación, mensajes, decisión sobre la
 // respuesta del servidor, guardado de la sesión y lectura del error. Funciones puras, sin Angular.
 
+// RFC-011: clave de localStorage del token de /login
+export const CLAVE_TOKEN = 'token';
+
 export const MENSAJES_LOGIN = {
   dniInvalido: 'DNI inválido. Debe contener 8 dígitos numéricos.',
   claveVacia: 'Por favor ingrese su contraseña.',
@@ -52,6 +55,8 @@ export function guardarSesion(res: any, config: ConfigLogin): void {
   if (!config.guardarSoloConValor || res.id) localStorage.setItem('userId', res.id.toString());
   if (!config.guardarSoloConValor || res.nombres) localStorage.setItem('userName', `${res.nombres} ${res.apellidos}`);
   if (!config.guardarSoloConValor || res.tipo) localStorage.setItem('userType', res.tipo);
+  // RFC-011: token de la API (lo envía AuthInterceptor; AuthService.logout lo borra con localStorage.clear())
+  if (res.token) localStorage.setItem(CLAVE_TOKEN, res.token);
 }
 
 // Error HTTP del login: 401 son credenciales inválidas; todo lo demás se informa como falta de conexión (H-029)
