@@ -1,12 +1,12 @@
 # Elementos de configuración (identificación)
 
-Inventario de los elementos de configuración (EC) del sistema "Posta Médica Valdiviezo" en la línea base **LB-0**.
+Inventario de los elementos de configuración (EC) del sistema "Posta Médica Valdiviezo" en la línea base **LB-0**, con los cambios registrados hasta la **versión 1.1.0 (LB-11), unida a `master`** el 2026-11-12.
 
 - **Versión:** versión declarada por el propio elemento cuando existe (`pom.xml`, `package.json`, versión del instalador). Si el elemento no declara versión, se usa la línea base en la que está (`LB-0`).
 - **Fecha:** fecha en que el elemento entró al control de versiones (commit inicial `17e2118`, 2026-10-20), salvo que se indique otra.
 - **Autor / Aprobado por:** el proyecto se recibió sin registro de autoría ni de aprobaciones. Donde no hay dato real se escribe "Sin registro".
-- **Distribución:** dónde se encuentra y quién lo recibe. En LB-0 todo vivía en el repositorio Git local del grupo, sin repositorio remoto. *(Tarea 27, 2026-11-12: desde la tarea 16 existe el remoto `BrayanH0/posta-medica-valdiviezo` en GitHub, con GitFlow: `master` para las versiones publicadas —tags `v1.0.1` y, al unir `release/1.1`, `v1.1.0`— y `develop` para la integración. La columna "Distribución" de cada fila conserva el valor de LB-0; donde dice "Repositorio Git local", léase también "y remoto en GitHub".)*
-- **Versión publicada actual:** `1.1.0` en la rama `release/1.1` (tarea 27), pendiente de unirse a `master` (tags LB-11 y `v1.1.0`). Qué entra en cada versión: `CHANGELOG.md` (EC-20).
+- **Distribución:** dónde se encuentra y quién lo recibe. En LB-0 todo vivía en el repositorio Git local del grupo, sin repositorio remoto. *(Tarea 27, 2026-11-12: desde la tarea 16 existe el remoto `BrayanH0/posta-medica-valdiviezo` en GitHub, con GitFlow: `master` para las versiones publicadas —tags `v1.0.1` y `v1.1.0`— y `develop` para la integración. La columna "Distribución" de cada fila conserva el valor de LB-0; donde dice "Repositorio Git local", léase también "y remoto en GitHub".)*
+- **Versión publicada actual:** **`1.1.0`, unida a `master`** por el PR #59 (`release/1.1` → `master`, 2026-11-12 16:10:42; commit de merge `df2f792`). Los tags anotados `LB-11` y `v1.1.0` (16:11:26) apuntan a ese commit, y el GitHub Release "v1.1.0 – Seguridad, reservas y uso en el celular" se publicó a las 16:13:25. El PR #60 (16:14:54) devolvió el merge a `develop`. Versión anterior: `1.0.1` (tags `LB-10` y `v1.0.1` sobre `0af31db`, PR #48, 2026-11-10). Qué entra en cada versión: `CHANGELOG.md` (EC-20). *(Actualizado en la tarea 29; antes decía "en la rama `release/1.1`, pendiente de unirse a `master`".)*
 
 ---
 
