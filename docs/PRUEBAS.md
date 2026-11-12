@@ -146,6 +146,7 @@ Las pruebas de navegador se hacen con Playwright, **una pestaña nueva por caso*
 - Tipo: Integración (API + base de datos)
 - Qué se hace: `curl http://localhost:8080/api/cita`; contar total y citas con `id_paciente = 1`. Comparar con `SELECT COUNT(*), SUM(id_paciente=1) FROM Cita`.
 - Esperado: un paciente solo debería poder recibir sus propias citas.
+- Ejecución desde la tarea 26 (RFC-011): el mismo GET con el token del paciente de prueba (paciente 1); ver "Cambios de la tarea 26". Lo que se cuenta no cambia.
 - Obtenido: `total=23 paciente1=4 pacientes distintos=13`. BD: `total 23 | paciente1 4`. El endpoint no pide autenticación.
 - Resultado: **FALLA** → H-013
 
@@ -153,6 +154,7 @@ Las pruebas de navegador se hacen con Playwright, **una pestaña nueva por caso*
 - Tipo: Integración (API + base de datos)
 - Qué se hace: `curl http://localhost:8080/api/historia_clinica`; contar total y historias con `id_paciente = 1`.
 - Esperado: un paciente solo debería poder recibir su propia historia clínica.
+- Ejecución desde la tarea 26 (RFC-011): el mismo GET con el token del paciente de prueba (paciente 1). Lo que se cuenta no cambia.
 - Obtenido: `total=5 paciente1=1`. Ejemplo de dato ajeno recibido: `{"idhistoria_Clinica":2,"id_paciente":2,"fecha_creacion":"2023-02-14","observaciones":"Control anual","tipo_sangre":"A+","alergias":"Penicilina"}`. BD: `total 5 | paciente1 1`.
 - Resultado: **FALLA** → H-013
 
@@ -627,6 +629,43 @@ Se corren al final de la batería, después de P25, con el backend y el frontend
 - Obtenido (base): duplicado 200; tras cancelar la pantalla **no** ofrece 11:40; estados `3,1,1` → FALLA.
 - Obtenido (rama RFC-012): duplicado 409; tras cancelar la pantalla ofrece 11:40; nueva reserva 200; estados `3,1` → **PASA**.
 
+## Prueba nueva de RFC-011 (tarea 26)
+
+### P28 — Matriz de autorización de la API
+- Tipo: Integración (API + base de datos)
+- Creada en: tarea 26 (RFC-011). Se corre al final de la batería, después de P27, con el backend encendido.
+- Qué se hace: con `fetch` (como `curl`), 16 peticiones con el resultado esperado según la matriz aprobada de `docs/rfc/RFC-011.md`: sin token (`GET /api/cita`, `GET /api/historia_clinica`, `POST /usuarios/nuevo`) → 401; token inválido y token **vencido** (firmado con el mismo `JWT_SECRET` del backend, vencido hace 100 s) → 401; paciente → `/api/paciente`, `/usuarios`, `/api/reportes/dashboard` → 403; médico y admin → `/api/historia_clinica` → 403; IDOR: el paciente de prueba pide una cita y una historia de otro paciente, y el médico de prueba las citas de otro médico → 403; lo propio (`/api/paciente/codigo/{su id}`, `/api/citas/medico/{su id}`) → 200; `/api/especialidad` sin token → 200. Además, `/api/citas/medico/{m}/fecha/{f}` pedido por el paciente en un día con citas de otro paciente: los campos recibidos deben ser solo `estado_cita, hora_cita`. Los ids "de otro" salen de la BD, no se escriben a mano.
+- Esperado: 17/17 como se espera.
+- Script: `e2e/bateria/bateria.cjs` (EC-19), función `p28`.
+
+## Cambios de la tarea 26 (RFC-011) en la ejecución de pruebas existentes
+
+Con RFC-011 la API exige token. **Autorizado por el usuario (tarea 26):** adaptar las pruebas existentes **solo para que envíen el token**, sin cambiar lo que verifican. Cada llamada usa el token del rol que puede hacerla según la matriz aprobada (el que se obtiene con `POST /login` y las credenciales de prueba de este documento, salvo donde se indica).
+
+| Prueba | Antes | Después | Por qué |
+|---|---|---|---|
+| P01 | 14 GET sin cabeceras | Los mismos 14 GET con token de admin, salvo `/api/historia_clinica` y `/api/evolucion_clinica` con token del paciente de prueba (solo el paciente puede pedirlos). Se agrega una línea informativa con el código **sin** token de cada uno | Sin token responden 401 |
+| P02 | 6 GET sin cabeceras | Token de admin; `/api/citas/medico/1/fecha/2023-07-01` con token del médico 1 (el dueño, que recibe la respuesta completa) | Ídem |
+| P03 | 11 GET sin cabeceras | Token de admin; `/api/historia_clinica/1` y `/api/evolucion_clinica/1` con token del paciente de prueba | Ídem |
+| P04 | sin cabeceras | Token de admin | Ídem |
+| P09 | Imprime el cuerpo de `/login` | Igual, con el `token` enmascarado, y además el contenido del token (`sub`, `rol`, duración) | El cuerpo ahora trae `token`; se muestra lo que contiene sin escribirlo |
+| P13 (paso 3) | `POST /api/cita` duplicado sin cabeceras | El mismo cuerpo con token del paciente de prueba (paciente 1, el del cuerpo) | Solo el paciente reserva, y a su nombre |
+| P14 | `curl /api/cita` sin cabeceras | El mismo GET con token del paciente de prueba | Ídem; lo que se cuenta no cambia |
+| P15 | `curl /api/historia_clinica` sin cabeceras | El mismo GET con token del paciente de prueba; además se imprime el conteo de la BD | Ídem |
+| P22 | `POST /api/cita` de la cita a cancelar sin cabeceras | Token del paciente de prueba | Ídem |
+| P23 | `GET /api/citas/medico/{1,2,3,6,10}?estado=…` sin cabeceras | Cada médico con **su** token (DNI leído de la BD, clave de prueba); pacientes del médico 1 con token del médico 1 | El `{idMedico}` tiene que ser el del token |
+| P24 | sin cabeceras | Token del médico 1 | Ídem |
+| P26 | 10 `POST /api/cita` sin cabeceras (pacientes 1 a 5) | Cada POST con el token del paciente que reserva (DNI leído de la BD) | Solo el paciente reserva, y a su nombre |
+| P27 | POST (paciente 2) y PUT de estado sin cabeceras | POST con token del paciente 2; PUT con token del médico 1 | Ídem |
+| P25 | Preflight y `GET /api/especialidad` sin token | Igual (sin cambios) | El preflight no lleva token y `/api/especialidad` es público |
+| P05–P08, P10–P12, P16–P21, P11/P18 apagado | Por pantalla | Igual (sin cambios): el token lo agrega el interceptor del frontend | — |
+| U33–U41, `AuthControllerTest`, U80, U81 | `new AuthController(lista)` | `new AuthController(lista, TokensDePrueba.tokenUtils())` | El controlador recibe el servicio de tokens (decisión D1). Ninguna aserción cambió |
+| U89 `losListadosNoDevuelvenLaClave` | 5 GET sin cabeceras | Los mismos 5 GET con un token de administrador generado con el bean `TokenUtils` | Sin token, 401 |
+| U91 (`CitaDobleReservaIntegracionTest`) | POST y PUT sin cabeceras | Cada POST con el token del paciente que reserva; el PUT con el del médico 1 (bean `TokenUtils`) | Ídem |
+| E2E `medico-citas-pendientes`, `medico-flow`, `medico-pacientes`, `medico-pacientes-formatting`, `registrar-cita-doble-reserva` | `request.get/post/put/delete` sin cabeceras | Las mismas llamadas con `headers: await conToken(request, rol)` (`e2e/tests/token.ts`, `POST /login`): paciente para crear citas, médico 1 para sus endpoints, admin para consultar o borrar citas y catálogos | Ídem |
+
+Las pruebas que estaban en el script del scratchpad pasan al repositorio como EC-19 (`e2e/bateria/`).
+
 ## Resultados de RFC-012 (tarea 24B, doble reserva; rama `feature/rfc-012-doble-reserva`)
 
 Base: `develop` `d981f3b` (2026-11-11 18:49:58–18:53:25). Rama: 19:07:07–19:09:55. Mismo runner y mismo script (scratchpad `t24/`).
@@ -671,6 +710,27 @@ Merge de `develop` `d0beb4c` (ya incluye RFC-017) en la rama: commit `ce31018`. 
 **Resumen tarea 25:** RFC-017 y RFC-012 juntas no se afectan entre sí: cada diferencia se explica por una de las dos o por la definición nueva de P22. **23 PASA · 4 FALLA** sobre P01–P27 (FALLA: P04 `500 Cannot instantiate … ResumenMedico`, P14, P15 y P16, las mismas del hotfix RFC-010 menos P13; P13, P22, P26 y P27 pasan). Backend 75/75; frontend 32/32 y 56/56; Playwright 7/7; `ng build` sin errores (las 2 advertencias de siempre). Evidencia: `docs/evidencias/t25-integracion.txt`.
 
 ---
+
+## Resultados de RFC-011 (tarea 26, autenticación JWT y autorización; rama `feature/rfc-011-autenticacion-api`)
+
+Base: `develop` `897bdbb` (2026-11-12 11:48:58–11:52:19, copia del script de la tarea 25). Rama: script del repositorio (EC-19), corrida A `1b6aa54` (12:39:32–12:42:40) y corrida B `4b473a5` (15:16:54–15:20:15) con salida idéntica en P01–P28 y P11/P18. Ejecución con token según "Cambios de la tarea 26".
+
+| ID | Obtenido en la rama | ¿Igual a la base? |
+|---|---|---|
+| P01 | 200 en los 14 con token; `/api/cita` 2811 B (admin, igual); `/api/historia_clinica` 148 B y `/api/evolucion_clinica` 390 B (paciente 1: solo lo suyo; base 746 B y 1443 B). Sin token: 401 en 13 de 14 (`/api/especialidad`, público, 200) | Mismo resultado (PASA); cambian los tamaños de historia y evolución por H-013 (esperado) |
+| P02–P04 | Iguales (P04 sigue `500 … ResumenMedico`, H-005) | Igual |
+| P05–P07 | Igual + clave `token` en localStorage (`eyJhbGciOi…`) | Cambia solo por el token (esperado) |
+| P08–P10, P12, P13, P19 | Iguales | Igual |
+| P09 | Igual + `token`; contenido `sub` = id, `rol` = tipo, duración 7200 s en los 3 roles | Cambia solo por el token (esperado) |
+| **P14** | `total=3 paciente1=3 distintos=1`; BD `22 \| 3` | **Cambia: FALLA → PASA** (H-013) |
+| **P15** | `total=1 paciente1=1`; BD `5 \| 1` | **Cambia: FALLA → PASA** (H-013) |
+| **P16** | `recibidas=3 delPaciente1=3 tarjetas=3 peticiones=7` | **Cambia: FALLA → PASA** (H-013; las 7 peticiones repetidas son H-014, aparte) |
+| P17 | Igual (los 3 roles quedan con localStorage `{}`; `/paciente/mis-citas` → `/login-paciente`, ahora por la guarda) | Igual |
+| P20–P27 | Iguales (P23 20/20 con el token de cada médico; P26 `{"200":1,"409":9}`; P27 `3,1`) | Igual |
+| P28 | 17/17 como se esperaba | Nueva: PASA |
+| P11/P18 apagado | Iguales | Igual |
+
+**Resumen RFC-011:** base **23 PASA · 4 FALLA** (P04, P14, P15, P16) sobre P01–P27 → rama **27 PASA · 1 FALLA** (P04, H-005) sobre P01–P28. Backend 97/97 (75 + U93 ×7 + U94 ×15); frontend 32/32 y 73/73 (61 + U95 ×6 + U96 ×3 + U97 ×3); Playwright 11/11 (7 + E02 ×4); `ng build` sin errores (las 2 advertencias de siempre). Pruebas existentes cambiadas: solo para enviar o recibir el token (tabla "Cambios de la tarea 26", autorizadas por el usuario). Evidencia: `docs/evidencias/t26-rfc011.txt` (secciones 1, 3 y 4, con curl).
 
 ## Pruebas unitarias
 
@@ -802,8 +862,15 @@ Script de la base de datos (desde LB-4): `database/BDPostaMedica.sql`.
 | U90 | `BE/…/exception/GlobalExceptionHandlerDobleReservaTest.java` (RFC-012; 4 casos) | Violación de `uq_cita_medico_fecha_hora` → 409 `{"message":"Ese horario ya fue reservado. Elija otra hora.","status":"error"}` sin texto SQL (con y sin `constraintName` de Hibernate); otra violación de integridad → la misma respuesta 500 que `handleRuntimeException`; `esHorarioOcupado` solo reconoce esa restricción | Unitaria | H-012 |
 | U91 | `BE/…/CitaDobleReservaIntegracionTest.java` (RFC-012; 2 casos) | Servidor real (puerto aleatorio) y BD real, fecha 2099-12-28: 10 `POST /api/cita` simultáneos → 1 con 200, 9 con 409 sin texto SQL, 1 fila; cancelar la cita libera el horario (nuevo POST 200) y reactivar la cancelada choca (409). Borra sus citas antes y después | Integración (servidor + MySQL) | H-012 |
 | U92 | `FE/features/paciente/registrar-cita/doble-reserva.unitaria.spec.ts` (RFC-012; 7 casos) | `calcularHorariosDisponibles`: la cancelada (estado 3) no ocupa, los estados 1, 2, 4 y 5 sí, cancelada + activa en la misma hora sigue ocupada, y en el horario por defecto también; `registrarCita`: 409 → alerta con el `message` del servidor (o el texto por defecto si no hay cuerpo), borra la hora y recarga las horas; 500 → "Error al registrar cita" como antes | Unitaria | H-012 |
+| U93 | `BE/…/seguridad/TokenUtilsTest.java` (RFC-011; 7 casos) | El token lleva id y rol y dura 2 h (`exp - iat` = 7 200 000 ms); vencido, firmado con otra clave, manipulado (rol cambiado con la firma original), basura o sin rol → no válido; secreto corto o nulo → `IllegalStateException`; la autenticación lleva `ROLE_<ROL>` | Unitaria | H-016, H-025 |
+| U94 | `BE/…/SeguridadApiIntegracionTest.java` (RFC-011; 15 casos) | Contexto de Spring + MySQL: login de los 3 roles devuelve token con su id y rol, login fallido sin token; 21 endpoints → 401 sin token, con token inválido y con token vencido (cuerpo `{"error":"Debe iniciar sesión"}`); `/api/especialidad` público; 403 por rol (paciente, médico y admin, cuerpo `{"error":"No tiene permiso para este recurso"}`); IDOR del paciente (cita, historia, evolución, paciente ajenos; borrar una cita ajena no la borra; reservar a nombre de otro no guarda) y del médico (citas, pacientes, `/fecha`, cambio de estado y cita de otro médico); listados filtrados (paciente: citas, historias y evoluciones propias, contadas contra la BD; médico: sus citas; admin: todas); `/fecha` para el paciente solo con `hora_cita` y `estado_cita`, para el médico dueño completa; alta pública con `idPaciente` existente crea otro paciente y no cambia el existente (borra el suyo al terminar); H-048: el `AuthenticationManager` acepta la clave correcta y rechaza la incorrecta contra el hash BCrypt, y el único `PasswordEncoder` del contexto es BCrypt | Integración (Spring + MySQL) | H-013, H-016, H-048, AUD-SEG-04 |
+| U95 | `FE/core/interceptors/auth.interceptor.unitaria.spec.ts` (RFC-011; 6 casos) | Agrega `Authorization: Bearer` a la API; sin token, nada; no lo envía a otros sitios; 401 de la API → `localStorage` vacío y `navigate(['/login-selection'], {queryParams:{sesion:'expirada'}})`, y el error sigue llegando; el 401 de `POST /login` no cierra nada; un 403 no cierra la sesión | Unitaria | H-016 |
+| U96 | `FE/core/guards/rol.guard.unitaria.spec.ts` (RFC-011; 3 casos) | Con sesión del rol entra; sin sesión o con sesión de otro rol va al login del rol de la pantalla (`/login-paciente`, `/login-medico`, `/login-admin`) | Unitaria | H-013 (AUD-DIS-14, AUD-PRI-05) |
+| U97 | `FE/features/auth/sesion-token.unitaria.spec.ts` (RFC-011; 3 casos) | `guardarSesion` guarda el token en los 3 roles; `AuthService.logout()` lo borra; la selección de login muestra el aviso solo con `?sesion=expirada` | Unitaria | H-016 |
 
 **E2E nueva (RFC-012):** `e2e/tests/registrar-cita-doble-reserva.spec.ts` (E01). Dos pestañas del paciente cargan "Registrar Cita" para el médico 1 el 2099-12-29; la A reserva 08:40 (200); la B, con la lista vieja, intenta 08:40 → 409, alerta "Ese horario ya fue reservado. Elija otra hora.", sigue en el formulario y la lista ya no ofrece 08:40; 1 cita en la BD; el médico cancela la de A (PUT) → una pestaña nueva ofrece 08:40 y la reserva da 200. Borra sus citas al empezar y al terminar. Se corre con las demás: `npx playwright test tests/ --workers=1` (7 pruebas desde RFC-012).
+
+**E2E nueva (RFC-011, tarea 26):** `e2e/tests/sesion-token.spec.ts` (E02, 4 casos): el login del paciente guarda un token (3 partes) y "Cerrar Sesión" lo borra; con la sesión del paciente 1 y `userId` cambiado a `4` en localStorage, `/api/historia_clinica` devuelve solo historias del paciente 1 y la pantalla no muestra "VIH" (AUD-PRI-02); con un token manipulado, `GET /api/cita` → 401, la app va a `/login-selection?sesion=expirada` con el aviso y localStorage queda vacío; sin sesión, `/admin/pacientes` lleva a `/login-admin` sin pedir `/api/paciente`. Desde la tarea 26 hay 11 pruebas de Playwright (7 + 4).
 
 > **Hotfix RFC-010:** U33–U41, `AuthControllerTest`, U80 y U81 cambiaron solo la construcción de los autenticadores (reciben un `PasswordEncoder`) y guardan el hash en las entidades simuladas; sus aserciones son las mismas. U55 solo agrega un `@Spy PasswordEncoder`. U49 cambió de sentido (ver su fila). Detalle antes/después en `docs/rfc/RFC-010.md`.
 

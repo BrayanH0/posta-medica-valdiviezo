@@ -50,16 +50,25 @@ class CitaDobleReservaIntegracionTest {
         jdbc.update("DELETE FROM Cita WHERE fecha_cita = ? AND motivo LIKE ?", FECHA, MOTIVO + "%");
     }
 
-    private HttpResponse<String> enviar(String metodo, String ruta, String json) throws Exception {
+    // RFC-011 (tarea 26): cada petición lleva el token de quien la hace (paciente que reserva, médico 1 que cambia el estado)
+    @Autowired
+    private com.centro_valdiviezo.backend.seguridad.TokenUtils tokenUtils;
+
+    private HttpResponse<String> enviar(String metodo, String ruta, String token, String json) throws Exception {
         HttpRequest req = HttpRequest.newBuilder(URI.create("http://localhost:" + puerto + ruta))
                 .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + token)
                 .method(metodo, HttpRequest.BodyPublishers.ofString(json))
                 .build();
         return http.send(req, HttpResponse.BodyHandlers.ofString());
     }
 
+    private HttpResponse<String> enviar(String metodo, String ruta, String json) throws Exception {
+        return enviar(metodo, ruta, tokenUtils.generarToken(1, "medico"), json);
+    }
+
     private HttpResponse<String> reservar(int idPaciente, String hora, String motivo) throws Exception {
-        return enviar("POST", "/api/cita", "{\"id_paciente\":" + idPaciente + ",\"id_medico\":1,\"fecha_cita\":\"" + FECHA
+        return enviar("POST", "/api/cita", tokenUtils.generarToken(idPaciente, "paciente"), "{\"id_paciente\":" + idPaciente + ",\"id_medico\":1,\"fecha_cita\":\"" + FECHA
                 + "\",\"hora_cita\":\"" + hora + "\",\"motivo\":\"" + MOTIVO + " " + motivo + "\",\"estado_cita\":1}");
     }
 

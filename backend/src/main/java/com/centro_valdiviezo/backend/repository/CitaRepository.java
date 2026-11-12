@@ -42,6 +42,13 @@ public interface CitaRepository extends JpaRepository<Cita, Integer> {
         @Query("SELECT c FROM Cita c WHERE c.id_medico = ?1 AND c.fecha_cita = ?2")
         List<Cita> findByMedicoIdAndFecha(Integer idMedico, String fecha);
 
+        // RFC-011: listados filtrados por el usuario del token
+        @Query("SELECT c FROM Cita c WHERE c.id_paciente = ?1")
+        List<Cita> findByIdPaciente(Integer idPaciente);
+
+        @Query("SELECT c FROM Cita c WHERE c.id_medico = ?1")
+        List<Cita> findByIdMedico(Integer idMedico);
+
         @Query(value = "SELECT ec.nombre_estado   AS estadoCita, COUNT(c.idCita) AS cantCita FROM Cita c JOIN Estado_Cita ec ON c.estado_cita = ec.id_estado_cita GROUP BY ec.id_estado_cita", nativeQuery = true)
         List<EstadoCitaCantDTO> cantCitasPorEstado();
 
