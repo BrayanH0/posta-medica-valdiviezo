@@ -1069,3 +1069,31 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - **Decisiones pendientes del usuario:** (1) P22; (2) revisar la lista de nombres ficticios (RFC-017); (3) si se baja el nivel del log de Hibernate ante un 409.
 - Cumplimiento de CLAUDE.md: causa escrita antes del código; sin valores a mano ni condiciones para los datos de prueba; ningún error atrapado en silencio; ninguna prueba existente modificada; archivos del repositorio con Write/Edit; horas de `date`, logs y `git log`; sin comandos destructivos de Git. Excepción: scripts y salidas del scratchpad creados o copiados con `cp`/`mkdir`/Node, fuera del repositorio.
 - Comandos para el usuario (cmd de Windows, una línea cada uno): `git push -u origin feature/rfc-017-datos-semilla`; `git push -u origin feature/rfc-012-doble-reserva`; y un `gh pr create --base develop --head <rama> …` por rama (texto completo en el reporte de la tarea).
+
+---
+
+## Tarea 25 — Integrar RFC-012 con `develop` (que ya incluye RFC-017)
+
+### [2026-11-11 19:33–19:38] Merge de `develop` en la rama
+- 19:33:43: `git checkout develop`; `git pull` → fast-forward `d981f3b..d0beb4c` (`d0beb4c` = merge del PR #55, RFC-017).
+- `git checkout feature/rfc-012-doble-reserva`; `git merge --no-ff --no-commit develop`: `BDPostaMedica.sql` sin conflicto (como predijo la simulación de la tarea 24); conflictos en `docs/BITACORA.md`, `docs/HALLAZGOS.md` y `docs/PRUEBAS.md`.
+- **Por qué hubo conflicto:** las dos ramas agregaron texto en el mismo lugar de cada archivo (final de la bitácora, nota después de la tabla de issues, sección de resultados después del hotfix RFC-010). No hay contradicción de contenido.
+- **Resolución (Edit):** conservar las dos partes, primero la de `develop` (RFC-017, que incluye la preparación de la tarea 24) y después la de la rama (24B), el orden que recomendó la tarea 24. La entrada de cierre de la tarea 24 queda dos veces en la bitácora, porque se escribió en cada rama; se conservan las dos porque cada una registra la rama en la que se cerró. Alternativa descartada: dejar una sola copia del cierre (la tarea pide conservar ambas partes).
+- Comprobación con un script de Node (ignorando CR): toda línea de cada lado está en el resultado, salvo las versiones viejas de filas que el otro lado actualizó (H-012, H-042, "#42–#47 (por crear)"). Sin marcadores de conflicto en `docs/`.
+- 19:38:31: commit de merge `ce31018` (padres `a420127` y `d0beb4c`), solo con la resolución.
+- **Fallo propio:** el primer `git commit -F - @'…'@` en PowerShell pasó el mensaje como argumento (ruta) y no por la entrada estándar; git respondió `fatal: cannot do a partial commit during a merge` y no hizo nada. Se repitió con el mensaje en un archivo del scratchpad.
+
+### [2026-11-11 19:36–19:44] P22 (opción 1 del usuario), batería y documentación
+- **Decisión del usuario: opción 1.** P22 crea al empezar su propia cita pendiente del médico 1 (`POST /api/cita`, paciente 1, `2026-10-26 10:20:00`, "Prueba P22: cita para cancelar") y la cancela desde "Citas Pendientes". Lo que se verifica no cambia.
+- Se copió al scratchpad (`t25/`) el script de batería y el runner de la tarea 24, y se cambió con Edit solo P22 y la carpeta del runner. El script usa el `idCita` que devuelve el servidor. Alternativa descartada: fijar el id en 23. Habría fallado: la cita salió con id 24, porque el `INSERT` rechazado de P13 consume un valor de `AUTO_INCREMENT`.
+- Hora `10:20`: no choca con P12 (`10:00`), P26/P27 (`2026-11-30`) ni con las E2E (`2099-12-31`).
+- **Batería completa 19:38:48–19:42:19** (`HEAD ce31018`, sin cambios pendientes; la definición nueva de P22 estaba solo en el script, PRUEBAS.md se editó después): `ng build` exit 0; frontend `TOTAL: 32 SUCCESS` y `TOTAL: 56 SUCCESS`; `mvnw test` `Tests run: 75, Failures: 0, Errors: 0, Skipped: 0` · `BUILD SUCCESS`; Playwright `7 passed`; P01–P27 (19:40:07–19:41:55); P11/P18 apagado (19:41:59–19:42:18); BD recargada al final (21 citas).
+- **Comparación** (diff sin horas) con las corridas de la tarea 24: contra RFC-012 sola, solo difieren P01 (tamaños), el orden de P23, las líneas X (RFC-017), y P22, P23 Cancelada `[24]` e ids de P27 +1 (P22). Contra RFC-017 sola, solo lo que corrige RFC-012 y P22. Apagado: idéntico. **P22: PASA** (BD `24 | 1 | 3 | Cancelada`; "Citas Canceladas" la muestra tras recargar). Total P01–P27: **23 PASA · 4 FALLA** (P04, P14, P15, P16).
+- **Fallo propio:** en el primer borrador del resumen de PRUEBAS.md escribí "22 PASA · 5 FALLA" sin contar. Se comprobó P04 (`500`) y P15 en la salida, y se corrigió a 23 · 4 antes del commit.
+- Observación: "X días disponibilidad" muestra `Mi?rcoles` también en la corrida de RFC-017 sola. Es la forma en que el script decodifica la salida del cliente `mysql`, no un dato dañado (el HEX de Especialidad es UTF-8 correcto). No se investigó más; no afecta ninguna prueba.
+- Documentación: PRUEBAS.md (P22, antes/después/por qué, y sección "Resultados de la integración"), RFC-012 (decisión de P22, historial), HALLAZGOS (observación de P22 resuelta). Evidencia: `docs/evidencias/t25-integracion.txt`.
+
+### Estado y pendientes (tarea 25)
+- Entorno: backend y frontend detenidos por el runner; BD local recargada con el SQL de la rama integrada (21 citas). Rama actual: `feature/rfc-012-doble-reserva`. Sin push ni PR.
+- Pendientes del usuario: revisar la lista de nombres ficticios (RFC-017); decidir si se baja el nivel del log de Hibernate ante un 409 (12 líneas `ERROR … Duplicate entry` en esta corrida); tag de línea base al integrar.
+- Cumplimiento de CLAUDE.md: archivos del repositorio editados con Edit/Write; la definición de P22 la cambió el usuario (decisión explícita), no para que pase, y lo que verifica no cambió; no se tocó ningún archivo de prueba automática ni de código; horas de `date`, `git log` y el runner; sin comandos destructivos de Git. Excepción: copias al scratchpad con `cp`/`mkdir`, fuera del repositorio.

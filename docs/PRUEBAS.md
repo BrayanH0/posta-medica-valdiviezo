@@ -299,9 +299,14 @@ Ejecución del 2026-10-21, entre 09:30 y 09:37 (hora real: `date` antes y despu�
 
 ### P22 — Cancelar una cita
 - Tipo: Sistema/E2E (navegador de punta a punta) y Aceptación
-- Qué se hace: en "Citas Pendientes" del médico 1, pulsar "Cancelar" en la cita 23 y confirmar; `SELECT` de la cita; abrir "Citas Canceladas" y recargar la página.
-- Esperado: la cita deja la lista de pendientes, queda en la base con el estado "Cancelada" y sigue en "Citas Canceladas" después de recargar.
-- Creada en: LB-3 (RFC-003).
+- Qué se hace (desde la tarea 25): al empezar P22, crear por la API una cita pendiente propia (`POST /api/cita` con paciente 1, médico 1, `2026-10-26`, `10:20:00`, motivo "Prueba P22: cita para cancelar", `estado_cita 1`); en "Citas Pendientes" del médico 1, pulsar "Cancelar" en **esa** cita (el `idCita` que devuelve el servidor) y confirmar; `SELECT` de la cita; abrir "Citas Canceladas" y recargar la página.
+- Esperado: la cita deja la lista de pendientes, queda en la base con el estado "Cancelada" y sigue en "Citas Canceladas" después de recargar. *(No cambia.)*
+- Creada en: LB-3 (RFC-003). Modificada en: tarea 25 (2026-11-11), por decisión del usuario (opción 1 de RFC-012).
+- **Cambio de la tarea 25 (antes / después / por qué):**
+  - Antes: "en 'Citas Pendientes' del médico 1, pulsar 'Cancelar' en la cita 23 y confirmar; …". La cita 23 era el duplicado que creaba P13.
+  - Después: P22 crea su propia cita pendiente del médico 1 al empezar y cancela esa, con el id que devuelve el servidor (no se escribe un id a mano: en la corrida de la tarea 25 salió 24, porque el `INSERT` rechazado de P13 consume un valor de `AUTO_INCREMENT`).
+  - Por qué: con RFC-012, P13 ya no crea la cita 23 (la segunda reserva responde 409), y P22 no se podía ejecutar como estaba escrita (tarea 24B). Lo que se verifica no cambia: estado "Cancelada" en la BD y en "Citas Canceladas" tras recargar. La hora `10:20` es distinta de la de P12 (`10:00`), de P26 y P27 (`2026-11-30`) y de las E2E (`2099-12-31`), así que no choca con la restricción.
+  - Efecto en otras pruebas: P23 (médico 1, Cancelada) ve esta cita en lugar de la 23; P27 recibe ids una unidad mayores. P20 y P21 no cambian (P22 crea la cita después de ellas).
 - Obtenido (LB-3): modal "Cancelar Cita … Motivo: Prueba LB-0: doble reserva (pestana B)"; red `200 PUT /api/citas/medico/1/23/estado {"estado":"Cancelada"}`; pendientes: "No hay citas pendientes.". Base: `23 | 1 | 3 | Cancelada | Prueba LB-0: doble reserva (pestana B)`. "Citas Canceladas" tras recargar: `23 | Juan Perez Gomez | 12345678 | 2026-10-26 | 10:00:00 | Prueba LB-0: doble reserva (pestana B) | Cancelada`.
 - Evidencia: `docs/evidencias/lb3-medico-citas-canceladas.png`
 - Resultado (LB-3): **PASA**
@@ -643,6 +648,27 @@ Base: `develop` `d981f3b` (2026-11-11 18:49:58–18:53:25). Rama: 19:07:07–19:
 | P27 | Duplicado 409; tras cancelar se ofrece y se reserva | FALLA → PASA (prueba nueva) |
 
 **Resumen RFC-012:** P13 pasa a PASA; P14 y P16 cambian en 1 cita (siguen FALLA por H-013); P20, P21 y P23 siguen PASA sin la cita 23; **P22 no se puede ejecutar como está definida**. Backend 75/75 (69 + U90 ×4 + U91 ×2); frontend 32/32 y 56/56 (49 + U92 ×7); Playwright 7/7 (6 + E01). Ninguna prueba existente se modificó. Evidencia: `docs/evidencias/t24-b-rfc012.txt`.
+
+## Resultados de la integración RFC-017 + RFC-012 (tarea 25; rama `feature/rfc-012-doble-reserva` con `develop` combinado)
+
+Merge de `develop` `d0beb4c` (ya incluye RFC-017) en la rama: commit `ce31018`. P22 con la definición nueva (opción 1, ver P22). Corrida 19:38:48–19:42:19 del 2026-11-11, `HEAD ce31018`, sin cambios pendientes; mismo runner y script de la tarea 24 (copiados al scratchpad `t25/`; solo cambia P22). Se compara con las dos corridas de la tarea 24: la rama RFC-012 sola y la rama RFC-017 sola.
+
+| ID | Obtenido | Comparación |
+|---|---|---|
+| P01 | 200 en los 14; tamaños de RFC-017 (cie 291 B, … paciente 2743 B) | Igual a RFC-017; distinto de RFC-012 sola solo por RFC-017 |
+| P02–P12 | Iguales | Igual |
+| P13 | Duplicado `409`, 1 reserva → PASA | Igual a RFC-012 |
+| P14, P16 | 22 \| 3; 22 recibidas, 3 tarjetas, 7 peticiones (siguen FALLA, H-013) | Igual a RFC-012 |
+| P15, P17–P19 | Iguales | Igual |
+| P20, P21 | Solo la cita 22; la 22 → Confirmada; "No hay citas pendientes." → PASA | Igual a RFC-012 |
+| **P22** | Crea la cita **24** (Pendiente); `200 PUT /api/citas/medico/1/24/estado`; pendientes: "No hay citas pendientes."; BD `24 \| 1 \| 3 \| Cancelada`; "Citas Canceladas" tras recargar: la 24 → **PASA** | **Cambia: no ejecutable → PASA** (definición nueva) |
+| P23 | 20/20 iguales; médico 1 Cancelada `[24]`; pacientes del médico 1 API `7,1,6,11` | Cancelada `[24]` por P22; el orden, por RFC-017 |
+| P24, P25 | Iguales | Igual |
+| P26 | `{"200":1,"409":9}`, 1 fila, sin texto SQL → PASA | Igual a RFC-012 |
+| P27 | Duplicado 409; tras cancelar se ofrece 11:40 y se reserva (ids 35 y 37) → PASA | Igual a RFC-012 (ids +1 porque P22 crea una cita antes) |
+| P11/P18 apagado | Iguales | Igual |
+
+**Resumen tarea 25:** RFC-017 y RFC-012 juntas no se afectan entre sí: cada diferencia se explica por una de las dos o por la definición nueva de P22. **23 PASA · 4 FALLA** sobre P01–P27 (FALLA: P04 `500 Cannot instantiate … ResumenMedico`, P14, P15 y P16, las mismas del hotfix RFC-010 menos P13; P13, P22, P26 y P27 pasan). Backend 75/75; frontend 32/32 y 56/56; Playwright 7/7; `ng build` sin errores (las 2 advertencias de siempre). Evidencia: `docs/evidencias/t25-integracion.txt`.
 
 ---
 

@@ -130,6 +130,7 @@ Cada hallazgo tiene un issue en `BrayanH0/posta-medica-valdiviezo` con el mismo 
 
 **Tarea 24B (2026-11-11):** observaciones encontradas al implementar RFC-012, fuera de su alcance (no se tocaron):
 - **P22 depende de la doble reserva.** Su definición cancela la cita 23, que creaba el duplicado de P13. Con RFC-012 esa cita no existe y P22 no se puede ejecutar como está escrita. Decide el usuario (opciones en `docs/rfc/RFC-012.md`).
+  - **Tarea 25 (2026-11-11): resuelto.** El usuario eligió la opción 1: P22 crea su propia cita pendiente del médico 1 y la cancela desde la pantalla. En la batería integrada (19:40–19:41) P22 PASA. Antes/después en `docs/PRUEBAS.md` (P22) y `docs/rfc/RFC-012.md`.
 - **Log ruidoso ante un 409.** Hibernate (`SqlExceptionHelper`) registra en nivel `ERROR` cada `Duplicate entry` de la restricción, aunque sea un rechazo esperado. No se cambió la configuración de logs.
 
 ## Observaciones sin número (tarea 18; decide el usuario si se registran como hallazgo)
