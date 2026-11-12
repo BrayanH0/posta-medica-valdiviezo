@@ -1515,3 +1515,16 @@ Después del merge, PR de `master` a `develop`:
 ```
 gh pr create --base develop --head master --title "Merge master (cierre v1.1.0 y evidencia T3) en develop" --body "Devuelve a develop la documentacion de la tarea 29 (cierre post-release v1.1.0 y evidencia del informe T3). Sin cambios de codigo."
 ```
+
+### [2026-11-12 17:56–18:02] Tarea 29 (continuación): cambios del usuario en GitHub y nombres del 14.2
+- **Pedido del usuario:** marcó v1.1.0 como "Latest" y cerró el issue #25. Pidió volver a tomar las Figuras 14-3, 21 y 22 y corregir los totales, poner los nombres de los integrantes en el 14.2, y hacer un commit nuevo (sin enmendar).
+- **Verificación antes de editar** (17:56:19): `gh release list` → v1.1.0 "Latest"; `gh issue view 25` → CLOSED 2026-11-12T22:55:56Z (17:55:56), `COMPLETED`, con el comentario de cierre del usuario; `gh issue list` → **16 abiertos, 32 cerrados**. Coincide con lo que dijo el usuario.
+- **Figuras:** se agregó a `componer.cjs` (scratchpad) la variable `SOLO` para regenerar solo `fig-14-3`, `fig-21` y `fig-22`; las otras 16 imágenes no cambian (`git status` muestra solo esas 3).
+  - **Fallo propio:** la primera corrida (17:57:46–17:58:16) dejó dos defectos. En la 14-3, el bloque "Assets" de v1.1.0 (desplegado por ser Latest) salía cargando y v1.0.1 quedaba cortado. En la 21 entraba parte del pie de GitHub, porque la página es más corta con 16 issues. Causa: los recortes tenían una altura fija, medida en la página anterior.
+  - **Corrección:** antes de capturar, el script hace scroll hasta el final para que carguen los bloques diferidos, y el recorte se calcula desde el alto real de cada página (sin los 70 px del pie). La corrida final (18:00:11–18:00:58) dio 14-3 1400×1998 (los Assets de v1.1.0 cargados y v1.0.1 completo), 21 1400×1325 y 22 1400×1998 (H-025 aparece cerrado). El script avisó "quedan bloques cargando" en 2 páginas (fragmentos de GitHub que no se ven); se comprobó mirando las imágenes que no queda ningún círculo de carga.
+- **Texto:**
+  - `docs/entrega/T3/EVIDENCIA_T3.md`: horas de las capturas de GitHub; pie de la 14-3 sin la nota "Latest en v1.0.1"; Figura 21 = 16 abiertos; Figura 22 = 32 cerrados, con el cierre de H-025; nombres de los integrantes en la tabla del 14.2 (se quitó "Sin registro" y la nota "completar la primera columna"). En la fila de BrayanH0 se usó la descripción del usuario (hotfix, RFC-011, 012, 017 y release) y se agregó "además, en la etapa T2: RFC-001 a RFC-009 y la documentación", porque sus 53 commits incluyen esos cambios y el conteo dejaría de corresponder a la columna.
+  - `docs/HALLAZGOS.md`: el #25 pasa a cerrado en la tabla de issues y en la columna Estado de H-025 (el usuario decidió no reescribir el historial); actualización en la nota de la tarea 29; la observación "Latest" queda resuelta.
+  - `docs/rfc/RFC-011.md`: en la evaluación posterior, el #25 cerrado.
+- **Pendientes que se resolvieron:** (1) "Latest", (2) issue #25, (3) nombres. Queda solo (4): confirmar el número de la Figura 36.
+- Commit nuevo "Docs: evidencia T3 actualizada (Latest, issue #25 y nombres)", sin enmendar los anteriores. Los comandos de push y PR son los mismos de arriba.

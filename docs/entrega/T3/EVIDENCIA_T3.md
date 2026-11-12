@@ -2,7 +2,7 @@
 
 Texto listo para pegar en el informe. Cada imagen está en `img/`, tiene 1400 px de ancho y lleva su pie de figura debajo. Las fechas y horas salen de `git log`, `git for-each-ref` y de la API de GitHub (`gh`), en hora de Perú (UTC−5). Ninguna imagen muestra tokens, claves ni el `JWT_SECRET`.
 
-Imágenes tomadas el 2026-11-12. Las de GitHub, entre las 17:31:07 y las 17:31:42, sin iniciar sesión (el repositorio es público; por eso arriba aparecen "Sign in" y "Sign up" y las fechas se ven como "yesterday" o "1h ago"). Las de la aplicación, entre las 17:24 y las 17:25, con la versión 1.1.0 (`master` = tag `LB-11`, `df2f792`) y la base de datos recién cargada con `database/BDPostaMedica.sql` (datos ficticios). Durante las capturas no se guardó ninguna cita.
+Imágenes tomadas el 2026-11-12. Las de GitHub, entre las 17:31:07 y las 17:31:42 (Figuras 13-1 y 13-2) y entre las 18:00:11 y las 18:00:58 (Figuras 14-3, 21 y 22, tomadas de nuevo después de marcar v1.1.0 como "Latest" y cerrar el issue #25), sin iniciar sesión (el repositorio es público; por eso arriba aparecen "Sign in" y "Sign up" y las fechas se ven como "yesterday" o "1h ago"). Las de la aplicación, entre las 17:24 y las 17:25, con la versión 1.1.0 (`master` = tag `LB-11`, `df2f792`) y la base de datos recién cargada con `database/BDPostaMedica.sql` (datos ficticios). Durante las capturas no se guardó ninguna cita.
 
 ---
 
@@ -62,17 +62,16 @@ Conteo con `git log LB-11 --no-merges` (commits propios, sin contar los de merge
 
 | Integrante | Cuenta de GitHub | Paquete / RFC | Pull request | N.º de commits |
 |---|---|---|---|---|
-| Sin registro (no figura en el repositorio) | pfaberio27-png | P1 — RFC-014 (consola y log de errores) | #50 | 6 (5 + 1 de corrección) |
-| Sin registro | Paolo1710 | P3 — RFC-015 (Aceptar/Cancelar del médico) | #51 | 3 |
-| Sin registro | Angel29042001 | P4 — RFC-013 (accesibilidad y celular) | #53 | 4 |
-| Sin registro | Rashidchz | P5 — RFC-016 (configuración para el despliegue) | #52 | 4 |
-| Brayan | BrayanH0 | RFC-001 a RFC-012 y RFC-017 (incluye la reorganización, las refactorizaciones R1–R4, el hotfix RFC-010 y la autenticación RFC-011), release v1.1.0 y documentación | #48, #49, #55, #56, #57, #58, #59, #60 | 53 |
+| Clauder Paulo Faberio Carhuapoma | pfaberio27-png | P1 — RFC-014 (consola y log de errores) | #50 | 6 (5 + 1 de corrección) |
+| Christian Paolo Silva Carrillo | Paolo1710 | P3 — RFC-015 (Aceptar/Cancelar del médico) | #51 | 3 |
+| Angel Gabriel Nolasco Poves | Angel29042001 | P4 — RFC-013 (accesibilidad y celular) | #53 | 4 |
+| Rashid Gabriel Chavez Zevallos | Rashidchz | P5 — RFC-016 (configuración para el despliegue) | #52 | 4 |
+| Brayan Junior Huamani Ostos | BrayanH0 | Hotfix RFC-010, RFC-011, RFC-012, RFC-017 y release v1.1.0 (además, en la etapa T2: RFC-001 a RFC-009 y la documentación) | #48, #49, #55, #56, #57, #58, #59, #60 | 53 |
 | **Total** | | | | **70** |
 
 **Detalle de los 53 commits de BrayanH0:** 6 de RFC-011; 2 de RFC-010; 2 de RFC-017; 1 por cada uno de RFC-001 a RFC-009 y RFC-012 (10; RFC-004 es la reorganización y RFC-005 a 008 las refactorizaciones R1–R4); y 33 de documentación, pruebas de caracterización, la batería de regresión y la release (por ejemplo "Release v1.1.0" y los registros de la bitácora). Además figuran 16 commits de merge de Brayan: 11 hechos desde GitHub al unir los PR y 5 locales.
 
 **Notas:**
-- Los nombres de los integrantes no están en el repositorio; completar la primera columna.
 - 52 de los 53 commits de BrayanH0 y los 4 de Angel29042001 llevan `Co-Authored-By: Claude Opus 5.5`: se hicieron con ayuda de Claude Code. Los de pfaberio27-png, Paolo1710 y Rashidchz no lo llevan (se hicieron en el editor web de GitHub).
 - El PR de P1 tiene 6 commits porque incluye el de corrección pedido en la revisión (ítem 13).
 
@@ -82,7 +81,7 @@ Conteo con `git log LB-11 --no-merges` (commits propios, sin contar los de merge
 
 ![Releases en GitHub](img/fig-14-3.png)
 
-**Figura 14-3.** Página Releases del repositorio en GitHub, con la versión v1.1.0 "Seguridad, reservas y uso en el celular" (tag `v1.1.0`, commit `df2f792`) y la versión v1.0.1 "Hotfix de seguridad" (tag `v1.0.1`, commit `0af31db`). *Nota: GitHub muestra la etiqueta "Latest" en v1.0.1 porque así quedó marcada al publicar; la versión vigente es v1.1.0.*
+**Figura 14-3.** Página Releases del repositorio en GitHub, con la versión vigente v1.1.0 "Seguridad, reservas y uso en el celular" (marcada "Latest"; tag `v1.1.0`, commit `df2f792`) y la versión anterior v1.0.1 "Hotfix de seguridad" (tag `v1.0.1`, commit `0af31db`). Cada release trae su descripción, los issues que cierra y el código fuente descargable (Assets).
 
 **Tags del repositorio**
 
@@ -128,11 +127,11 @@ Datos (de `docs/PRUEBAS.md`, tabla "Pruebas que pasan por línea base"): LB-0 7 
 
 ![Issues abiertos](img/fig-21.png)
 
-**Figura 21.** Issues abiertos en GitHub (17): los hallazgos que todavía no tienen un cambio aplicado, cada uno con su gravedad y su tipo (`bug`, `mejora`).
+**Figura 21.** Issues abiertos en GitHub (16): los hallazgos que todavía no tienen un cambio aplicado, cada uno con su gravedad y su tipo (`bug`, `mejora`).
 
 ![Issues cerrados](img/fig-22.png)
 
-**Figura 22.** Issues cerrados en GitHub (31; se ve la primera página, con 25). Los de arriba (H-042 a H-048, H-016, H-013 y H-012) se cerraron con la release v1.1.0 y muestran el ícono del pull request que los cerró. Los demás se cerraron en octubre, con un comentario de cierre: son hallazgos atendidos entre LB-1 y LB-9, y correcciones de documentación (H-040, H-041).
+**Figura 22.** Issues cerrados en GitHub (32; se ve la primera página, con 25). H-042 a H-048, H-016, H-013 y H-012 se cerraron con la release v1.1.0 y muestran el ícono del pull request que los cerró. H-025 (clave secreta de JWT en el código) se cerró después de la release, con un comentario: el secreto ya no está en el código y el antiguo, que quedó en el historial, fue rotado. Los demás se cerraron en octubre, con un comentario de cierre: son hallazgos atendidos entre LB-1 y LB-9, y correcciones de documentación (H-040, H-041).
 
 ---
 
