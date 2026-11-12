@@ -2,6 +2,9 @@
 -- Base de Datos: posta_medica_valdiviezo
 -- Motor: MySQL
 -- =======================================================
+-- RFC-017: este archivo está en UTF-8. Se declara aquí para que cualquier cliente lo cargue
+-- igual (el cliente mysql de Windows usa cp850 por defecto y guardaba "Pediatr├¡a").
+SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- Drop tables in reverse order of dependency if they exist
@@ -18,7 +21,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- DROP TABLE IF EXISTS Estado_Cita;
 -- DROP TABLE IF EXISTS CIE;
 
-CREATE DATABASE IF NOT EXISTS posta_medica_valdiviezo;
+CREATE DATABASE IF NOT EXISTS posta_medica_valdiviezo CHARACTER SET utf8mb4;
 USE posta_medica_valdiviezo;
 
 -- =======================================================
@@ -125,6 +128,10 @@ CREATE TABLE Cita (
   hora_cita TIME,
   motivo VARCHAR(255),
   estado_cita INT,
+  -- RFC-012: un horario (médico, fecha, hora) solo puede tener una cita que no esté Cancelada (estado 3).
+  -- Las canceladas dan NULL, y una UNIQUE admite varios NULL: cancelar libera el horario.
+  slot_activo TINYINT GENERATED ALWAYS AS (IF(estado_cita = 3, NULL, 1)) STORED,
+  CONSTRAINT uq_cita_medico_fecha_hora UNIQUE (id_medico, fecha_cita, hora_cita, slot_activo),
   FOREIGN KEY (estado_cita) REFERENCES Estado_Cita(id_estado_cita),
   FOREIGN KEY (id_paciente) REFERENCES Paciente(idPaciente) ON DELETE CASCADE,
   FOREIGN KEY (id_medico) REFERENCES Medico(id_medico)
@@ -218,16 +225,16 @@ INSERT INTO Medico (nombres, apellidos, cmp, dni, clave, id_especialidad) VALUES
 ('Eduardo', 'Ramirez Vega', 'CMP34567', '10000003', '$2a$10$f1W.Cv/tYgBD3O0FRYqBjO284Ztp4vsatwdOYbBEjrKhJACTZUvs2', 3),
 ('Lucia', 'Flores Huaman', 'CMP45678', '10000004', '$2a$10$GyJys0sgKYskYf/zGaYX6.Shd9LEjxn/siSjDe3mD7ZzZf3uH1uGu', 4),
 ('Miguel', 'Vasquez Solis', 'CMP56789', '10000005', '$2a$10$dQi/Op9eV05blasWlBOCzuFEil9ySCIAHyCv0xICsAoXp8D5xI0ii', 5),
-('Roberto', 'Gomez Bolaños', 'CMP67890', '10000006', '$2a$10$tZD3A0pDwO357x4FSws5qeJAa91WiyBIVL5XXZjZaVI1Zba6yIjd6', 1),
-('Andrea', 'Legarreta Martinez', 'CMP78901', '10000007', '$2a$10$uWi38ury2GF3sCxHwiEVaOSI271ZDFqLZHWpcQac3Mrbvs4dMsXhK', 1),
-('Sofia', 'Vergara', 'CMP89012', '10000008', '$2a$10$aiaRjCZv1XMIW.kxILT4reET7Hp63Sc..lpobvrnFj7mnSLzWEZBm', 2),
-('Eugenio', 'Derbez', 'CMP90123', '10000009', '$2a$10$Y4huHxNukKg9zvtMDpfIeOBMVsz5lyNdGlCLCYvXQJc6Ad1q2ezk.', 2),
-('Thalia', 'Sodi Miranda', 'CMP01234', '10000010', '$2a$10$/RjZVxEzY.iXtRdYApbBAOpENLlBlakg1cQDZSofsUfawEJ3fOETS', 3),
-('Luis', 'Miguel Gallego', 'CMP11223', '10000011', '$2a$10$jqXhrARJzRbJUglXQ1aPj.L11TaUpDCItqVqljop4F1edercedaNG', 3),
-('Shakira', 'Mebarak Ripoll', 'CMP22334', '10000012', '$2a$10$Cspq3DxKZuK7OzBOiBUnsuLnC0Q4LXPD2CThMZaiZdlRW7s51EMAi', 4),
-('Juanes', 'Aristizabal', 'CMP33445', '10000013', '$2a$10$/NnVApc5/q6/1nq3Qva2qebhIraSyQlHC.Ue9/xhwoSOo/UpaCEee', 4),
-('Salma', 'Hayek Pinault', 'CMP44556', '10000014', '$2a$10$2huALlHLdSVE/gVNhJC1WO1ZGAc9Ea25RvSe.cMX7O7che/2U3J06', 5),
-('Penelope', 'Cruz Sanchez', 'CMP55667', '10000015', '$2a$10$S/ON/o7dn2onCZNHD4I3he2Qh7vLfwsdf8bv.KOMyaAOFxIACNUty', 5);
+('Ruben', 'Salazar Ticona', 'CMP67890', '10000006', '$2a$10$tZD3A0pDwO357x4FSws5qeJAa91WiyBIVL5XXZjZaVI1Zba6yIjd6', 1),
+('Gladys', 'Montoya Rengifo', 'CMP78901', '10000007', '$2a$10$uWi38ury2GF3sCxHwiEVaOSI271ZDFqLZHWpcQac3Mrbvs4dMsXhK', 1),
+('Patricia', 'Valdez Carhuaz', 'CMP89012', '10000008', '$2a$10$aiaRjCZv1XMIW.kxILT4reET7Hp63Sc..lpobvrnFj7mnSLzWEZBm', 2),
+('Ernesto', 'Lozano Pinedo', 'CMP90123', '10000009', '$2a$10$Y4huHxNukKg9zvtMDpfIeOBMVsz5lyNdGlCLCYvXQJc6Ad1q2ezk.', 2),
+('Milagros', 'Cardenas Lupaca', 'CMP01234', '10000010', '$2a$10$/RjZVxEzY.iXtRdYApbBAOpENLlBlakg1cQDZSofsUfawEJ3fOETS', 3),
+('Victor', 'Arce Huarcaya', 'CMP11223', '10000011', '$2a$10$jqXhrARJzRbJUglXQ1aPj.L11TaUpDCItqVqljop4F1edercedaNG', 3),
+('Norma', 'Benites Sulca', 'CMP22334', '10000012', '$2a$10$Cspq3DxKZuK7OzBOiBUnsuLnC0Q4LXPD2CThMZaiZdlRW7s51EMAi', 4),
+('Julio', 'Ccopa Mendoza', 'CMP33445', '10000013', '$2a$10$/NnVApc5/q6/1nq3Qva2qebhIraSyQlHC.Ue9/xhwoSOo/UpaCEee', 4),
+('Elena', 'Quiroz Tapia', 'CMP44556', '10000014', '$2a$10$2huALlHLdSVE/gVNhJC1WO1ZGAc9Ea25RvSe.cMX7O7che/2U3J06', 5),
+('Silvia', 'Ramos Cutipa', 'CMP55667', '10000015', '$2a$10$S/ON/o7dn2onCZNHD4I3he2Qh7vLfwsdf8bv.KOMyaAOFxIACNUty', 5);
 
 INSERT INTO Paciente (nombres, apellidos, dni, clave, fecha_nacimiento, sexo, telefono, id_estado_paciente, id_ubigeo) VALUES
 ('Juan', 'Perez Gomez', '12345678', '$2a$10$T3yWKuOKmhhzy7b4epJjrOTufzlDZxa9gHWkE1WW8DNMya5lKtE2O', '1990-05-10', 'M', '999888777', 1, 1),
@@ -235,16 +242,16 @@ INSERT INTO Paciente (nombres, apellidos, dni, clave, fecha_nacimiento, sexo, te
 ('Carlos', 'Ruiz Diaz', '34567890', '$2a$10$zwovT0tfBxm98Bxa7CdUeeC9BPzyzhwBxVKcScUsTPgV9WaLE.Nd6', '1988-08-20', 'M', '999333444', 1, 3),
 ('Ana', 'Torres Paz', '45678901', '$2a$10$iBpHLuxl43QKe0yMDHkGfe09scIkntbENLXNUh8aa8MDxw35V5K4y', '1995-11-30', 'F', '999555666', 2, 4),
 ('Luis', 'Gomez Soto', '56789012', '$2a$10$SX6yCT7.RC0UwRAvo0hpmO.1KXvfTtpTtbqNPAVjwERrWutR/En82', '1982-03-25', 'M', '999777888', 1, 5),
-('Pedro', 'Castillo', '60000001', '$2a$10$0qbVoKLbRBLJibJ12Etjj.PILidWHNAe9FGOl2aiQX1xoVCw3qh2y', '1980-01-01', 'M', '999111001', 1, 1),
-('Dina', 'Boluarte', '60000002', '$2a$10$QXjB6m2v78YkCyEtlORWMOKVHExTj4EHsQzgkCIQ2CFK7zWTWc0qW', '1982-02-02', 'F', '999111002', 1, 2),
-('Martin', 'Vizcarra', '60000003', '$2a$10$IloNCZ.HP7.UIeTq5o9n/O/BSW8LwNB7XD3EUWYNg/Tyj/hKku3JG', '1984-03-03', 'M', '999111003', 2, 3),
-('Alan', 'Garcia', '60000004', '$2a$10$riVnfMc/lJ1LJ3fZQQ.YEuEWJFGvATA0/u5AbuY.6lB1uWEhNtA1e', '1950-04-04', 'M', '999111004', 3, 4),
-('Alberto', 'Fujimori', '60000005', '$2a$10$psR3o/P8mgwlL6kMsw6mRuXkiDb1fovTLIVWIxai.k566tw3mDp16', '1940-05-05', 'M', '999111005', 4, 5),
-('Alejandro', 'Toledo', '60000006', '$2a$10$Es7ueuLQTMSn7cuYCjKXBe2V3z1kqXCxR/P7CmcNL8ZOcuTgvsAei', '1945-06-06', 'M', '999111006', 1, 1),
-('Ollanta', 'Humala', '60000007', '$2a$10$0aHZ3yoZNe/cMzcpPd7q2OM.93x4cw8MpRDguhc4B11r7nUD3uG.q', '1960-07-07', 'M', '999111007', 1, 2),
-('Nadine', 'Heredia', '60000008', '$2a$10$M4eGn6Sh5LpoDCh3Emk3puC9IW4fts.HG7GXOic3YZBsyAHhfvG8a', '1975-08-08', 'F', '999111008', 1, 3),
-('Keiko', 'Fujimori', '60000009', '$2a$10$keajp5qzcWo/w3SnXHL6peyDXacn3.LTOVTz6TuvFhMbrurxEu3Ke', '1975-09-09', 'F', '999111009', 2, 4),
-('Pedro Pablo', 'Kuczynski', '60000010', '$2a$10$V.uileAWs/kboullqBz.tOhgoDqAakevhwlfv2KIYhv8MxrgN6IEy', '1938-10-10', 'M', '999111010', 5, 5);
+('Teodoro', 'Quispe Ancco', '60000001', '$2a$10$0qbVoKLbRBLJibJ12Etjj.PILidWHNAe9FGOl2aiQX1xoVCw3qh2y', '1980-01-01', 'M', '999111001', 1, 1),
+('Rosa', 'Mamani Huillca', '60000002', '$2a$10$QXjB6m2v78YkCyEtlORWMOKVHExTj4EHsQzgkCIQ2CFK7zWTWc0qW', '1982-02-02', 'F', '999111002', 1, 2),
+('Felix', 'Condori Apaza', '60000003', '$2a$10$IloNCZ.HP7.UIeTq5o9n/O/BSW8LwNB7XD3EUWYNg/Tyj/hKku3JG', '1984-03-03', 'M', '999111003', 2, 3),
+('Wilber', 'Huaman Ccasa', '60000004', '$2a$10$riVnfMc/lJ1LJ3fZQQ.YEuEWJFGvATA0/u5AbuY.6lB1uWEhNtA1e', '1950-04-04', 'M', '999111004', 3, 4),
+('Hilario', 'Chambi Turpo', '60000005', '$2a$10$psR3o/P8mgwlL6kMsw6mRuXkiDb1fovTLIVWIxai.k566tw3mDp16', '1940-05-05', 'M', '999111005', 4, 5),
+('Justo', 'Yupanqui Layme', '60000006', '$2a$10$Es7ueuLQTMSn7cuYCjKXBe2V3z1kqXCxR/P7CmcNL8ZOcuTgvsAei', '1945-06-06', 'M', '999111006', 1, 1),
+('Eloy', 'Pariona Cusi', '60000007', '$2a$10$0aHZ3yoZNe/cMzcpPd7q2OM.93x4cw8MpRDguhc4B11r7nUD3uG.q', '1960-07-07', 'M', '999111007', 1, 2),
+('Yesenia', 'Ticona Puma', '60000008', '$2a$10$M4eGn6Sh5LpoDCh3Emk3puC9IW4fts.HG7GXOic3YZBsyAHhfvG8a', '1975-08-08', 'F', '999111008', 1, 3),
+('Marleni', 'Choque Vilca', '60000009', '$2a$10$keajp5qzcWo/w3SnXHL6peyDXacn3.LTOVTz6TuvFhMbrurxEu3Ke', '1975-09-09', 'F', '999111009', 2, 4),
+('Saturnino', 'Ayala Ccahuana', '60000010', '$2a$10$V.uileAWs/kboullqBz.tOhgoDqAakevhwlfv2KIYhv8MxrgN6IEy', '1938-10-10', 'M', '999111010', 5, 5);
 
 INSERT INTO Administrador (nombres, apellidos, dni, clave, rol) VALUES
 ('Admin', 'Principal', '87654321', '$2a$10$VlK.5oFbQRPwWB8ksQx72.BHbzmo5I3oWwMLRut7I0He31pi7tnnG', 'ADMIN');

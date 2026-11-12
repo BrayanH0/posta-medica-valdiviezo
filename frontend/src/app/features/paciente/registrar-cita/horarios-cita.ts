@@ -31,7 +31,12 @@ export function minutosAHora(minutos: number): string {
   return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
 }
 
-export function calcularHorariosDisponibles(fecha: string, disponibilidad: any[], citasOcupadas: any[]): ResultadoHorarios {
+// Id de "Cancelada" en Estado_Cita. RFC-012: la BD (columna slot_activo) no cuenta las canceladas,
+// así que su horario vuelve a estar libre.
+export const ESTADO_CITA_CANCELADA = 3;
+
+export function calcularHorariosDisponibles(fecha: string, disponibilidad: any[], citasDelDia: any[]): ResultadoHorarios {
+  const citasOcupadas = citasDelDia.filter(c => c.estado_cita !== ESTADO_CITA_CANCELADA);
   const dia = diaDeLaSemana(fecha);
   const regla = disponibilidad.find(a => a.dia_semana === dia);
   const horarios: string[] = [];

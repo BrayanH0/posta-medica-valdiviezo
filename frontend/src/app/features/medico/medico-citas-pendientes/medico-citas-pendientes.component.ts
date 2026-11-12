@@ -15,6 +15,10 @@ export class MedicoCitasPendientesComponent implements OnInit {
   error = '';
   selectedCita: Cita | null = null;
   actionType: 'aceptar' | 'cancelar' | null = null;
+  // true mientras se espera la respuesta del servidor: evita el doble envío (RFC-015)
+  procesando = false;
+  // Mensaje que confirma al médico la acción guardada (RFC-015)
+  mensaje = '';
 
   constructor(private medicoService: MedicoService) {}
 
@@ -36,29 +40,36 @@ export class MedicoCitasPendientesComponent implements OnInit {
   }
 
   confirmAction(cita: Cita, action: 'aceptar' | 'cancelar') {
+    if (this.procesando) return;
+    this.mensaje = '';
     this.selectedCita = cita;
     this.actionType = action;
   }
 
   closeModal() {
+    if (this.procesando) return;
     this.selectedCita = null;
     this.actionType = null;
   }
 
   executeAction() {
-    if (this.selectedCita && this.actionType) {
-      const nuevoEstado = this.actionType === 'aceptar' ? 'Confirmada' : 'Cancelada';
-      this.medicoService.updateCitaStatus(this.selectedCita.idCita, nuevoEstado).subscribe({
-        next: () => {
-          this.closeModal();
-          this.cargarCitas();
-        },
-        error: () => {
-          this.closeModal();
-          this.citas = null;
-          this.error = MENSAJE_SIN_CONEXION;
-        }
-      });
-    }
+    if (this.procesando || !this.selectedCita || !this.actionType) return;
+    const idCita = this.selectedCita.idCita;
+    const nuevoEstado = this.actionType === 'aceptar' ? 'Confirmada' : 'Cancelada';
+    this.procesando = true;
+    this.medicoService.updateCitaStatus(idCita, nuevoEstado).subscribe({
+      next: () => {
+        this.procesando = false;
+        this.closeModal();
+        this.mensaje = `Cita ${idCita} ${nuevoEstado === 'Confirmada' ? 'confirmada' : 'cancelada'}.`;
+        this.cargarCitas();
+      },
+      error: () => {
+        this.procesando = false;
+        this.closeModal();
+        this.citas = null;
+        this.error = MENSAJE_SIN_CONEXION;
+      }
+    });
   }
 }

@@ -1115,3 +1115,139 @@ Evidencia: `docs/evidencias/t23-rerevision-prs.txt`, sección 7.
 - **Simulación de merge:** sin conflictos con develop, con P3 ni con P5. El árbol final es `1cda20f` en los órdenes P5 → P1 → P3 y P1 → P3 → P5.
 - **Veredicto: P1 #50 APROBAR.** Orden recomendado: P5 → P1 → P3 (P3 cuando ponga la descripción). El comentario para GitHub está en la sección 7.7.
 - Limpieza: enlaces y worktrees quitados (exit 0, sin `--force`), puertos libres y BD recargada (21 citas). No hubo merge, push ni comentarios en GitHub.
+
+---
+
+## Tarea 24 — RFC-017 (datos semilla) y RFC-012 (doble reserva)
+
+> Nota: las entradas de las tareas 21 a 23 están en la rama `docs/t22-revision-prs`, que todavía no está en `develop`. Esta entrada parte de `develop`.
+
+### [2026-11-11 18:44–18:53] Preparación y batería base sobre `develop`
+- `git checkout develop` y `git pull` (fast-forward `463ca1d..d981f3b`, incluye P1, P4 y P5). `develop` = `d981f3b`.
+- Los scripts de batería de las tareas 19–23 siguen en el scratchpad de esas sesiones. Se copió `bateria.cjs` (tarea 19) al scratchpad de esta sesión (`t24/bateria.cjs`, fuera del repositorio) y se le agregó, con Edit:
+  - un resguardo en P21/P22: si la cita a aceptar o cancelar no está en "Citas Pendientes", registra "NO EJECUTABLE" y sigue (antes el script se cortaba). En la base no cambia nada;
+  - las pruebas nuevas P26 (10 reservas simultáneas) y P27 (cancelar libera el horario), que se agregan a `docs/PRUEBAS.md` con RFC-012, y unas líneas "X" de observación para RFC-017 (nombres, conteos, bytes de `Especialidad`). Se corren también en la base, como "antes".
+- Runner nuevo `t24/correr24.cjs` (misma secuencia que `correr23.cjs` sin la parte de variables de P5): `ng build`, unitarias 32 y todas, BD + `mvnw test`, BD + backend y `ng serve`, Playwright, BD + batería, backend apagado + P11/P18, BD recargada.
+- **Base (`develop` `d981f3b`), 18:49:58–18:53:25:** `ng build` exit 0; frontend `TOTAL: 32 SUCCESS` y `TOTAL: 49 SUCCESS`; `mvnw test` `Tests run: 69, Failures: 0, Errors: 0` · `BUILD SUCCESS`; Playwright `6 passed`; P01–P25 con los mismos resultados que en las tareas anteriores (P13: duplicado `200`, 2 reservas). P26: `{"200":10}`, 10 filas (la doble reserva ocurre). P27: tras cancelar, la pantalla **no** ofrece 11:40 y la API acepta el duplicado antes de cancelar. Salidas en `t24/base/` del scratchpad; resumen en `docs/evidencias/t24-base.txt`.
+- 18:52:13: issue de H-048 creado con `gh issue create` → **#54** (etiquetas `bug`, `media`). Ver HALLAZGOS.
+
+### [2026-11-11 18:53] Tarea 24A — RFC-017: causa (antes de cambiar el código)
+- 18:53:51: rama `feature/rfc-017-datos-semilla` desde `develop` (`d981f3b`). El RFC proponía `feature/rfc-017-semilla-ficticia`; se usa el nombre que pide la tarea.
+- **Nombres reales — causa:** los datos de prueba se escribieron a mano con nombres conocidos. Revisión de las 3 tablas con personas (`Paciente`, `Medico`, `Administrador`): no solo los pacientes 6–15 (expresidentes y políticos peruanos); **los médicos 6–15 también son personas públicas reales** (actores y cantantes: Gómez Bolaños, Legarreta, Vergara, Derbez, Sodi, Luis Miguel, Shakira, Juanes, Hayek, Cruz). RFC-017 pedía revisar `Medico` antes de cerrar; se incluyen. Pacientes 1–5, médicos 1–5 y el administrador tienen nombres genéricos y no se tocan.
+- **Tildes (`Pediatr├¡a`) — causa, medida:** el archivo `BDPostaMedica.sql` está bien (`file`: UTF-8; `Pediatría` = `C3 AD`). El servidor y la base usan `utf8mb4`. Pero el cliente `mysql` de Windows abre la sesión con `character_set_client = cp850` (`SELECT @@character_set_client` → `cp850`), y el script no declara su codificación. Al cargarlo, cada byte UTF-8 se lee como un carácter cp850 y se guarda convertido: `HEX(nombre_especialidad)` de Pediatría = `50656469617472` **`E2949C` `C2A1`** `61` ("├" y "¡"), es decir, texto doblemente codificado en la BD. La API lo devuelve tal cual (`Pediatr├¡a`). Afecta a todo texto con tilde o eñe del script (especialidades, estados, CIE, motivos, `Miércoles`, `Bolaños`).
+- **Consecuencia funcional encontrada:** `Disponibilidad_Medico.dia_semana` guarda `Miércoles` mal codificado, y el frontend compara con `'Miércoles'` (`horarios-cita.ts`): los miércoles nunca coinciden con el horario del médico y se ofrece el horario por defecto 08:00–20:00. Se corrige con la misma causa. *(Precisión agregada a las 19:01: con los datos semilla todos los horarios son 08:00–20:00, igual que el de defecto, así que no había diferencia visible.)*
+- **Decisión:** corregir en el archivo, que es la causa común a cualquier forma de cargarlo: `SET NAMES utf8mb4;` al principio y `CHARACTER SET utf8mb4` en `CREATE DATABASE`. Alternativas descartadas: (1) pedir `mysql --default-character-set=utf8mb4` en la carga: depende de que cada integrante recuerde el parámetro, y el script seguiría fallando con la carga habitual; (2) cambiar la URL JDBC (`characterEncoding`): la conexión del backend no es la causa (se comprueba después de la recarga) y `application.properties` es de P5; (3) reescribir el SQL sin tildes: pierde datos.
+
+### [2026-11-11 18:54–19:02] Tarea 24A — cambios, batería y documentación
+- `BDPostaMedica.sql` (Edit): `SET NAMES utf8mb4;`, `CHARACTER SET utf8mb4` en `CREATE DATABASE`, y 20 filas con nombres ficticios (pacientes 6–15, médicos 6–15; se conserva el sexo). Lista en RFC-017, "Cambios respecto del registro", **para revisión del usuario** (el RFC pedía aprobarla antes; la tarea ordenó aplicarla). No se verificó en fuentes externas que ningún nombre coincida con alguien público.
+- Comprobación del diff con un script de Node: "filas cambiadas 20 20 resto identico: true" (todo lo que sigue al nombre es igual). `grep` de los apellidos reales en `database/` → 0.
+- **Pruebas que dependen de los nombres (punto 3 de la tarea):** ninguna prueba automática (`e2e/tests`, `frontend/src`, `backend/src`) contiene esos nombres. En `docs/PRUEBAS.md` solo el "Obtenido" histórico de P05 (LB-0) menciona al médico 6 por su nombre real: es un registro de lo que se vio, no una aserción, y no se modificó.
+- Batería completa 18:55:47–18:58:54 (con los cambios aún sin commit; el runner registra "cambios sin commit: 2"). Igual a la base salvo P01 (tamaños: vuelven a los de LB-0) y el orden de P23 (ordena por apellidos). Backend 69/69, frontend 32/32 y 49/49, Playwright 6/6, backend apagado idéntico.
+- 18:59–19:00:02: backend arrancado a mano para medir la conexión: `performance_schema` muestra `character_set_client/connection = utf8mb4` en las conexiones JDBC → la conexión no era la causa. API: `Pediatría` con bytes UTF-8 correctos. Backend detenido (19:00:02).
+- RFC-010, "Riesgo residual": corregido (H-048 lo atiende RFC-011, no P5), con la nota de la corrección.
+- HALLAZGOS: H-042 corregido en la rama; tabla de issues: #42–#47 existen (ya no "por crear"), H-048 = **#54**, y la nota de que desde H-048 el número del issue no coincide con el del hallazgo; la observación de codificación de la tarea 18 queda con su causa verificada.
+- PRUEBAS.md: sección "Resultados de RFC-017". Evidencias: `docs/evidencias/t24-base.txt`, `docs/evidencias/t24-a-rfc017.txt`.
+- Pendiente para quien tenga la BD cargada: recargarla con el SQL nuevo (la codificación dañada no se arregla con `UPDATE` simples).
+
+### [2026-11-11 19:13–19:16] Tarea 24 — cierre: commits, simulación del merge y estado
+*(Esta entrada se agregó igual en las dos ramas, en un segundo commit de solo bitácora.)*
+- Commits: 24A `888ec64` (19:02:07) "RFC-017: datos semilla ficticios y codificación UTF-8 (Closes #42)" en `feature/rfc-017-datos-semilla`; 24B `8a038e8` (19:13:45) "RFC-012: impedir doble reserva con restricción en la BD (Closes #12)" en `feature/rfc-012-doble-reserva`. Las dos parten de `develop` `d981f3b` (`git merge-base` = `d981f3b…`).
+- **Simulación del merge de las dos ramas juntas sobre `develop`** (19:13:53, `git merge-tree --write-tree feature/rfc-017-datos-semilla feature/rfc-012-doble-reserva`, no modifica ninguna rama):
+  - `database/BDPostaMedica.sql`: **sin conflicto** (Auto-merging). Las dos tocan el SQL en partes distintas (24A: cabecera y `INSERT` de médicos y pacientes; 24B: `CREATE TABLE Cita`). El SQL combinado se cargó en MySQL: `carga=0`, Pediatría `…C3AD61`, paciente 6 "Teodoro Quispe Ancco", índice `uq_cita_medico_fecha_hora` presente (4 columnas), 21 citas.
+  - `docs/evidencias/t24-base.txt`: sin conflicto (mismo blob `0a86ccb` en las dos).
+  - **Conflictos solo en `docs/`**: `BITACORA.md` (las dos agregan su entrada al final), `HALLAZGOS.md` (las dos agregan una nota de la tarea 24 después de la tabla de issues) y `PRUEBAS.md` (las dos agregan su sección de resultados después del hotfix RFC-010). Resolución: conservar las dos partes, primero 24A y después 24B. En HALLAZGOS, las filas H-012 y H-042 no chocan (son líneas distintas).
+  - Recomendación: hacer el merge de 24A primero (fast-forward desde `develop`) y después el de 24B, resolviendo los 3 archivos de `docs/`.
+- **No se ejecutó la batería sobre la combinación** de las dos ramas (cada una se probó por separado contra la misma base). Sin registro de una corrida combinada.
+- **Fallos propios y notas de método:**
+  - Un `grep` del principio sin `-a` no buscó en `PRUEBAS.md` (lo trató como binario) y dio "sin resultados"; se repitió con `-a` y apareció el "Obtenido" histórico de P05.
+  - El plan de back-out de RFC-012 (solo `DROP INDEX`) estaba mal; se detectó al probarlo (ver 24B).
+  - Las baterías de 24A y 24B se corrieron con los cambios todavía sin commit (el runner lo registra); los commits contienen exactamente esos archivos más la documentación.
+- **Estado del entorno al terminar:** backend y frontend detenidos (los arrancó y detuvo el runner; el backend que arranqué a mano para medir la conexión se detuvo a las 19:00:02). La BD local quedó cargada con el **SQL combinado** de la simulación (24A + 24B). Rama actual al cerrar: `feature/rfc-017-datos-semilla`. Issue #54 creado en GitHub. Sin push ni PR.
+- **Decisiones pendientes del usuario:** (1) P22 (RFC-012); (2) revisar la lista de nombres ficticios (RFC-017); (3) si se baja el nivel del log de Hibernate ante un 409.
+- Cumplimiento de CLAUDE.md: causa escrita antes del código en las dos tareas; sin valores a mano ni condiciones para los datos de prueba en el código (el frontend usa el id de estado 3, que es el de la BD); ningún error atrapado en silencio (el 409 deja `WARN`, el resto sigue con `log.error`); ninguna prueba existente modificada (P22 se informa, no se cambia); archivos del repositorio creados y modificados con Write/Edit; horas tomadas de `date`, de los logs del runner y de `git log`; sin comandos destructivos de Git. Excepciones: los scripts y salidas del scratchpad se copiaron o crearon con `cp`/`mkdir` y Node, fuera del repositorio.
+- Comandos para el usuario (cmd de Windows, una línea cada uno):
+  - `git push -u origin feature/rfc-017-datos-semilla`
+  - `git push -u origin feature/rfc-012-doble-reserva`
+  - `gh pr create --base develop --head feature/rfc-017-datos-semilla --title "RFC-017: datos semilla ficticios y codificación UTF-8 (Closes #42)" --body "…"`
+  - `gh pr create --base develop --head feature/rfc-012-doble-reserva --title "RFC-012: impedir doble reserva con restricción en la BD (Closes #12)" --body "…"`
+
+## Tarea 24B — RFC-012 (doble reserva, opción B)
+
+> Rama `feature/rfc-012-doble-reserva` desde `develop` (`d981f3b`), **no** desde 24A, como pide la tarea. La preparación y la batería base de la tarea 24 (18:44–18:53, `docs/evidencias/t24-base.txt`) están registradas en la entrada "Tarea 24" de la rama de 24A; se repite aquí lo necesario.
+
+### [2026-11-11 19:02] Causa (antes de cambiar el código)
+- 19:02:16: rama creada. Base de comparación: la batería de `develop` de las 18:49–18:53 (backend 69/69, frontend 32/32 y 49/49, Playwright 6/6; P13 duplicado `200` con 2 reservas; P26 nueva `{"200":10}` con 10 filas; P27 nueva: tras cancelar, la pantalla no ofrece el horario).
+- **Por qué ocurre:** la tabla `Cita` no tiene ninguna restricción sobre `(id_medico, fecha_cita, hora_cita)`; `CitaService.crearCita` hace `save` sin validar; el frontend solo oculta las horas al cargar la lista. Una validación "consultar y luego insertar" no es atómica (P26: 10 de 10 simultáneas se guardan). La garantía tiene que estar en la BD.
+- **Por qué un horario cancelado no se libera hoy:** `calcularHorariosDisponibles` (`horarios-cita.ts`) trata como ocupada toda cita del día que devuelve `/api/citas/medico/{id}/fecha/{fecha}`, sin mirar `estado_cita`.
+- **Decisión del usuario: opción B** (RFC-012, "Decisión pendiente"): columna generada `slot_activo = IF(estado_cita = 3, NULL, 1)` y `UNIQUE (id_medico, fecha_cita, hora_cita, slot_activo)`. MySQL admite varios `NULL` en un índice UNIQUE, así que las canceladas no ocupan el horario.
+- **El estado 3 es "Cancelada" (confirmado en el código):** orden de los `INSERT INTO Estado_Cita` de `BDPostaMedica.sql` (Pendiente, Confirmada, **Cancelada**, Atendida, Reprogramada → id 3); `mis-citas.component.ts:75` (`case 3: return 'Cancelada'`); `ReporteController.java:36` (`countByEstadoCita(3)` para las canceladas).
+- Semilla: `SELECT … WHERE estado_cita IS NULL OR estado_cita<>3 GROUP BY id_medico, fecha_cita, hora_cita HAVING COUNT(*)>1` → sin filas (19:02): la restricción se puede crear.
+
+### [2026-11-11 19:02–19:12] Cambios, pruebas y documentación
+- **BD:** `BDPostaMedica.sql` (columna generada `slot_activo` + `uq_cita_medico_fecha_hora`); migración `database/migraciones/RFC-012-slot-activo.sql` (lista duplicados y crea la restricción) y su back-out `RFC-012-slot-activo-revertir.sql`.
+- **Prueba de la migración** (19:03, script `t24/migracion.cjs` del scratchpad): BD de `develop` + migración → `SHOW CREATE TABLE` igual a la BD nueva y datos iguales (MD5); con duplicados activos → los lista, falla con `ERROR 1062` y la tabla no cambia; con una cancelada y una activa en la misma hora no los cuenta como duplicado.
+- **Fallo encontrado en el back-out del RFC** (19:03:20): `DROP INDEX uq_cita_medico_fecha_hora` falla con `ERROR 1553 … needed in a foreign key constraint`, porque InnoDB usa el índice UNIQUE (empieza por `id_medico`) para la FK de `id_medico`. Se corrigió el script de reversión para recrear antes el índice `id_medico`; repetido a las 19:03:37: la tabla queda igual a la de `develop`. Corregido también el "Plan de back-out" de RFC-012.
+- **Backend:** `GlobalExceptionHandler` con un handler nuevo para `DataIntegrityViolationException`. Si la causa nombra la restricción → 409 con mensaje propio y `WARN`. Si no → llama a `handleRuntimeException` (la respuesta 500 y el `log.error` de P1 no cambian; `GlobalExceptionHandlerTest` pasa sin cambios). Alternativa descartada: capturar en `CitaService` (habría que repetirlo en los 3 caminos que guardan citas).
+- **Frontend:** `horarios-cita.ts` ignora las citas con `estado_cita === 3` al calcular las horas; `registrar-cita.component.ts` ante un 409 muestra el `message`, borra la hora elegida y recarga las horas. Ninguna prueba existente usa `estado_cita` (U19–U23, U75–U79 pasan sin cambios).
+- **Pruebas nuevas:** U90 (4), U91 (2, servidor + BD reales con 10 hilos), U92 (7), E01 (Playwright, dos pestañas). Primera corrida aislada 19:05: backend 7/7 de las clases tocadas; frontend `TOTAL: 56 SUCCESS`.
+- **Batería completa 19:07:07–19:09:55** (cambios sin commit): backend 75/75, frontend 32/32 y 56/56, Playwright 7/7. Diferencias con la base solo por la corrección: P13 FALLA→PASA (409, 1 reserva); P14 y P16 una cita menos; P20, P21 y P23 sin la cita 23; P26 `{"200":1,"409":9}` y 1 fila; P27 el horario cancelado vuelve a ofrecerse. Backend apagado: idéntico.
+- **P22 queda no ejecutable** (cancelaba la cita 23 de la doble reserva). **No se modificó**: decide el usuario; opciones en RFC-012.
+- Observación: cada 409 deja además una línea `ERROR … SqlExceptionHelper : Duplicate entry …` de Hibernate en el log (12 en la corrida, igual que los `WARN` propios). No se cambió la configuración de logs; anotado en HALLAZGOS.
+- Documentación: RFC-012 (decisión B, diseño, antes/después, P22, evaluación), HALLAZGOS (H-012 corregido en la rama, observaciones), PRUEBAS.md (P26, P27, U90–U92, E01, resultados). Evidencia: `docs/evidencias/t24-b-rfc012.txt`.
+
+### [2026-11-11 19:13–19:17] Tarea 24 — cierre: commits, simulación del merge y estado
+*(La misma entrada está en la rama de 24A, commit `3dd49a9`, escrita antes de volver a esta rama; la única diferencia es la rama actual al cerrar.)*
+- Commits: 24A `888ec64` (19:02:07) "RFC-017: datos semilla ficticios y codificación UTF-8 (Closes #42)" y `3dd49a9` (cierre) en `feature/rfc-017-datos-semilla`; 24B `8a038e8` (19:13:45) "RFC-012: impedir doble reserva con restricción en la BD (Closes #12)" en `feature/rfc-012-doble-reserva`. Las dos parten de `develop` `d981f3b`.
+- **Simulación del merge de las dos ramas juntas sobre `develop`** (19:13:53, `git merge-tree --write-tree feature/rfc-017-datos-semilla feature/rfc-012-doble-reserva`, no modifica ninguna rama):
+  - `database/BDPostaMedica.sql`: **sin conflicto** (Auto-merging). Las dos tocan el SQL en partes distintas (24A: cabecera y `INSERT` de médicos y pacientes; 24B: `CREATE TABLE Cita`). El SQL combinado se cargó en MySQL: `carga=0`, Pediatría `…C3AD61`, paciente 6 "Teodoro Quispe Ancco", índice `uq_cita_medico_fecha_hora` presente (4 columnas), 21 citas.
+  - `docs/evidencias/t24-base.txt`: sin conflicto (mismo blob `0a86ccb` en las dos).
+  - **Conflictos solo en `docs/`**: `BITACORA.md` (las dos agregan su entrada al final), `HALLAZGOS.md` (las dos agregan una nota de la tarea 24 después de la tabla de issues) y `PRUEBAS.md` (las dos agregan su sección de resultados después del hotfix RFC-010). Resolución: conservar las dos partes, primero 24A y después 24B. En HALLAZGOS, las filas H-012 y H-042 no chocan.
+  - Recomendación: merge de 24A primero (fast-forward desde `develop`) y después 24B, resolviendo los 3 archivos de `docs/`.
+- **No se ejecutó la batería sobre la combinación** de las dos ramas (cada una se probó por separado contra la misma base). Sin registro de una corrida combinada.
+- **Fallos propios y notas de método:** un `grep` del principio sin `-a` trató `PRUEBAS.md` como binario y dio "sin resultados"; repetido con `-a`, apareció el "Obtenido" histórico de P05. El plan de back-out de RFC-012 estaba mal (detectado al probarlo). Las baterías se corrieron con los cambios aún sin commit (el runner lo registra).
+- **Estado del entorno al terminar:** backend y frontend detenidos. La BD local quedó cargada con el **SQL combinado** de la simulación (24A + 24B). Rama actual al cerrar: `feature/rfc-012-doble-reserva`. Issue #54 creado en GitHub. Sin push ni PR.
+- **Decisiones pendientes del usuario:** (1) P22; (2) revisar la lista de nombres ficticios (RFC-017); (3) si se baja el nivel del log de Hibernate ante un 409.
+- Cumplimiento de CLAUDE.md: causa escrita antes del código; sin valores a mano ni condiciones para los datos de prueba; ningún error atrapado en silencio; ninguna prueba existente modificada; archivos del repositorio con Write/Edit; horas de `date`, logs y `git log`; sin comandos destructivos de Git. Excepción: scripts y salidas del scratchpad creados o copiados con `cp`/`mkdir`/Node, fuera del repositorio.
+- Comandos para el usuario (cmd de Windows, una línea cada uno): `git push -u origin feature/rfc-017-datos-semilla`; `git push -u origin feature/rfc-012-doble-reserva`; y un `gh pr create --base develop --head <rama> …` por rama (texto completo en el reporte de la tarea).
+
+---
+
+## Tarea 25 — Integrar RFC-012 con `develop` (que ya incluye RFC-017)
+
+### [2026-11-11 19:33–19:38] Merge de `develop` en la rama
+- 19:33:43: `git checkout develop`; `git pull` → fast-forward `d981f3b..d0beb4c` (`d0beb4c` = merge del PR #55, RFC-017).
+- `git checkout feature/rfc-012-doble-reserva`; `git merge --no-ff --no-commit develop`: `BDPostaMedica.sql` sin conflicto (como predijo la simulación de la tarea 24); conflictos en `docs/BITACORA.md`, `docs/HALLAZGOS.md` y `docs/PRUEBAS.md`.
+- **Por qué hubo conflicto:** las dos ramas agregaron texto en el mismo lugar de cada archivo (final de la bitácora, nota después de la tabla de issues, sección de resultados después del hotfix RFC-010). No hay contradicción de contenido.
+- **Resolución (Edit):** conservar las dos partes, primero la de `develop` (RFC-017, que incluye la preparación de la tarea 24) y después la de la rama (24B), el orden que recomendó la tarea 24. La entrada de cierre de la tarea 24 queda dos veces en la bitácora, porque se escribió en cada rama; se conservan las dos porque cada una registra la rama en la que se cerró. Alternativa descartada: dejar una sola copia del cierre (la tarea pide conservar ambas partes).
+- Comprobación con un script de Node (ignorando CR): toda línea de cada lado está en el resultado, salvo las versiones viejas de filas que el otro lado actualizó (H-012, H-042, "#42–#47 (por crear)"). Sin marcadores de conflicto en `docs/`.
+- 19:38:31: commit de merge `ce31018` (padres `a420127` y `d0beb4c`), solo con la resolución.
+- **Fallo propio:** el primer `git commit -F - @'…'@` en PowerShell pasó el mensaje como argumento (ruta) y no por la entrada estándar; git respondió `fatal: cannot do a partial commit during a merge` y no hizo nada. Se repitió con el mensaje en un archivo del scratchpad.
+
+### [2026-11-11 19:36–19:44] P22 (opción 1 del usuario), batería y documentación
+- **Decisión del usuario: opción 1.** P22 crea al empezar su propia cita pendiente del médico 1 (`POST /api/cita`, paciente 1, `2026-10-26 10:20:00`, "Prueba P22: cita para cancelar") y la cancela desde "Citas Pendientes". Lo que se verifica no cambia.
+- Se copió al scratchpad (`t25/`) el script de batería y el runner de la tarea 24, y se cambió con Edit solo P22 y la carpeta del runner. El script usa el `idCita` que devuelve el servidor. Alternativa descartada: fijar el id en 23. Habría fallado: la cita salió con id 24, porque el `INSERT` rechazado de P13 consume un valor de `AUTO_INCREMENT`.
+- Hora `10:20`: no choca con P12 (`10:00`), P26/P27 (`2026-11-30`) ni con las E2E (`2099-12-31`).
+- **Batería completa 19:38:48–19:42:19** (`HEAD ce31018`, sin cambios pendientes; la definición nueva de P22 estaba solo en el script, PRUEBAS.md se editó después): `ng build` exit 0; frontend `TOTAL: 32 SUCCESS` y `TOTAL: 56 SUCCESS`; `mvnw test` `Tests run: 75, Failures: 0, Errors: 0, Skipped: 0` · `BUILD SUCCESS`; Playwright `7 passed`; P01–P27 (19:40:07–19:41:55); P11/P18 apagado (19:41:59–19:42:18); BD recargada al final (21 citas).
+- **Comparación** (diff sin horas) con las corridas de la tarea 24: contra RFC-012 sola, solo difieren P01 (tamaños), el orden de P23, las líneas X (RFC-017), y P22, P23 Cancelada `[24]` e ids de P27 +1 (P22). Contra RFC-017 sola, solo lo que corrige RFC-012 y P22. Apagado: idéntico. **P22: PASA** (BD `24 | 1 | 3 | Cancelada`; "Citas Canceladas" la muestra tras recargar). Total P01–P27: **23 PASA · 4 FALLA** (P04, P14, P15, P16).
+- **Fallo propio:** en el primer borrador del resumen de PRUEBAS.md escribí "22 PASA · 5 FALLA" sin contar. Se comprobó P04 (`500`) y P15 en la salida, y se corrigió a 23 · 4 antes del commit.
+- Observación: "X días disponibilidad" muestra `Mi?rcoles` también en la corrida de RFC-017 sola. Es la forma en que el script decodifica la salida del cliente `mysql`, no un dato dañado (el HEX de Especialidad es UTF-8 correcto). No se investigó más; no afecta ninguna prueba.
+- Documentación: PRUEBAS.md (P22, antes/después/por qué, y sección "Resultados de la integración"), RFC-012 (decisión de P22, historial), HALLAZGOS (observación de P22 resuelta). Evidencia: `docs/evidencias/t25-integracion.txt`.
+
+### Estado y pendientes (tarea 25)
+- Entorno: backend y frontend detenidos por el runner; BD local recargada con el SQL de la rama integrada (21 citas). Rama actual: `feature/rfc-012-doble-reserva`. Sin push ni PR.
+- Pendientes del usuario: revisar la lista de nombres ficticios (RFC-017); decidir si se baja el nivel del log de Hibernate ante un 409 (12 líneas `ERROR … Duplicate entry` en esta corrida); tag de línea base al integrar.
+- Cumplimiento de CLAUDE.md: archivos del repositorio editados con Edit/Write; la definición de P22 la cambió el usuario (decisión explícita), no para que pase, y lo que verifica no cambió; no se tocó ningún archivo de prueba automática ni de código; horas de `date`, `git log` y el runner; sin comandos destructivos de Git. Excepción: copias al scratchpad con `cp`/`mkdir`, fuera del repositorio.
+
+---
+
+## Tarea 26 — Parte 0: rama `docs/t22-revision-prs` al día con `develop`
+
+### [2026-11-12 11:46–11:50] Merge de `develop` en `docs/t22-revision-prs`
+- Qué: `git merge develop` en `docs/t22-revision-prs` (4 commits propios de las tareas 22–23, 24 commits de `develop` detrás; `develop` = `origin/develop` = `897bdbb`). La rama no tenía push (`git ls-remote --heads origin docs/t22-revision-prs` → vacío).
+- Por qué: la evidencia de revisión de PR (tareas 22–23) tiene que llegar a `develop` por PR, sin mezclarse con RFC-011.
+- Conflictos: solo en documentación, ambos por agregar texto al final de la misma sección.
+  - `docs/BITACORA.md`: entradas de las tareas 22–23 (rama) y 24–25 (`develop`). Se conservaron las dos, en orden cronológico (22–23 primero, separadas por `---`). La nota de la tarea 24 ("las entradas de las tareas 21 a 23 están en la rama `docs/t22-revision-prs`…") se dejó tal cual: describe la situación de ese momento.
+  - `docs/HALLAZGOS.md`: la sub-viñeta "Tarea 24: causa verificada y corregida en RFC-017" (`develop`) se colocó bajo la viñeta de la codificación dañada (tarea 18), que es la que completa; las secciones "Observaciones sin número (tarea 22 / tarea 23)" de la rama quedaron después.
+- Alternativa descartada: `rebase` de la rama sobre `develop` (reescribiría commits ya registrados en la bitácora por hash).
+- Evidencia: `git diff --name-only --diff-filter=U` vacío tras resolver; `grep -c "^<<<<<<<\|^>>>>>>>"` → 0 en los dos archivos. El resto de archivos del merge vienen de `develop` sin cambios.
+- No se tocó código ni pruebas. Push y PR los hace el usuario.

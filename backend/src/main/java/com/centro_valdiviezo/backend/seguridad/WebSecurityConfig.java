@@ -2,6 +2,7 @@ package com.centro_valdiviezo.backend.seguridad;
 
 import java.util.Arrays;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,15 +29,15 @@ public class WebSecurityConfig {
     private final JWTAuthorizationFilter jwtAuthorizationFilter;
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authManager)
-            throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authManager,
+            CorsConfigurationSource corsConfigurationSource) throws Exception {
 
         // JWTAuthenticationFilter jwtAuthenticationFilter = new JWTAuthenticationFilter();
         // jwtAuthenticationFilter.setAuthenticationManager(authManager);
         // jwtAuthenticationFilter.setFilterProcessesUrl("/login");
 
         return http.csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().permitAll()) // Permitir todo para pruebas
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -82,9 +83,11 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    CorsConfigurationSource corsConfigurationSource() {
+    CorsConfigurationSource corsConfigurationSource(
+            @Value("${app.cors.allowed-origins}") String[] origenesPermitidos) {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200")); // tu frontend
+        // Orígenes del frontend, separados por comas (variable CORS_ORIGINS; por defecto http://localhost:4200)
+        configuration.setAllowedOrigins(Arrays.asList(origenesPermitidos));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
