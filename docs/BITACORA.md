@@ -978,6 +978,146 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 
 ---
 
+## Tarea 22 — Revisión de los PR de los integrantes (sin merge, sin push)
+
+Evidencia completa: `docs/evidencias/t22-revision-prs.txt`. Esta tarea **no cambia código**: solo revisa ramas ajenas en worktrees temporales y documenta. Rama: `docs/t22-revision-prs` desde `develop` (`731d5e1`).
+
+### [2026-11-11 16:44–16:47] Lectura, fetch y revisión estática
+- Lectura previa: CLAUDE.md y las 4 fichas de `docs/entrega/fichas/`.
+- 16:45:28 `git fetch origin`. PR abiertos: #50 (P1), #51 (P3) y #52 (P5). El #53 (P4) apareció en el fetch de 17:00:31.
+- **Indicaciones del usuario durante la tarea:** P5 "lo está haciendo ahora", P4 "también está en avance, evalúa aquellos que están completos" y, después, "revisa el p4 que ya está". Se evaluaron completos P1, P3 y P4. P5 (2 de 4 commits) solo se revisó en estático y queda **sin veredicto**.
+- **Autoría:** ningún commit es de BrayanH0 (ítem 14.2). Los autores son pfaberio27-png (P1), Paolo1710 (P3), Angel29042001 (P4) y Rashidchz (P5). Las 4 ramas salen de `develop` (`merge-base` = `731d5e1`).
+- **Alcance:** cada PR toca solo los archivos de su ficha.
+- **Comparación contra lo verificado en la tarea 18.** La copia de la tarea 18 ya no existe (se descartó el 2026-11-10). Se usó el verificador de la tarea 18 apuntando a un worktree de cada PR: "develop + DESPUÉS de la ficha == archivo del PR".
+  - **Problema encontrado:** el script del repo dio `bloques: 0 … fallos: 0` en las 3 fichas. La ficha tiene CRLF en este clon y la expresión regular espera `\n`, así que es un falso "todo bien" (anotado en HALLAZGOS, observaciones de la tarea 22). Se usó una copia en el scratchpad que solo normaliza el fin de línea; el script del repo no se tocó.
+  - Resultado: P3 y P4 idénticos (0 fallos). P5, lo hecho hasta ahora es idéntico.
+  - P1 tiene 1 diferencia: en `login-paciente.component.ts`, la línea 34 tiene 4 espacios en lugar de quedar vacía y la línea 35 tiene 5 espacios de sangría en lugar de 4. Solo espacios en blanco; el commit dice "adjusted formatting".
+- **PR:**
+  - #50, #52 y #53: título, descripción y `Closes #N` iguales a la ficha, con base `develop`.
+  - **#51 tiene base `master`** (por eso muestra 8 commits) y la **descripción vacía**.
+  - El 3.er commit de P3 tiene el mensaje mezclado con el texto que propone GitHub ("Implement unit tests for MedicoCitasPendientesComponentP3: …").
+  - Los 4 commits de P4 se hicieron en local en 21 s, y cada uno lleva `Co-Authored-By: Claude Opus 5.5`. Decide el usuario.
+
+### [2026-11-11 16:46–17:13] Pruebas en worktrees temporales
+- `git worktree add --detach` en el scratchpad: base (`develop`), p1, p3 y p5 a las 16:46:09; p4 a las 17:00:49. En cada uno, `frontend/node_modules` es un enlace (junction) al del repo.
+- Orquestador `correr.cjs` (scratchpad) por variante:
+  - `ng build`, unitarias 32 y todas, con los comandos de PRUEBAS.md.
+  - BD recargada + `mvnw test`.
+  - BD recargada + backend y `ng serve` **del worktree**, y Playwright desde `e2e/` (ningún PR toca `e2e/`).
+  - BD recargada + batería P01–P25 con **el mismo `bateria.cjs` de la tarea 19**, sin cambios.
+  - BD recargada + comprobación funcional (`func.cjs`, `func-p4.cjs`).
+  - Backend apagado + P11/P18, y BD recargada al final.
+- **Base de hoy = LB-10:** la batería y P11/P18 de la base son idénticas línea por línea a la salida de LB-10 de la tarea 19, sin contar las horas.
+- **Resultados:**
+  - P1: 67/67 (+1 nueva), 32/49 y 6/6.
+  - P3: 66/66, 32/**54** (+5 nuevas) y 6/6.
+  - P4: 66/66, 32/49 y 6/6.
+  - En los 3: batería P01–P25 y P11/P18 **idénticas** a la base, y el build con las mismas 2 advertencias de siempre.
+- **Comprobación funcional** (base contra PR):
+  - P1, consola: la base muestra DNI y clave; P1 no muestra ninguno de los dos.
+  - P1, error 500: el cuerpo es igual al de la base, y el POST sin cuerpo agrega 1 línea "Error no controlado en la API" al log (de 1 a 2; la anterior es el 500 de P04 de la batería). En la base, ese contador queda en 0.
+  - P3, doble clic: la base envía 2 PUT; P3 envía 1, con "Guardando...", botones desactivados y "Cita 22 confirmada." visible dentro de `role="status"`.
+  - P4: a 360 px no hay desborde (380 → 360), la tabla del médico pasa de 10 a 290 px y el contenido del admin de 100 a 360. A 1280 px, las 3 capturas son idénticas byte a byte a las de la base.
+- **Simulación de merge** (`git merge-tree`, no modifica ramas): sin conflictos con develop, entre cada par y en secuencia; ningún archivo en común. Orden recomendado: P1 → P3 → P4 → P5.
+  - P1 va primero porque RFC-012 depende de su `GlobalExceptionHandler`.
+  - P5 va al final y cuando esté completo, porque RFC-011 (H-048) parte de su `WebSecurityConfig`.
+
+### Veredictos
+- **P1 #50: PEDIR CAMBIOS (menor)**, por los 2 renglones de espacios. Alternativa para el usuario: aprobar y corregirlo después, porque no cambia el comportamiento.
+- **P3 #51: PEDIR CAMBIOS**: cambiar la base a `develop` y pegar la descripción con `Closes #44`. El código está bien.
+- **P4 #53: APROBAR.**
+- **P5 #52: sin veredicto** (en curso).
+- Los comentarios listos para pegar están en la evidencia, sección 8.
+
+### Fallos propios, excepciones y estado del entorno (tarea 22)
+- **Fallo propio 1:** la primera corrida de la base (16:49:49) falló en `mvnw test`, porque `cmd` no encontró `mvnw.cmd` sin `.\`; el backend tampoco arrancó. Se detuvo, se comprobó que 4200/8080 estaban libres, se corrigió a `.\mvnw.cmd` y se repitió completa (16:51:07–16:54:29). No se usó ningún resultado de la corrida fallida.
+- **P4, intento 1 (17:03:09–17:07:56):** Playwright dio 0/6 por un error del entorno. `ng serve` no pudo renombrar la caché de Vite del worktree (`EPERM … rename … .angular\cache\…\vite\deps`) y la página no cargó. Se detuvo y se repitió todo P4 (17:09:15–17:12:53): 6/6 y ninguna línea EPERM. El intento 1 no se usó.
+- **Fallo propio 2:** para repetir P4 intenté renombrar `t22/p4` con `mv` (scratchpad, fuera del repo), pero falló porque 2 procesos `tail` de mis propios monitores detenidos tenían abierto un archivo. Por eso la cadena siguió directo a la medición de la base (`solo-p4`), que **reescribió `base/resumen.txt`**: se perdió ese archivo de horas de la corrida completa de la base. Las horas quedan aquí, tomadas de los avisos de esa corrida. Los resultados de la base (`bateria*.txt`, `mvn-test.txt`, `fe-*.txt`, `playwright.txt`, `func.txt`) no se perdieron. Se cerraron los 2 `tail` y P4 se repitió en `t22/p4-intento2`.
+- `git commit-tree` (simulación secuencial) dejó commits sueltos que ninguna rama apunta. No cambian nada y git los elimina solo.
+- **Excepción a CLAUDE.md** ("los archivos se borran solo con Edit/Write"). El pedido indicaba borrar los worktrees con `git worktree remove`:
+  - 17:13:26: primero se quitaron solo los enlaces de `node_modules`, con PowerShell. El `node_modules` real tenía 375 carpetas antes y después.
+  - 17:13:33–17:13:37: `git worktree remove` de los 5, con exit 0 y sin `--force`. `git worktree list` muestra solo el repo.
+  - Todo estaba fuera del repositorio (scratchpad), donde no aplican los hooks.
+  - Además, por terminal y también en el scratchpad: se crearon las carpetas de salida, y el intento de `mv` falló (ver arriba).
+- La BD se recargó varias veces (`DROP DATABASE` + `database/BDPostaMedica.sql`, 21 citas cada vez), la última al terminar P4. Los registros temporales (1 paciente por registro, 1 cita por doble clic) se crearon y quedaron borrados con la recarga.
+- Entorno al terminar: backend y `ng serve` detenidos, 4200/8080 libres y MySQL encendido.
+- No hubo merge, push ni comentarios en GitHub; los publica el usuario.
+- Las ramas de los integrantes no se modificaron, y los heads probados eran los mismos en el fetch final (17:13:15).
+- Cumplimiento de CLAUDE.md: no se editó ningún archivo de código ni de pruebas del repo; solo `docs/`, con Edit/Write. Las horas son de `date` y de los registros. Sin comandos destructivos de Git.
+
+## Tarea 23 — Re-revisión de los PR #50, #51 y #52 (sin merge, sin push)
+
+Evidencia completa: `docs/evidencias/t23-rerevision-prs.txt`. Misma metodología que la tarea 22. Esta tarea **no cambia código**: revisa ramas ajenas en worktrees temporales y documenta.
+
+### [2026-11-11 18:01–18:03] Actualización y estado de los PR
+- 18:01:59 `git checkout develop` + `git pull`: develop pasó de `731d5e1` a `463ca1d` (merge del PR #53, P4).
+- 18:02:01 `gh pr list`. Estado de los PR:
+  - #53 (P4): unido.
+  - #52 (P5): 4 commits (head `73cec2a`).
+  - #50 (P1) y #51 (P3): **sin commits nuevos**, con los mismos heads de la tarea 22 (`0cf8c0b` y `2280d9d`).
+  - 18:13:17, fetch final: los 3 heads no cambiaron.
+- Los archivos de la ficha P5 no cambiaron en develop desde `731d5e1` (`git diff --stat` vacío). Por eso el verificador compara contra el develop de hoy.
+
+### [2026-11-11 18:02–18:14] PR #52 (P5): revisión completa
+- **Autoría:** los 4 commits son de Rashidchz, hechos con el editor web (committer GitHub) y sin trailers. Ninguno es de BrayanH0.
+- **Base:** `develop` (`merge-base` = `731d5e1`).
+- **Commits y PR:** los 4 títulos son iguales a la ficha y van en el mismo orden. La descripción es idéntica a la ficha (`diff` sin diferencias; empieza con `Closes #46`).
+- **Archivos contra la ficha:** se usó la copia del verificador que normaliza CRLF (tarea 22), sin cambios. Resultado: `bloques: 6, archivos: 4, fallos: 0`. No hay archivos fuera de la ficha.
+- **Pruebas:** worktrees de la base (develop `463ca1d`) y de P5, con el orquestador `correr23.cjs`. Es la misma secuencia de la tarea 22 y usa el mismo `bateria.cjs` de la tarea 19.
+  - Base: 18:04:34–18:08:35. Da 66/66, 32, 49 y 6/6. La batería y P11/P18 son **idénticas a LB-10**.
+  - P5: 18:09:00–18:12:42. Da **68/68** (+2 de `WebSecurityConfigCorsTest`), 32, 49 y 6/6. La batería y P11/P18 son **idénticas a LB-10** y a la base. `ng build` tiene las 2 advertencias de siempre y deja `index.html` en `dist/proyecto_valdiviezo/browser`.
+- **CORS sin variables:** P25 es idéntico a LB-10. Responde en 8080; `localhost:4200` recibe 200, y Vercel y un origen ajeno reciben 403. Igual que la base.
+- **CORS con variables:** `PORT=8081`, `SHOW_SQL=false` y `CORS_ORIGINS` con el valor de la ficha.
+  - P5 arranca en 8081. Vercel recibe 200 con `Access-Control-Allow-Origin`, el origen ajeno sigue en 403 y hay 0 líneas `Hibernate:`.
+  - Control: la base, con las mismas variables, sigue en 8080, rechaza a Vercel (403) y escribe 7 líneas `Hibernate:`.
+  - Prueba agregada (no está en la ficha): con un espacio después de la coma, P5 da lo mismo.
+- No se probó `DB_URL` con otro valor (la ficha no lo pide) ni el despliegue en Vercel.
+
+### [2026-11-11 18:13] PR #50 (P1) y #51 (P3): solo lo pedido
+- **P1:** sigue igual. La línea 34 de `login-paciente.component.ts` tiene 4 espacios y la 35 tiene 5 de sangría (`cat -A`). **No corrigió.**
+- **P3:** la descripción sigue vacía (0 caracteres, sin `Closes #44`). **No corrigió.**
+  - La base ya es `develop`, pero la cambió BrayanH0 (`base_ref_changed` 22:51:19Z), no P3.
+- GitHub marca los dos como MERGEABLE pero BLOCKED, por la revisión CHANGES_REQUESTED de BrayanH0.
+
+### [2026-11-11 18:13:41] Simulación de merge sobre develop `463ca1d`
+- `git merge-tree` no muestra conflictos en ningún caso: develop+P1, develop+P3 y develop+P5, los 3 pares y 3 órdenes secuenciales.
+- El árbol final es el mismo (`96f3aee`) en los 3 órdenes. No hay archivos en común entre los PR ni con P4.
+- Límite: no se corrieron las pruebas sobre el árbol combinado, solo sobre cada PR por separado.
+- **Orden recomendado: P5 → P1 → P3.** P5 es el único listo, y unirlo primero no cambia el resultado. Alternativa: el orden de la tarea 22 (P1 → P3 → P5), que da el mismo árbol pero obliga a esperar.
+
+### Veredictos (tarea 23)
+- **P5 #52: APROBAR.**
+- **P1 #50: sigue PEDIR CAMBIOS** (espacios sin corregir).
+- **P3 #51: sigue PEDIR CAMBIOS** (falta la descripción con `Closes #44`).
+- Los comentarios listos para pegar están en la evidencia, sección 5.
+
+### Fallos propios, excepciones y estado del entorno (tarea 23)
+- **Fallo propio:** el `git merge --no-edit develop` en `docs/t22-revision-prs` (18:14:34) dejó el mensaje de merge sin la línea `Co-Authored-By`. Lo corregí con `git commit --amend`, en local y sin push: quedó `2319db2` (padres `169743c` y `463ca1d`).
+- **Observación nueva en HALLAZGOS** (tarea 23): las descripciones de PR de las fichas citan conteos de `mvnw test` que ya no coinciden (P5 dice 52/52 y da 68/68).
+- **Excepción a CLAUDE.md** ("los archivos se crean y borran solo con Edit/Write"): igual que en la tarea 22, y todo fuera del repositorio (scratchpad).
+  - Por terminal: se copiaron los scripts de la tarea 22 y se crearon las carpetas.
+  - Con PowerShell: se crearon y quitaron los enlaces de `node_modules`. El `node_modules` real sigue con 375 carpetas.
+  - `git worktree add` y `git worktree remove` de base y p5: exit 0, sin `--force`. `git worktree list` muestra solo el repo.
+- La BD se recargó antes de cada etapa y al final (18:12:42, 21 citas).
+- Entorno al terminar: backend y `ng serve` detenidos, 4200/8080/8081 libres y MySQL encendido.
+- No hubo merge de PR, push ni comentarios en GitHub. Las ramas de los integrantes no se modificaron.
+
+### [2026-11-11 18:29–18:39] Re-revisión de P1 #50 (pedida por el usuario)
+Evidencia: `docs/evidencias/t23-rerevision-prs.txt`, sección 7.
+- 18:29:47 fetch: llegó 1 commit nuevo, `9d59c01` (18:27:28). Es de pfaberio27-png, hecho en el editor web.
+  - Toca solo las 2 líneas pedidas en `login-paciente.component.ts`: la 34 queda vacía y la 35 con 4 espacios.
+  - El mensaje es el pedido, pero **empieza con un espacio** (`" P1: corregir espacios…"`). Es estético; quitarlo exige reescribir la historia de la rama. No se pide; decide el usuario.
+- **Verificador:** `bloques: 9, archivos: 5, fallos: 0`. En la tarea 22 había dado 1 fallo.
+- **Pruebas** (worktrees de develop `463ca1d` y de P1 `9d59c01`; `correr23.cjs` con la comprobación funcional `func.cjs` de la tarea 22 y sin la prueba con variables, que es de P5):
+  - Base: 18:30:50–18:34:28. P1: 18:34:28–18:38:04.
+  - P1 da 67/67 (+1), 32, 49 y 6/6. La batería y P11/P18 son **idénticas a LB-10**.
+  - Consola: la base muestra el DNI y la clave; P1 no muestra ninguno. El 500 tiene el mismo cuerpo y queda en el log (de 1 a 2 líneas).
+- **Simulación de merge:** sin conflictos con develop, con P3 ni con P5. El árbol final es `1cda20f` en los órdenes P5 → P1 → P3 y P1 → P3 → P5.
+- **Veredicto: P1 #50 APROBAR.** Orden recomendado: P5 → P1 → P3 (P3 cuando ponga la descripción). El comentario para GitHub está en la sección 7.7.
+- Limpieza: enlaces y worktrees quitados (exit 0, sin `--force`), puertos libres y BD recargada (21 citas). No hubo merge, push ni comentarios en GitHub.
+
+---
+
 ## Tarea 24 — RFC-017 (datos semilla) y RFC-012 (doble reserva)
 
 > Nota: las entradas de las tareas 21 a 23 están en la rama `docs/t22-revision-prs`, que todavía no está en `develop`. Esta entrada parte de `develop`.
@@ -1100,6 +1240,20 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 
 ---
 
+## Tarea 26 — Parte 0: rama `docs/t22-revision-prs` al día con `develop`
+
+### [2026-11-12 11:46–11:50] Merge de `develop` en `docs/t22-revision-prs`
+- Qué: `git merge develop` en `docs/t22-revision-prs` (4 commits propios de las tareas 22–23, 24 commits de `develop` detrás; `develop` = `origin/develop` = `897bdbb`). La rama no tenía push (`git ls-remote --heads origin docs/t22-revision-prs` → vacío).
+- Por qué: la evidencia de revisión de PR (tareas 22–23) tiene que llegar a `develop` por PR, sin mezclarse con RFC-011.
+- Conflictos: solo en documentación, ambos por agregar texto al final de la misma sección.
+  - `docs/BITACORA.md`: entradas de las tareas 22–23 (rama) y 24–25 (`develop`). Se conservaron las dos, en orden cronológico (22–23 primero, separadas por `---`). La nota de la tarea 24 ("las entradas de las tareas 21 a 23 están en la rama `docs/t22-revision-prs`…") se dejó tal cual: describe la situación de ese momento.
+  - `docs/HALLAZGOS.md`: la sub-viñeta "Tarea 24: causa verificada y corregida en RFC-017" (`develop`) se colocó bajo la viñeta de la codificación dañada (tarea 18), que es la que completa; las secciones "Observaciones sin número (tarea 22 / tarea 23)" de la rama quedaron después.
+- Alternativa descartada: `rebase` de la rama sobre `develop` (reescribiría commits ya registrados en la bitácora por hash).
+- Evidencia: `git diff --name-only --diff-filter=U` vacío tras resolver; `grep -c "^<<<<<<<\|^>>>>>>>"` → 0 en los dos archivos. El resto de archivos del merge vienen de `develop` sin cambios.
+- No se tocó código ni pruebas. Push y PR los hace el usuario.
+
+---
+
 ## Tarea 26 — RFC-011: autenticación JWT y autorización por rol y propietario
 
 > Parte 0 (rama `docs/t22-revision-prs` al día con `develop`, commit `e7fdf0c`) se documentó en **esa** rama, para no mezclarla con RFC-011. Resumen en `docs/evidencias/t26-rfc011.txt`, sección 0.
@@ -1183,3 +1337,18 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Pendientes del usuario: push y PR de esta rama y de `docs/t22-revision-prs` (Parte 0); definir `JWT_SECRET` en su equipo (`SETUP.md`) antes de arrancar el backend; tag de línea base al integrar; decidir si se purga del historial el secreto JWT viejo (H-025); los issues #13, #16 y #54 se cierran cuando el commit llegue a `master`.
 - Fallos propios: (1) uso de `sed -i` sobre `e2e/bateria/bateria.cjs` (arriba); (2) en `CitaDobleReservaIntegracionTest` escribí primero los argumentos en orden invertido (corregido antes de compilar); (3) la primera versión de `correr.cjs` lanzaba la batería con `shell: true` interpolando la ruta de salida (inyección de comandos; corregido en `4b473a5`).
 - Cumplimiento de CLAUDE.md: causa explicada en esta bitácora antes de tocar el código; sin valores escritos a mano ni condiciones especiales para los datos de prueba (los ids "ajenos" de las pruebas salen de la BD); sin errores atrapados en silencio (`validarToken` devuelve vacío y eso termina en un 401 explícito); pruebas existentes cambiadas solo con la autorización del usuario y solo para enviar o recibir el token (lista completa aprobada antes de editar); `git rm` con excepción autorizada; horas de `date`, `git log` y el runner; sin push ni comandos destructivos de Git. **Excepción no autorizada:** el `sed -i` del punto anterior. Las copias del runner al scratchpad usaron `cp`/`mkdir` fuera del repositorio.
+
+---
+
+## Tarea 27 — Conflicto del PR #58 (`docs/t22-revision-prs` → `develop`)
+
+### [2026-11-12 15:38–15:40] Merge de `origin/develop` en `docs/t22-revision-prs`
+- Qué: `git checkout docs/t22-revision-prs` (al día con `origin/docs/t22-revision-prs` = `e7fdf0c`) y `git pull --no-rebase origin develop` (`develop` = `2d3925e`, "Merge pull request #57", RFC-011).
+- Por qué hubo conflicto: las dos ramas agregaron una sección "Tarea 26" al final de `docs/BITACORA.md` desde el mismo punto: esta rama la Parte 0 (11:46–11:50) y `develop` la de RFC-011 (11:47–15:27). `docs/HALLAZGOS.md` se combinó solo.
+- Resolución (Edit): se conservan las dos secciones completas, en orden cronológico: primero la Parte 0 y después RFC-011, separadas por `---`. No se borró ni duplicó texto. La nota de RFC-011 ("Parte 0 … se documentó en **esa** rama") se deja tal cual: describe la situación de ese momento.
+- Alternativa descartada: `rebase` (el pedido es merge y los hashes de la rama ya están citados en la bitácora).
+- Evidencia:
+  - Marcadores `<<<<<<<`/`=======`/`>>>>>>>` en `docs/BITACORA.md` → 0; `git diff --cached --name-only --diff-filter=U` → vacío.
+  - Comparación por líneas (script de Node en el scratchpad, sin contar líneas vacías ni `---`) de la bitácora resuelta contra `HEAD` y contra `origin/develop`: líneas de la rama ausentes 0, de `develop` ausentes 0, repetidas de más 0, líneas nuevas fuera de esta entrada 0.
+  - `git diff --cached --stat origin/develop` (se compara con `origin/develop` porque el `develop` local seguía en `897bdbb`, anterior al PR #57): `docs/BITACORA.md` +165, `docs/HALLAZGOS.md` +11, `docs/evidencias/t22-revision-prs.txt` +312, `docs/evidencias/t23-rerevision-prs.txt` +289; 4 archivos, 777 inserciones, **0 líneas borradas**, **0 archivos fuera de `docs/`**.
+- Sin push (lo hace el usuario). No se tocó código ni pruebas.
