@@ -1,0 +1,60 @@
+Tarea 24A — RFC-017: datos semilla ficticios y codificación UTF-8
+Rama feature/rfc-017-datos-semilla (desde develop d981f3b). Batería 2026-11-11 18:55:47–18:58:54 (con los cambios aún sin commit).
+Salidas completas: scratchpad t24/a/ (fuera del repositorio).
+
+== cambio en database/BDPostaMedica.sql
+- SET NAMES utf8mb4; al principio; CREATE DATABASE ... CHARACTER SET utf8mb4.
+- 20 filas: pacientes 6-15 y médicos 6-15 con nombres ficticios.
+Comprobación del diff (script de Node sobre git diff -U0): "filas cambiadas 20 20 resto identico: true"
+  (en cada fila, todo lo que sigue a nombres y apellidos —CMP/DNI, hash, fechas, sexo, teléfono, FKs— es igual).
+grep -ciE de los apellidos reales en database/BDPostaMedica.sql -> 0
+
+== unitarias y E2E (igual a la base)
+mvn-test:   Tests run: 69, Failures: 0, Errors: 0, Skipped: 0 / BUILD SUCCESS
+fe-32:      TOTAL: 32 SUCCESS
+fe-todas:   TOTAL: 49 SUCCESS
+playwright: 6 passed (8.2s)
+
+== diff de la batería contra la base (sin las líneas "# hora")
+bateria-apagado.txt: sin diferencias.
+bateria.txt: solo estas líneas (P02-P22, P24-P27 idénticas):
+< P01 /api/cie 200 306B          > P01 /api/cie 200 291B
+< P01 /api/cita 200 2818B        > P01 /api/cita 200 2811B
+< P01 /api/disponibilidad_medico 200 8677B   > 8632B
+< P01 /api/especialidad 200 584B > 554B
+< P01 /api/estado_cita 200 461B  > 458B
+< P01 /api/estado_paciente 200 464B > 461B
+< P01 /api/evolucion_clinica 200 1446B > 1443B
+< P01 /api/historia_clinica 200 750B > 746B
+< P01 /api/medico 200 1752B      > 1761B
+< P01 /api/medico/conEspecialidad 200 2586B > 2505B
+< P01 /api/medico/especialidad/1 200 360B > 351B
+< P01 /api/paciente 200 2694B    > 2743B
+< P23 pacientes medico 1: API 7,6,1,11 BD 1,6,7,11
+> P23 pacientes medico 1: API 7,1,6,11 BD 1,6,7,11
+< X especialidad: Medicina General,Pediatr├¡a,Cardiolog├¡a,Dermatolog├¡a,Ginecolog├¡a
+> X especialidad: Medicina General,Pediatría,Cardiología,Dermatología,Ginecología
+< X especialidad HEX id2: 50656469617472E2949CC2A161
+> X especialidad HEX id2: 50656469617472C3AD61
+> X pacientes 6-15: 6=Teodoro Quispe Ancco/60000001,7=Rosa Mamani Huillca/60000002,8=Felix Condori Apaza/60000003,9=Wilber Huaman Ccasa/60000004,10=Hilario Chambi Turpo/60000005,11=Justo Yupanqui Layme/60000006,12=Eloy Pariona Cusi/60000007,13=Yesenia Ticona Puma/60000008,14=Marleni Choque Vilca/60000009,15=Saturnino Ayala Ccahuana/60000010
+> X medicos 6-15: 6=Ruben Salazar Ticona/10000006,7=Gladys Montoya Rengifo/10000007,8=Patricia Valdez Carhuaz/10000008,9=Ernesto Lozano Pinedo/10000009,10=Milagros Cardenas Lupaca/10000010,11=Victor Arce Huarcaya/10000011,12=Norma Benites Sulca/10000012,13=Julio Ccopa Mendoza/10000013,14=Elena Quiroz Tapia/10000014,15=Silvia Ramos Cutipa/10000015
+X conteos: 15 15 1 5 75 5 11 5 5 (igual a la base)
+
+Explicación:
+- P01: los 10 listados sin nombres cambiados tienen ahora exactamente los tamaños registrados en LB-0 (cie 291, cita 2811,
+  disponibilidad 8632, especialidad 554, estado_cita 458, estado_paciente 461, evolucion 1443, historia 746, ...): cada
+  carácter con tilde vuelve a ocupar 2 bytes en vez de 5. Medico y paciente cambian además por la longitud de los nombres.
+- P23: mismo conjunto de pacientes; cambia el orden porque la consulta ordena por apellidos
+  (CitaRepository.findPacientesDeMedico: "ORDER BY p.apellidos, p.nombres").
+
+== bytes después de la recarga (19:00)
+SELECT DISTINCT dia_semana, HEX(dia_semana) ... LIKE 'Mi%'  -> 4D69C3A972636F6C6573 (Miércoles, é = C3 A9)
+GET /api/especialidad/2 -> {"id_especialidad":2,"nombre_especialidad":"Pediatría","descripcion":"Atención infantil","precio":60.0}
+GET /api/disponibilidad_medico/medico/1 -> "dia_semana":"Mi" 303 251 "rcoles" (C3 A9 en octal)
+
+== conexión JDBC del backend (performance_schema, backend arrancado a mano 18:59, detenido 19:00:02)
+857 character_set_client      utf8mb4
+857 character_set_connection  utf8mb4
+858 character_set_client      utf8mb4
+858 character_set_connection  utf8mb4
+-> la conexión del backend ya era utf8mb4: no era la causa y no se cambió.
