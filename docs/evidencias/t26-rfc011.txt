@@ -1,0 +1,62 @@
+TAREA 26 - RFC-011 Autenticacion JWT y autorizacion por rol y propietario
+=======================================================================
+Fecha: 2026-11-12. Horas reales: `date`, `git log` y el resumen del runner.
+Regla de esta evidencia: ningun token se escribe completo (solo los primeros caracteres y "...").
+
+0. Parte 0 - rama docs/t22-revision-prs
+---------------------------------------
+11:46:06  git fetch; develop = origin/develop = 897bdbb; la rama no existe en origin
+          (git ls-remote --heads origin docs/t22-revision-prs -> vacio).
+          git log develop..docs/t22-revision-prs -> 4 commits (169743c, 2319db2, 57cdfd9, d0eca11)
+          git merge develop:
+            CONFLICT (content): Merge conflict in docs/BITACORA.md
+            CONFLICT (content): Merge conflict in docs/HALLAZGOS.md
+          Resolucion con Edit, conservando ambas partes (detalle en BITACORA, "Tarea 26 - Parte 0").
+          grep -c "^<<<<<<<\|^>>>>>>>\|^=======$" -> 0 en los dos archivos.
+          commit e7fdf0c "Merge develop en docs/t22-revision-prs (tarea 26, parte 0)"
+          git diff --stat develop docs/t22-revision-prs:
+            docs/BITACORA.md                       | 154 ++++
+            docs/HALLAZGOS.md                      |  11 ++
+            docs/evidencias/t22-revision-prs.txt   | 312 ++++
+            docs/evidencias/t23-rerevision-prs.txt | 289 ++++
+            4 files changed, 766 insertions(+)
+          -> la rama solo agrega documentacion respecto de develop.
+
+1. Parte 1 - bateria base (develop 897bdbb, rama feature/rfc-011-autenticacion-api recien creada)
+-----------------------------------------------------------------------------------------------
+Runner: copia del de la tarea 25 (scratchpad t26/correr24.cjs + bateria.cjs; solo cambia la carpeta).
+[11:48:58] rama feature/rfc-011-autenticacion-api, HEAD 897bdbb, cambios sin commit: 0
+[11:49:10] ng build exit=0
+[11:49:21] frontend caracterizacion: TOTAL: 32 SUCCESS
+[11:49:28] frontend todas:           TOTAL: 61 SUCCESS   (56 en la tarea 25 + 5 de P3, ya en develop)
+[11:49:55] mvnw test: Tests run: 75, Failures: 0, Errors: 0, Skipped: 0 / BUILD SUCCESS
+[11:50:26] Playwright: 7 passed (18.1s)
+[11:50:27-11:51:55] P01-P27 (BD recargada: 21 citas)
+[11:51:59-11:52:18] P11/P18 con el backend apagado
+[11:52:19] BD recargada (21 citas); backend y frontend detenidos
+
+Lineas clave:
+P01 14/14 en 200 (cita 2811B, historia_clinica 746B, paciente 2743B, usuarios 82B, ...); clave:false en todos
+P02 6/6 en 200 ; P03 11/11 en 200, sin clave
+P04 500 {"message":"Cannot instantiate query result type '...ResumenMedico' ...   -> FALLA (H-005)
+P05-P10, P17, P19 iguales a la tarea 25
+P13 POST duplicado 409, BD reservas: 1
+P14 total=22 paciente1=3 distintos=13 BD=22|3                                     -> FALLA (H-013)
+P15 total=5 paciente1=1                                                          -> FALLA (H-013)
+P16 recibidas=22 delPaciente1=3 tarjetas=3 peticiones=7                          -> FALLA (H-013)
+P20-P24 PASA (P22 crea la cita 24 y la cancela; P23 20/20)
+P25 4200 -> 200 en 6 preflight + GET; otro-origen -> 403 en los 7
+P26 {"200":1,"409":9}, 1 fila ; P27 409 / ofrece 11:40 / 200, estados 3,1
+P11 apagado: mensaje de conexion en las 4 pantallas ; P18 ERR_CONNECTION_REFUSED, ls {}
+Resumen base: 23 PASA, 4 FALLA (P04, P14, P15, P16). Igual a la tarea 25.
+
+2. Codigo JWT existente (H-025)
+-------------------------------
+- seguridad/TokenUtils.java: estatico; secreto escrito en el codigo (linea 15, valor no se copia aqui);
+  generarToken(nombre, correo) sin id ni rol; 3600 s; validarToken da siempre ROLE_USER.
+- seguridad/JWTAuthorizationFilter.java: lee "Authorization: Bearer", valida y pone la autenticacion.
+  Comentado en WebSecurityConfig. Reutilizable si se le da el rol y el id.
+- seguridad/JWTAuthenticationFilter.java + UserDetailServiceImpl: solo buscan administrador y paciente
+  (NO medico) y responden solo {"token":...}. No sirve para los 3 roles: /login seguira en AuthController.
+- WebSecurityConfig: anyRequest().permitAll(); bean passwordEncoder = NoOpPasswordEncoder (H-048).
+- jjwt 0.11.5 en el pom.

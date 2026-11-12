@@ -1097,3 +1097,16 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - Entorno: backend y frontend detenidos por el runner; BD local recargada con el SQL de la rama integrada (21 citas). Rama actual: `feature/rfc-012-doble-reserva`. Sin push ni PR.
 - Pendientes del usuario: revisar la lista de nombres ficticios (RFC-017); decidir si se baja el nivel del log de Hibernate ante un 409 (12 líneas `ERROR … Duplicate entry` en esta corrida); tag de línea base al integrar.
 - Cumplimiento de CLAUDE.md: archivos del repositorio editados con Edit/Write; la definición de P22 la cambió el usuario (decisión explícita), no para que pase, y lo que verifica no cambió; no se tocó ningún archivo de prueba automática ni de código; horas de `date`, `git log` y el runner; sin comandos destructivos de Git. Excepción: copias al scratchpad con `cp`/`mkdir`, fuera del repositorio.
+
+---
+
+## Tarea 26 — RFC-011: autenticación JWT y autorización por rol y propietario
+
+> Parte 0 (rama `docs/t22-revision-prs` al día con `develop`, commit `e7fdf0c`) se documentó en **esa** rama, para no mezclarla con RFC-011. Resumen en `docs/evidencias/t26-rfc011.txt`, sección 0.
+
+### [2026-11-12 11:47–11:53] Preparación
+- Rama `feature/rfc-011-autenticacion-api` desde `develop` `897bdbb` (= `origin/develop`; incluye P1, P3, P4, P5, RFC-012 y RFC-017).
+- Batería base completa (runner de la tarea 25 copiado al scratchpad `t26/`): `ng build` 0; frontend 32/32 y 61/61; backend 75/75; Playwright 7/7; P01–P27: **23 PASA · 4 FALLA** (P04, P14, P15, P16). Igual a la tarea 25 (el frontend pasa de 56 a 61 por las 5 pruebas de P3, ya en `develop`). Evidencia: `docs/evidencias/t26-rfc011.txt`, sección 1.
+- Revisión del código JWT existente (H-025): `TokenUtils` (secreto escrito en el código, sin id ni rol) y `JWTAuthorizationFilter` se pueden reutilizar adaptándolos; `JWTAuthenticationFilter` + `UserDetailServiceImpl` no buscan médicos, así que `/login` sigue en `AuthController`. Detalle en la evidencia, sección 2.
+- Propuesta de matriz de autorización y 5 decisiones (D1–D5) escritas en `docs/rfc/RFC-011.md`, "Propuesta de matriz de autorización". **No se codificó nada: se espera el OK del usuario.**
+- Diferencias entre el pedido de la tarea y el texto de RFC-011, registradas para que el usuario confirme: expiración **2 h** (RFC: 1 h) y **403** para recursos ajenos (RFC: 404). Se sigue el pedido de la tarea.
