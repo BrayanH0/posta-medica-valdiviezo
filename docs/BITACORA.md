@@ -1008,3 +1008,25 @@ Horas en hora local de Perú (UTC-5). Las evidencias están en `docs/evidencias/
 - HALLAZGOS: H-042 corregido en la rama; tabla de issues: #42–#47 existen (ya no "por crear"), H-048 = **#54**, y la nota de que desde H-048 el número del issue no coincide con el del hallazgo; la observación de codificación de la tarea 18 queda con su causa verificada.
 - PRUEBAS.md: sección "Resultados de RFC-017". Evidencias: `docs/evidencias/t24-base.txt`, `docs/evidencias/t24-a-rfc017.txt`.
 - Pendiente para quien tenga la BD cargada: recargarla con el SQL nuevo (la codificación dañada no se arregla con `UPDATE` simples).
+
+### [2026-11-11 19:13–19:16] Tarea 24 — cierre: commits, simulación del merge y estado
+*(Esta entrada se agregó igual en las dos ramas, en un segundo commit de solo bitácora.)*
+- Commits: 24A `888ec64` (19:02:07) "RFC-017: datos semilla ficticios y codificación UTF-8 (Closes #42)" en `feature/rfc-017-datos-semilla`; 24B `8a038e8` (19:13:45) "RFC-012: impedir doble reserva con restricción en la BD (Closes #12)" en `feature/rfc-012-doble-reserva`. Las dos parten de `develop` `d981f3b` (`git merge-base` = `d981f3b…`).
+- **Simulación del merge de las dos ramas juntas sobre `develop`** (19:13:53, `git merge-tree --write-tree feature/rfc-017-datos-semilla feature/rfc-012-doble-reserva`, no modifica ninguna rama):
+  - `database/BDPostaMedica.sql`: **sin conflicto** (Auto-merging). Las dos tocan el SQL en partes distintas (24A: cabecera y `INSERT` de médicos y pacientes; 24B: `CREATE TABLE Cita`). El SQL combinado se cargó en MySQL: `carga=0`, Pediatría `…C3AD61`, paciente 6 "Teodoro Quispe Ancco", índice `uq_cita_medico_fecha_hora` presente (4 columnas), 21 citas.
+  - `docs/evidencias/t24-base.txt`: sin conflicto (mismo blob `0a86ccb` en las dos).
+  - **Conflictos solo en `docs/`**: `BITACORA.md` (las dos agregan su entrada al final), `HALLAZGOS.md` (las dos agregan una nota de la tarea 24 después de la tabla de issues) y `PRUEBAS.md` (las dos agregan su sección de resultados después del hotfix RFC-010). Resolución: conservar las dos partes, primero 24A y después 24B. En HALLAZGOS, las filas H-012 y H-042 no chocan (son líneas distintas).
+  - Recomendación: hacer el merge de 24A primero (fast-forward desde `develop`) y después el de 24B, resolviendo los 3 archivos de `docs/`.
+- **No se ejecutó la batería sobre la combinación** de las dos ramas (cada una se probó por separado contra la misma base). Sin registro de una corrida combinada.
+- **Fallos propios y notas de método:**
+  - Un `grep` del principio sin `-a` no buscó en `PRUEBAS.md` (lo trató como binario) y dio "sin resultados"; se repitió con `-a` y apareció el "Obtenido" histórico de P05.
+  - El plan de back-out de RFC-012 (solo `DROP INDEX`) estaba mal; se detectó al probarlo (ver 24B).
+  - Las baterías de 24A y 24B se corrieron con los cambios todavía sin commit (el runner lo registra); los commits contienen exactamente esos archivos más la documentación.
+- **Estado del entorno al terminar:** backend y frontend detenidos (los arrancó y detuvo el runner; el backend que arranqué a mano para medir la conexión se detuvo a las 19:00:02). La BD local quedó cargada con el **SQL combinado** de la simulación (24A + 24B). Rama actual al cerrar: `feature/rfc-017-datos-semilla`. Issue #54 creado en GitHub. Sin push ni PR.
+- **Decisiones pendientes del usuario:** (1) P22 (RFC-012); (2) revisar la lista de nombres ficticios (RFC-017); (3) si se baja el nivel del log de Hibernate ante un 409.
+- Cumplimiento de CLAUDE.md: causa escrita antes del código en las dos tareas; sin valores a mano ni condiciones para los datos de prueba en el código (el frontend usa el id de estado 3, que es el de la BD); ningún error atrapado en silencio (el 409 deja `WARN`, el resto sigue con `log.error`); ninguna prueba existente modificada (P22 se informa, no se cambia); archivos del repositorio creados y modificados con Write/Edit; horas tomadas de `date`, de los logs del runner y de `git log`; sin comandos destructivos de Git. Excepciones: los scripts y salidas del scratchpad se copiaron o crearon con `cp`/`mkdir` y Node, fuera del repositorio.
+- Comandos para el usuario (cmd de Windows, una línea cada uno):
+  - `git push -u origin feature/rfc-017-datos-semilla`
+  - `git push -u origin feature/rfc-012-doble-reserva`
+  - `gh pr create --base develop --head feature/rfc-017-datos-semilla --title "RFC-017: datos semilla ficticios y codificación UTF-8 (Closes #42)" --body "…"`
+  - `gh pr create --base develop --head feature/rfc-012-doble-reserva --title "RFC-012: impedir doble reserva con restricción en la BD (Closes #12)" --body "…"`
