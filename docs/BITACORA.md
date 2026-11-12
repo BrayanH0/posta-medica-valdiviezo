@@ -1442,3 +1442,39 @@ P01-P28: 27 PASA / 1 FALLA (P04, conocido). Frontend 32/32 y 73/73, backend 97/9
 
 Detalle completo: CHANGELOG.md
 ```
+
+---
+
+## Tarea 29 — Cierre post-release v1.1.0 y evidencia para el informe T3 (ítems 13–14.3)
+
+Rama `docs/cierre-v1.1.0` desde `master` (`df2f792`). Solo `docs/`: no se toca código ni pruebas.
+
+### [2026-11-12 17:02–17:09] Preparación
+- Lectura de CLAUDE.md. `JWT_SECRET`: existe en el entorno, **longitud 64** (no se mostró el valor). `DB_PASSWORD` existe.
+- 17:02:09 `git fetch`: `origin/develop` avanzó a `190797e` ("Merge pull request #60 from BrayanH0/master"). `master` = `origin/master` = `df2f792`. 17:09:03 `git pull` ("Already up to date") y `git checkout -b docs/cierre-v1.1.0`.
+- Tags (`git for-each-ref`): `LB-10` y `v1.0.1` → `0af31db` (merge del PR #48), creados el 2026-11-10 a las 20:24:53. `LB-11` y `v1.1.0` → `df2f792` (merge del PR #59), creados el 2026-11-12 a las 16:11:26. `git diff --stat origin/release/1.1 LB-11` y `git diff --stat LB-11 origin/develop`: vacíos, así que el código de LB-11 es el mismo que se probó en `release/1.1`.
+- `gh release list`: "v1.1.0 – Seguridad, reservas y uso en el celular" (2026-11-12 16:13:25) y "v1.0.1 – Hotfix de seguridad" (2026-11-10 20:38:28, marcada *Latest*). **Observación:** GitHub marca *Latest* a v1.0.1 y no a v1.1.0. Se ve en la Figura 14-3 y se deja anotado en HALLAZGOS; corregirlo (editar el Release) lo decide el usuario.
+- **La tarea 28 no quedó en `docs/`.** Sus tablas 6 (pruebas que pasan por LB) y 8 (pendientes de cierre) solo estaban en el chat. Con autorización del usuario se reconstruyeron desde los documentos: la tabla 6 desde los resúmenes de `docs/PRUEBAS.md` (ahora como tabla debajo de "Tabla de resultados"), y la tabla 8 a partir de los estados "pendiente de merge" o "Registrado" que todavía figuraban en HALLAZGOS, RFC-010 a RFC-017, ELEMENTOS_CONFIGURACION y PRUEBAS. Es un fallo de proceso de la tarea 28: CLAUDE.md pide que todo lo del reporte quede en `docs/`.
+- **Decisiones del usuario** (respuesta a la pregunta hecha antes de editar; la hora exacta no se registró, fue entre las 17:02:09 y las 17:09:03): (1) pies de las Figuras 25–35 = los del informe T2, que el usuario pegó; (2) **excepción a CLAUDE.md:** los PNG de `docs/entrega/T3/img/` los guardan Playwright y un script, porque Write no puede escribir binarios; el texto se sigue escribiendo solo con Edit/Write; (3) reconstruir las tablas de la tarea 28.
+
+### [2026-11-12 17:10:43–17:14:06] Batería completa sobre el tag LB-11
+- Por qué: para la columna LB-11 de `PRUEBAS.md` hacía falta una corrida sobre el propio tag (la de la tarea 27 se hizo en `release/1.1` antes del cambio de versión). Además es la prueba de regresión que pide CLAUDE.md: esta tarea solo cambia documentación y no debe cambiar ningún resultado.
+- `node e2e/bateria/correr.cjs <scratchpad>/t29-lb11` (EC-19, sin cambios), con HEAD `df2f792` y **0 cambios sin commit** (lo imprime el runner a las 17:10:43, antes de editar el primer documento). `JWT_SECRET` tomado del entorno.
+- Resultado (`resumen.txt` del runner): `ng build` exit 0 (2 advertencias de siempre); frontend `Executed 32 of 32 SUCCESS` y `Executed 73 of 73 SUCCESS`; `Tests run: 97, Failures: 0, Errors: 0, Skipped: 0`; Playwright `11 passed (16.4s)`; batería con el backend encendido (17:12:11–17:13:42) y apagado (17:13:45–17:14:05), exit 0; BD recargada al final (21 citas).
+- Comparación con la tarea 27 (`docs/evidencias/t27-release-v1.1.0.txt`, sección 1), línea por línea: P01 con los mismos tamaños (cie 291 B, historia 148 B, evolución 390 B, paciente 2743 B, usuarios 82 B), sin token 401 en 13 de 14; P04 `500 … ResumenMedico`; P13 `409`, 1 reserva; P14 `total=3 paciente1=3 distintos=1 BD=22|3`; P15 `total=1 paciente1=1 BD=5|1`; P16 `recibidas=3 delPaciente1=3 tarjetas=3 peticiones=7`; P22 crea y cancela la 24; P23 20/20; P26 `{"200":1,"409":9}`, 1 fila; P27 ids 35 y 37, `BD: 3,1`; P28 `17/17 como se esperaba`; P11/P18 iguales. `clave:false` en 18 líneas y `clave:true` en 0. Tokens completos (`grep -c "eyJ…{20,}\.…{20,}\."`) en las 4 salidas: 0. **Resultado: 27 PASA · 1 FALLA (P04, H-005), igual que la tarea 27.**
+
+### [2026-11-12 17:09–17:20] Parte A — Cierre de documentos
+- **Por qué hacía falta:** la tarea 27 dejó los estados en "pendiente de merge", porque el merge a `master` y los tags los hacía el usuario. El usuario los hizo el 2026-11-12 (PR #59 a las 16:10:42, tags a las 16:11:26, PR #60 a `develop` a las 16:14:54), pero los documentos seguían diciendo "pendiente". La causa es que el estado se registra en el momento del cambio, y el merge ocurrió fuera de una tarea de Claude.
+- `docs/HALLAZGOS.md`:
+  - H-007 → "Cerrado (RFC-010, LB-10)", con los PR #48 y #49.
+  - H-012, H-013, H-016, H-042, H-043, H-044, H-045, H-046 y H-048 → "Cerrado (RFC-0XX, LB-11)", con su PR a `develop` y el PR #59.
+  - H-025 → "Cerrado en código; secreto rotado, queda en el historial". Antes se comprobó que el secreto está rotado: un script de Node compara el `JWT_SECRET` del entorno (64 caracteres) con el valor de `TokenUtils.java` en LB-10 (32), sin imprimir ninguno. Resultado: `iguales: false`, `actual contiene viejo: false`.
+  - En la columna "Cambio que lo atiende", RFC-013 a RFC-016 pasan de "(Registrado, tarea 18)" a "(Cerrado, tarea 29)".
+  - Tabla de issues, con los datos de `gh issue view` (17:12:54): #7 cerrado (2026-11-10 20:24); #12, #13, #16, #42–#46 y #54 cerrados (2026-11-12 16:10:43–16:10:50, PR #59); #25 sigue abierto.
+  - Nota "Tarea 29" debajo de la de la tarea 27.
+- `docs/rfc/RFC-010.md` a `RFC-017.md`: "Línea base resultante" (LB-10 o LB-11, con el tag y su commit); "Estatus" = **Cerrado** (2026-11-12, tarea 29) con sus PR; filas nuevas en el historial (integrado, publicado y cerrado, con las horas de `gh` y `git for-each-ref`); y "Evaluación posterior": ¿se cumplió? (con los datos de la batería sobre LB-11) y ¿se usó el back-out? (no en los 8: `git log --all -i --grep=revert` vacío y sin registro de restauraciones). En RFC-013 a RFC-016, que decían "Sin registro (no implementada)", la evaluación se completó con lo verificado en las tareas 22–23. En RFC-014 el historial muestra el ciclo completo del PR #50 (cambios pedidos 17:49:50, commit `9d59c01` 18:27:28, aprobación 18:42:45, merge 18:42:56).
+- `docs/rfc/RFC-001.md` a `RFC-003.md`: campo "Tipo de mantenimiento = Correctivo". Se usó el mismo nombre que ya tienen RFC-010 a RFC-017. **Detalle:** en RFC-001, H-003 figura como Preventivo en HALLAZGOS; la nota del campo lo aclara en vez de esconderlo (una primera versión de la nota decía que los 3 eran fallas; se corrigió antes del commit).
+- `docs/ELEMENTOS_CONFIGURACION.md`: el encabezado dice que el inventario llega hasta la versión 1.1.0 (LB-11) unida a `master`, y "Versión publicada actual" pasa a 1.1.0 en `master` (PR #59, `df2f792`, tags, Release y PR #60).
+- `docs/PRUEBAS.md`: columnas "LB-10 RFC-010 (v1.0.1)" y "LB-11 RFC-011 a 017 (v1.1.0)" en la tabla de resultados, y filas P26, P27 y P28 ("No ejecutada" hasta LB-10). Se comprobó con `awk` que las 29 filas tienen 14 columnas. El resumen del hotfix pasa a "Resumen LB-10", y se agregan el "Resumen LB-11" y la tabla de pruebas que pasan por línea base (base de la Figura 19).
+- **Alternativas descartadas:** (1) marcar H-025 como "Cerrado" a secas: el issue #25 sigue abierto y el secreto viejo sigue en el historial; (2) poner la fecha del merge como fecha de cierre del RFC: el cierre es la evaluación posterior, que se hizo hoy, así que se registran las dos (merge y cierre); (3) usar las horas de la tarea 27 para la columna LB-11 sin volver a correr: esa corrida era sobre `release/1.1` y no sobre el tag.
+- **Fallo propio corregido antes del commit:** la nota de HALLAZGOS decía "`gh issue view` (17:1x)", una hora estimada. Se volvió a consultar con `date` (17:12:54) y se reemplazó.
