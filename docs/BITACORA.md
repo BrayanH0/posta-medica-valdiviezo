@@ -1528,3 +1528,30 @@ gh pr create --base develop --head master --title "Merge master (cierre v1.1.0 y
   - `docs/rfc/RFC-011.md`: en la evaluación posterior, el #25 cerrado.
 - **Pendientes que se resolvieron:** (1) "Latest", (2) issue #25, (3) nombres. Queda solo (4): confirmar el número de la Figura 36.
 - Commit nuevo "Docs: evidencia T3 actualizada (Latest, issue #25 y nombres)", sin enmendar los anteriores. Los comandos de push y PR son los mismos de arriba.
+
+### [2026-11-13 16:55–16:56] Tarea 30: conteo de PR actualizado en la evidencia T3 (#61 y #62)
+- **Por qué:** después de la tarea 29 el usuario unió el PR #61 (`docs/cierre-v1.1.0` → `master`) y el #62 (`master` → `develop`). Los conteos del 14.1 y del 14.2 se habían medido hasta el #60, así que quedaron cortos.
+- **Verificación** (`git pull` en `master`, fast-forward `df2f792..daf5b87`; `gh pr view`):
+  - #61: MERGED 2026-11-12T23:05:08Z, merge commit `daf5b87`.
+  - #62: MERGED 2026-11-12T23:05:33Z, merge commit `406b5db`.
+  - `gh pr list --state merged` (desde el #48): 14 PR unidos, #48–#53 y #55–#62 (el #54 no está entre los unidos). Con `git rev-list --parents` se ve que los 14 commits de merge tienen 2 padres, es decir, todos son merge commits.
+  - `git log master origin/develop --merges`: 14 de BrayanH0 (committer GitHub) y 5 de Brayan (locales), en total 19. En `LB-11` (`git log LB-11 --merges`) son 16 (11 + 5), lo mismo que decía el texto.
+  - `git shortlog -sne --no-merges LB-11`: sin cambios (Brayan 53, total 70). Hasta `master`/`develop` actuales Brayan tiene 56: los 3 commits de docs de la tarea 29, posteriores a LB-11.
+- **Cambios (solo `docs/entrega/T3/EVIDENCIA_T3.md`):**
+  - 14.1, línea 53: "los 12 merges a `master` y `develop` (PR #48 a #60)" → "los 14 merges a `master` y `develop` (PR #48 a #62)".
+  - 14.1, línea 54: "los 12 PR se unieron" → "los 14 PR se unieron".
+  - 14.2, línea 72: "16 commits de merge de Brayan: 11 hechos desde GitHub al unir los PR y 5 locales" → "19 commits de merge de Brayan hasta el PR #62: 14 hechos desde GitHub al unir los PR y 5 locales (en `LB-11` eran 16: 11 desde GitHub y 5 locales)".
+- **No se cambió:**
+  - La tabla del 14.2 (53 y 70): está medida explícitamente sobre `LB-11` (versión 1.1.0) y ese conteo no cambió.
+  - La columna "Pull request" de la fila de BrayanH0 (#48 … #60): es una lista, no un conteo, y el pedido era tocar solo conteos. **Decisión para el usuario:** agregar o no #61 y #62.
+  - `docs/ELEMENTOS_CONFIGURACION.md:9` nombra el PR #60 como un hecho de la release, no como un conteo.
+  - La bitácora histórica (por ejemplo, "los 12 PR (#48–#53, #55–#60)" de la tarea 29) se deja como registro de lo que era cierto en ese momento.
+- **Búsqueda de otros conteos** en `docs/` sin contar la bitácora (Grep de "N PR", "N merges", "#48 a #6x", "commits de merge" y "#60/#61/#62"): no aparece ningún otro conteo viejo.
+- **Alternativa descartada:** pasar toda la tabla del 14.2 a `master` actual (Brayan 56, total 73). Cambiaría la base declarada del conteo ("sobre la versión 1.1.0") y el pedido era no cambiar nada más.
+- **Pruebas:** no aplica la batería de `docs/PRUEBAS.md`, porque solo cambia texto de `docs/` (ni código ni pruebas).
+- Commit "Docs: conteo de PR actualizado (#61 y #62)" en `docs/conteos-pr`, sin push. Comandos para el usuario:
+```
+git push -u origin docs/conteos-pr
+gh pr create --base master --head docs/conteos-pr --title "Docs: conteo de PR actualizado (#61 y #62)" --body "Solo docs/. EVIDENCIA_T3 14.1: 14 merges/PR (#48 a #62). 14.2: 19 commits de merge hasta el #62 (14 GitHub + 5 locales; 16 en LB-11). Bitacora tarea 30."
+gh pr create --base develop --head master --title "Merge master (conteo de PR) en develop" --body "Devuelve a develop la correccion de conteos de la tarea 30. Sin cambios de codigo."
+```
