@@ -50,8 +50,8 @@ Elegimos P1 porque es el único paquete que recorrió el ciclo completo de un ca
 **Reglas que aplicamos**
 
 - **Protección de ramas:** `master` y `develop` están protegidas en GitHub. No se puede hacer push directo (todo cambio entra por un pull request), ni force push, ni borrar la rama.
-- **Pull request obligatorio, con revisión:** los 12 merges a `master` y `develop` (PR #48 a #60) entraron por pull request. En los PR de los integrantes (#50 a #53), el revisor probó el cambio antes de aprobarlo y, cuando algo no coincidía, pidió cambios (#50 y #51). GitHub no exige un número mínimo de aprobaciones (está en 0) y la protección no se aplica a los administradores; la revisión la hicimos por acuerdo del grupo.
-- **Merge commit (no squash ni rebase):** los 12 PR se unieron con "Create a merge commit". Así cada commit del integrante queda en el historial con su autor (lo que permite el conteo del ítem 14.2) y el tag de versión queda sobre el commit de merge. GitHub también permite squash y rebase en este repositorio: usar el merge commit es una regla del grupo, no un bloqueo técnico.
+- **Pull request obligatorio, con revisión:** los 14 merges a `master` y `develop` (PR #48 a #62) entraron por pull request. En los PR de los integrantes (#50 a #53), el revisor probó el cambio antes de aprobarlo y, cuando algo no coincidía, pidió cambios (#50 y #51). GitHub no exige un número mínimo de aprobaciones (está en 0) y la protección no se aplica a los administradores; la revisión la hicimos por acuerdo del grupo.
+- **Merge commit (no squash ni rebase):** los 14 PR se unieron con "Create a merge commit". Así cada commit del integrante queda en el historial con su autor (lo que permite el conteo del ítem 14.2) y el tag de versión queda sobre el commit de merge. GitHub también permite squash y rebase en este repositorio: usar el merge commit es una regla del grupo, no un bloqueo técnico.
 - **Cada cambio cita su RFC y su issue:** la rama y los commits nombran la RFC (por ejemplo "P1: … (RFC-014)"), y el PR dice "Closes #N" para que el issue se cierre solo cuando el cambio llega a `master`.
 
 ---
@@ -69,7 +69,7 @@ Conteo con `git log LB-11 --no-merges` (commits propios, sin contar los de merge
 | Brayan Junior Huamani Ostos | BrayanH0 | Hotfix RFC-010, RFC-011, RFC-012, RFC-017 y release v1.1.0 (además, en la etapa T2: RFC-001 a RFC-009 y la documentación) | #48, #49, #55, #56, #57, #58, #59, #60 | 53 |
 | **Total** | | | | **70** |
 
-**Detalle de los 53 commits de BrayanH0:** 6 de RFC-011; 2 de RFC-010; 2 de RFC-017; 1 por cada uno de RFC-001 a RFC-009 y RFC-012 (10; RFC-004 es la reorganización y RFC-005 a 008 las refactorizaciones R1–R4); y 33 de documentación, pruebas de caracterización, la batería de regresión y la release (por ejemplo "Release v1.1.0" y los registros de la bitácora). Además figuran 16 commits de merge de Brayan: 11 hechos desde GitHub al unir los PR y 5 locales.
+**Detalle de los 53 commits de BrayanH0:** 6 de RFC-011; 2 de RFC-010; 2 de RFC-017; 1 por cada uno de RFC-001 a RFC-009 y RFC-012 (10; RFC-004 es la reorganización y RFC-005 a 008 las refactorizaciones R1–R4); y 33 de documentación, pruebas de caracterización, la batería de regresión y la release (por ejemplo "Release v1.1.0" y los registros de la bitácora). Además figuran 19 commits de merge de Brayan hasta el PR #62: 14 hechos desde GitHub al unir los PR y 5 locales (en `LB-11` eran 16: 11 desde GitHub y 5 locales).
 
 **Notas:**
 - 52 de los 53 commits de BrayanH0 y los 4 de Angel29042001 llevan `Co-Authored-By: Claude Opus 5.5`: se hicieron con ayuda de Claude Code. Los de pfaberio27-png, Paolo1710 y Rashidchz no lo llevan (se hicieron en el editor web de GitHub).
