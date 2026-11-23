@@ -1,0 +1,186 @@
+:host {
+  display: block;
+}
+
+.auth-shell {
+  display: grid;
+  grid-template-columns: minmax(340px, 5fr) 6fr;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+}
+
+/* ---------- Panel izquierdo ---------- */
+.auth-brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 48px 56px;
+  color: #ffffff;
+  background: var(--primary);
+}
+
+.auth-brand__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auth-logo {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  color: var(--primary);
+  background: #ffffff;
+  border-radius: var(--radius-sm);
+}
+
+.auth-brand__name {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.auth-brand__body {
+  max-width: 440px;
+}
+
+.auth-brand__title {
+  margin: 0 0 16px;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.auth-brand__text {
+  margin: 0 0 32px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #d3e0f0;
+}
+
+.auth-brand__cards {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.auth-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-lg);
+}
+
+.auth-card__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-sm);
+}
+
+.auth-card__title {
+  margin: 0 0 2px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.auth-card__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #d3e0f0;
+}
+
+/* ---------- Lado derecho ---------- */
+.auth-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px;
+}
+
+.auth-panel {
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-panel--ancho {
+  max-width: 560px;
+}
+
+/* Selector de rol: navegación entre los tres logins */
+.auth-roles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin-bottom: 32px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.auth-roles__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 8px 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-2);
+  text-align: center;
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.auth-roles__item:hover {
+  color: var(--primary);
+  background: var(--bg);
+}
+
+/* El estado activo no depende solo del color: lleva borde y más peso */
+.auth-roles__item.is-active {
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+/* ---------- Pantallas angostas: el panel pasa a ser una franja de marca ---------- */
+@media (max-width: 900px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .auth-brand {
+    gap: 0;
+    padding: 18px 20px;
+  }
+
+  .auth-brand__body {
+    display: none;
+  }
+
+  .auth-main {
+    align-items: flex-start;
+    padding: 28px 20px 40px;
+  }
+}
