@@ -16,7 +16,9 @@
   --bg: #f5f8fc;
   --surface: #ffffff;
   --border: #e1e9f3;
-  --border-strong: #b7c5d8;     /* borde de campos: 3:1 sobre blanco (WCAG 1.4.11) */
+  /* Borde de campos y controles: 3.23:1 sobre blanco y 3.03:1 sobre el fondo (WCAG 1.4.11).
+     --border (#e1e9f3) queda para separadores que no delimitan un control. */
+  --border-strong: #7d91ab;
 
   /* Texto */
   --text: #16283f;
