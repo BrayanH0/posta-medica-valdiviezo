@@ -1,0 +1,34 @@
+Evidencia de regresión, tarea 31 (RFC-019, Parte 1). Corridas con `node e2e/bateria/correr.cjs <carpeta fuera del repo>`.
+La batería completa guarda su salida fuera del repositorio (regla del LEEME); aquí quedan el resumen de cada corrida, los totales y el resultado de la comparación.
+
+== ANTES: LB-11 sin cambios (rama feature/rfc-019-rediseno-base = 34df99c, 0 cambios sin commit) ==
+[18:03:43] inicio ng-build ... [18:03:55] fin ng-build exit=0   (2 advertencias: presupuesto inicial 809.95 kB y jquery no ESM)
+[18:04:21] fin fe-32 exit=0        TOTAL: 32 SUCCESS
+[18:04:27] fin fe-todas exit=0     TOTAL: 73 SUCCESS
+[18:04:53] fin mvn-test exit=0     Tests run: 97, Failures: 0, Errors: 0, Skipped: 0
+[18:05:28] fin playwright exit=0   11 passed (21.4s)
+[18:06:59] fin bateria-on exit=0
+[18:07:22] fin bateria-off exit=0
+[18:07:23] fin
+
+== DESPUÉS 1: HEAD f8d7f25 (18:20:29-18:23:37) ==
+ng-build exit=0 (813.64 kB, las mismas 2 advertencias); fe-32 32/32; fe-todas 73/73; mvn 97/97; Playwright 11 passed (16.0s);
+bateria-on y bateria-off exit=0. Comparación con ANTES (sin líneas "# hora"): diff vacío (la cifra de 300 líneas que decía la bitácora era la suma de dos archivos normalizados; la comparación real es bateria.txt + bateria-apagado.txt).
+
+== DESPUÉS 2: HEAD 14d2289 (18:36:31-18:39:39), incluye todos los cambios de CSS hasta el borde y el foco ==
+[18:36:31] rama feature/rfc-019-rediseno-base, HEAD 14d2289, cambios sin commit: 1   (la carpeta .impeccable/ sin versionar; ningún archivo del proyecto)
+[18:36:39] fin ng-build exit=0
+[18:36:46] fin fe-32 exit=0        TOTAL: 32 SUCCESS
+[18:36:52] fin fe-todas exit=0     TOTAL: 73 SUCCESS
+[18:37:13] fin mvn-test exit=0     Tests run: 97, Failures: 0, Errors: 0, Skipped: 0
+[18:37:45] fin playwright exit=0   16 passed (19.4s)   = 11 de siempre + 5 nuevas de e2e/tests/rediseno-acceso.spec.ts
+[18:39:16] fin bateria-on exit=0
+[18:39:39] fin bateria-off exit=0
+[18:39:39] fin
+Comparación de la batería P01-P28 (encendido y apagado) contra ANTES, sin las líneas "# hora" ni los tokens:
+  diff -> sin diferencias (bateria.txt 153 líneas + bateria-apagado.txt 7 líneas en cada corrida; 150 líneas comparadas tras quitar las de hora).
+  P04 sigue en: "P04 500 {"message":"Cannot instantiate query result type 'com.centro_valdiviezo.backend.dto.ResumenMedico'..."
+Resultado: igual a LB-11 (27 PASA, 1 FALLA: P04, H-005).
+
+== Pruebas existentes sin modificar ==
+git diff LB-11 --stat -- '*.spec.ts' e2e backend database   -> solo aparece el archivo NUEVO e2e/tests/rediseno-acceso.spec.ts (ninguna prueba existente modificada).
