@@ -1614,3 +1614,5 @@ gh pr create --base develop --head master --title "Merge master (conteo de PR) e
   2. *Prueba nueva sin catálogo y PROTEGIDOS sin lo que ella usa.* → Entrada "E2E nueva (RFC-019, Parte 1)" (E03) en `docs/PRUEBAS.md`, EC-08 en `docs/ELEMENTOS_CONFIGURACION.md` (9 archivos y 16 pruebas, en la rama) y los selectores de la prueba en PROTEGIDOS de `RFC-019.md`.
   3. *Dos frases de la bitácora desactualizadas* (`aria-pressed`, "sombra azul"). → Marcadas como estado previo a `14d2289`.
   4. *Mensaje de `14d2289` inexacto.* → Anotado arriba.
+  - **Comprobación de la corrección 1** (Playwright, `ariaSnapshot` de `/login-selection`, 18:46): `button "Soy Paciente"`, `button "Soy Médico"`, `button "Soy Administrador"`; `aria-labelledby` apunta a `tit-*` y `aria-describedby` a `desc-*`, con los textos esperados.
+  - **Regresión tras la vuelta 2** (HEAD `d6680c1`, 18:46:51–18:49:55): `ng build` exit 0, frontend 32/32 y 73/73, backend 97/97, Playwright 16/16, batería P01–P28 idéntica a la de LB-11 (diff vacío sin horas; P04 sigue fallando). Resumen en `docs/evidencias/t31-rfc019-parte1.txt`.

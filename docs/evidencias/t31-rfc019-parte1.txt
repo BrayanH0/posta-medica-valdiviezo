@@ -30,5 +30,10 @@ Comparación de la batería P01-P28 (encendido y apagado) contra ANTES, sin las 
   P04 sigue en: "P04 500 {"message":"Cannot instantiate query result type 'com.centro_valdiviezo.backend.dto.ResumenMedico'..."
 Resultado: igual a LB-11 (27 PASA, 1 FALLA: P04, H-005).
 
+== DESPUÉS 3: HEAD d6680c1 (18:46:51-18:49:55), tras la vuelta 2 de la revisión (aria-labelledby en los botones de rol) ==
+ng-build exit=0; fe-32 32/32; fe-todas 73/73; mvn 97/97; Playwright 16 passed (16.3s); bateria-on y bateria-off exit=0.
+Batería P01-P28 contra ANTES, sin líneas "# hora" ni tokens: diff vacío (igual a LB-11: 27 PASA, 1 FALLA, P04).
+Árbol de accesibilidad de /login-selection: button "Soy Paciente", button "Soy Médico", button "Soy Administrador" (nombre = título; la descripción va por aria-describedby y ya no se repite en el nombre).
+
 == Pruebas existentes sin modificar ==
 git diff LB-11 --stat -- '*.spec.ts' e2e backend database   -> solo aparece el archivo NUEVO e2e/tests/rediseno-acceso.spec.ts (ninguna prueba existente modificada).
