@@ -1,1 +1,254 @@
-/* You can add global styles to this file, and also import other style files */
+/* RFC-019: sistema de diseño "azul clínico".
+   Todas las pantallas leen estos valores; no se escriben colores sueltos en los componentes.
+   Las clases propias llevan el prefijo "ui-" para no chocar con Bootstrap ni con las clases que usan las pruebas. */
+
+:root {
+  /* Marca */
+  --primary: #1e3a5f;
+  --primary-hover: #16304f;
+  --accent: #3b82c4;            /* foco, detalles y elementos que no son texto */
+  --accent-soft: #dbeafe;       /* ítem activo del menú, etiqueta "Confirmada" */
+  /* #3b82c4 sobre blanco da 4.06:1 y no alcanza para texto pequeño (AA pide 4.5:1).
+     Para enlaces y texto de acento se usa este tono más oscuro de la misma familia (5.4:1). */
+  --accent-text: #2b6cb0;
+
+  /* Superficies */
+  --bg: #f5f8fc;
+  --surface: #ffffff;
+  --border: #e1e9f3;
+  --border-strong: #b7c5d8;     /* borde de campos: 3:1 sobre blanco (WCAG 1.4.11) */
+
+  /* Texto */
+  --text: #16283f;
+  --text-2: #4a5d75;
+  --text-3: #5f6f84;
+
+  /* Estados */
+  --danger: #a32d2d;
+  --danger-bg: #fcebeb;
+  --warn: #633806;
+  --warn-bg: #faeeda;
+
+  /* Forma */
+  --radius-sm: 10px;
+  --radius-md: 12px;
+  --radius-lg: 14px;
+
+  --font: Inter, 'Segoe UI', Arial, sans-serif;
+  --focus-ring: 0 0 0 3px rgba(59, 130, 196, 0.45);
+}
+
+html {
+  font-family: var(--font);
+}
+
+body {
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Foco visible en todo lo que se puede accionar con el teclado (AUD-DIS-08) */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Texto solo para lectores de pantalla */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Pantallas de acceso (dentro de app-auth-layout) ---------- */
+.auth-title {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.auth-subtitle {
+  margin: 0 0 28px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.auth-footer {
+  margin: 24px 0 0;
+  font-size: 14px;
+  text-align: center;
+  color: var(--text-2);
+}
+
+/* ---------- Formularios ---------- */
+.ui-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.ui-label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ui-hint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-3);
+}
+
+.ui-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 46px;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.ui-input::placeholder {
+  color: var(--text-3);
+  opacity: 1;
+}
+
+.ui-input:hover {
+  border-color: var(--text-3);
+}
+
+.ui-input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+}
+
+/* Campo de contraseña con botón Mostrar/Ocultar dentro del campo */
+.ui-password {
+  position: relative;
+}
+
+.ui-password .ui-input {
+  padding-right: 96px;
+}
+
+.ui-password__toggle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  min-height: 34px;
+  padding: 4px 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.ui-password__toggle:hover {
+  background: var(--accent-soft);
+}
+
+/* ---------- Botones ---------- */
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 10px 20px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.ui-btn--primary {
+  width: 100%;
+  color: #ffffff;
+  background: var(--primary);
+}
+
+.ui-btn--primary:hover {
+  background: var(--primary-hover);
+}
+
+.ui-btn--secondary {
+  color: var(--primary);
+  background: var(--surface);
+  border-color: var(--border-strong);
+}
+
+.ui-btn--secondary:hover {
+  background: var(--bg);
+  border-color: var(--primary);
+}
+
+.ui-link {
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ui-link:hover {
+  color: var(--primary);
+}
+
+/* ---------- Avisos ---------- */
+.ui-alert {
+  display: block;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.45;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+}
+
+.ui-alert--danger {
+  color: var(--danger);
+  background: var(--danger-bg);
+  border-color: #f1c9c9;
+}
+
+.ui-alert--warn {
+  color: var(--warn);
+  background: var(--warn-bg);
+  border-color: #f0d9b0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
