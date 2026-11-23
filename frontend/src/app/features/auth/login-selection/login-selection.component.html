@@ -1,13 +1,29 @@
-<div class="selection-container">
-    <div class="selection-box">
-        <h2>Centro De Salud Valdiviezo</h2>
-        <p *ngIf="aviso" class="aviso-sesion" role="alert">{{ aviso }}</p>
-        <p>Por favor, seleccione su rol para iniciar sesión:</p>
-        
-        <div class="buttons">
-            <button class="btn-role btn-paciente" (click)="irALoginPaciente()">Soy Paciente</button>
-            <button class="btn-role btn-medico" (click)="irALoginMedico()">Soy Médico</button>
-            <button class="btn-role btn-admin" (click)="irALoginAdmin()">Soy Administrador</button>
-        </div>
+<app-auth-layout>
+    <h1 class="auth-title">Bienvenido</h1>
+    <p *ngIf="aviso" class="aviso-sesion ui-alert ui-alert--warn" role="alert">{{ aviso }}</p>
+    <p class="auth-subtitle">Seleccione su rol para continuar.</p>
+
+    <div class="options">
+        <button type="button" class="option" (click)="irALoginPaciente()">
+            <span class="option__text">
+                <span class="option__title">Soy Paciente</span>
+                <span class="option__desc">Reserve citas y consulte su historial.</span>
+            </span>
+            <svg class="option__arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+        </button>
+        <button type="button" class="option" (click)="irALoginMedico()">
+            <span class="option__text">
+                <span class="option__title">Soy Médico</span>
+                <span class="option__desc">Confirme o cancele las citas de sus pacientes.</span>
+            </span>
+            <svg class="option__arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+        </button>
+        <button type="button" class="option" (click)="irALoginAdmin()">
+            <span class="option__text">
+                <span class="option__title">Soy Administrador</span>
+                <span class="option__desc">Gestione pacientes, médicos y reportes.</span>
+            </span>
+            <svg class="option__arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+        </button>
     </div>
-</div>
+</app-auth-layout>

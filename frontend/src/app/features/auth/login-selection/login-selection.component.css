@@ -1,86 +1,47 @@
-/* RFC-011: aviso de sesión vencida */
-.aviso-sesion {
-    color: #842029;
-    background: #f8d7da;
-    border-radius: 6px;
-    padding: 10px 12px;
-    margin-bottom: 16px;
+/* RFC-019: lista de roles. El aviso de sesión vencida usa .ui-alert de styles.css. */
+.options {
+    display: grid;
+    gap: 12px;
 }
 
-.selection-container {
+.option {
     display: flex;
     align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    padding: 16px 18px;
+    font: inherit;
+    text-align: left;
+    color: var(--text);
+    cursor: pointer;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    transition: border-color 0.15s, background-color 0.15s;
 }
 
-.selection-box {
-    background: white;
-    padding: 40px 50px;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    text-align: center;
-    /* 400px en pantallas grandes; en el celular, como máximo el ancho de la pantalla (RFC-013) */
-    min-width: min(400px, 100%);
+.option:hover {
+    background: var(--accent-soft);
+    border-color: var(--primary);
 }
 
-h2 {
-    color: #333;
-    margin-bottom: 10px;
-    font-size: 24px;
+.option__text {
+    display: grid;
+    gap: 2px;
 }
 
-p {
-    color: #666;
-    font-size: 14px;
-    margin-bottom: 30px;
-}
-
-.buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.btn-role {
-    padding: 15px 30px;
-    border: none;
-    border-radius: 8px;
+.option__title {
     font-size: 16px;
     font-weight: 600;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
 }
 
-.btn-paciente {
-    background-color: #2196F3;
+.option__desc {
+    font-size: 14px;
+    color: var(--text-2);
 }
 
-.btn-paciente:hover {
-    background-color: #1976D2;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
-}
-
-.btn-medico {
-    background-color: #4CAF50; /* Green */
-}
-
-.btn-medico:hover {
-    background-color: #388E3C;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
-}
-
-.btn-admin {
-    background-color: #FF9800;
-}
-
-.btn-admin:hover {
-    background-color: #F57C00;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+.option__arrow {
+    flex: none;
+    color: var(--primary);
 }

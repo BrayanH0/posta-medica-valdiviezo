@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthLayoutComponent } from '../auth-layout/auth-layout.component';
 import { PARAM_SESION_EXPIRADA } from '../../../core/interceptors/auth.interceptor';
 
 // RFC-011: aviso cuando AuthInterceptor cerró la sesión por un 401 de la API
@@ -9,7 +10,7 @@ export const MENSAJE_SESION_EXPIRADA = 'Su sesión expiró o no es válida. Inic
 @Component({
   selector: 'app-login-selection',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, AuthLayoutComponent],
   templateUrl: './login-selection.component.html',
   styleUrls: ['./login-selection.component.css']
 })

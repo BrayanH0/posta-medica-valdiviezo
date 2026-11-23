@@ -3,12 +3,13 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth';
+import { AuthLayoutComponent } from '../auth-layout/auth-layout.component';
 import { LOGIN_MEDICO, guardarSesion, mensajeErrorLogin, resolverRespuestaLogin, validarDniPeruano, validarFormularioLogin } from '../login-comun';
 
 @Component({
   selector: 'app-login-medico',
   standalone: true,
-  imports: [FormsModule, CommonModule, RouterModule],
+  imports: [FormsModule, CommonModule, RouterModule, AuthLayoutComponent],
   templateUrl: './login-medico.component.html',
   styleUrls: ['./login-medico.component.css']
 })
