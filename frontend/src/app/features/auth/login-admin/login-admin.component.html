@@ -12,7 +12,7 @@
             <label class="ui-label" for="clave">Contraseña</label>
             <div class="ui-password">
                 <input class="ui-input" [type]="mostrarClave ? 'text' : 'password'" id="clave" [(ngModel)]="clave" name="clave" required placeholder="Ingrese su contraseña">
-                <button type="button" (click)="toggleMostrarClave()" class="ui-password__toggle" [attr.aria-label]="mostrarClave ? 'Ocultar contraseña' : 'Mostrar contraseña'" [attr.aria-pressed]="mostrarClave">
+                <button type="button" (click)="toggleMostrarClave()" class="ui-password__toggle" [attr.aria-label]="mostrarClave ? 'Ocultar contraseña' : 'Mostrar contraseña'">
                     {{ mostrarClave ? 'Ocultar' : 'Mostrar' }}
                 </button>
             </div>

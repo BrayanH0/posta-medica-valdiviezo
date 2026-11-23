@@ -4,24 +4,24 @@
     <p class="auth-subtitle">Seleccione su rol para continuar.</p>
 
     <div class="options">
-        <button type="button" class="option" (click)="irALoginPaciente()">
+        <button type="button" class="option" (click)="irALoginPaciente()" aria-describedby="desc-paciente">
             <span class="option__text">
                 <span class="option__title">Soy Paciente</span>
-                <span class="option__desc">Reserve citas y consulte su historial.</span>
+                <span class="option__desc" id="desc-paciente">Reserve citas y consulte su historial.</span>
             </span>
             <svg class="option__arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
         </button>
-        <button type="button" class="option" (click)="irALoginMedico()">
+        <button type="button" class="option" (click)="irALoginMedico()" aria-describedby="desc-medico">
             <span class="option__text">
                 <span class="option__title">Soy Médico</span>
-                <span class="option__desc">Confirme o cancele las citas de sus pacientes.</span>
+                <span class="option__desc" id="desc-medico">Confirme o cancele las citas de sus pacientes.</span>
             </span>
             <svg class="option__arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
         </button>
-        <button type="button" class="option" (click)="irALoginAdmin()">
+        <button type="button" class="option" (click)="irALoginAdmin()" aria-describedby="desc-admin">
             <span class="option__text">
                 <span class="option__title">Soy Administrador</span>
-                <span class="option__desc">Gestione pacientes, médicos y reportes.</span>
+                <span class="option__desc" id="desc-admin">Gestione pacientes, médicos y reportes.</span>
             </span>
             <svg class="option__arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
         </button>

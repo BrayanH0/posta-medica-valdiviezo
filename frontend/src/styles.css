@@ -37,7 +37,6 @@
   --radius-lg: 14px;
 
   --font: Inter, 'Segoe UI', Arial, sans-serif;
-  --focus-ring: 0 0 0 3px rgba(59, 130, 196, 0.45);
 }
 
 html {
@@ -138,10 +137,10 @@ body {
   border-color: var(--text-3);
 }
 
+/* El contorno sólido de 3 px viene de la regla global :focus-visible, igual que en el resto de controles.
+   Aquí solo se oscurece el borde para marcar el campo activo. */
 .ui-input:focus-visible {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: var(--focus-ring);
+  border-color: var(--primary);
 }
 
 /* Campo de contraseña con botón Mostrar/Ocultar dentro del campo */
