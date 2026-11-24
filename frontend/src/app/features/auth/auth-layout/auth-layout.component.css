@@ -4,22 +4,22 @@
 
 .auth-shell {
   display: grid;
-  /* El panel de marca no crece con el monitor: 40% del ancho entre 380 y 640 px.
-     Así en 1920 px el formulario tiene el espacio y el panel no queda medio vacío. */
-  grid-template-columns: clamp(380px, 40%, 640px) 1fr;
+  /* Mitad y mitad, como la pantalla de acceso de la guía de diseño. Con el panel de marca al 40 %
+     (tope de 640 px) a 1920 px el formulario quedaba rodeado de espacio vacío. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   min-height: 100vh;
   min-height: 100dvh;
   background: var(--bg);
 }
 
 /* ---------- Panel izquierdo ---------- */
-/* Logo, mensaje y tarjetas forman un solo bloque desde la parte superior, con espaciado normal */
+/* Logo, mensaje y tarjetas forman un solo bloque, centrado en vertical en el panel */
 .auth-brand {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 56px;
-  padding: 48px 56px;
+  padding: 48px clamp(56px, 6vw, 120px);
   color: #ffffff;
   background: var(--primary);
 }
@@ -129,12 +129,11 @@
   min-height: min(580px, calc(100vh - 80px));
 }
 
-/* El registro cambia de alto al mostrar un error: se ancla arriba en vez de centrarse,
-   así los campos no se mueven mientras el usuario los edita */
+/* El registro se centra con la misma regla que los logins. Como su alto cambia al mostrar un error,
+   reserva la altura del caso con error (658 px medidos a 1280 px) para que los campos no se muevan al editar. */
 .auth-panel--ancho {
   max-width: 560px;
-  align-self: flex-start;
-  margin-top: clamp(0px, 6vh, 72px);
+  min-height: min(660px, calc(100vh - 80px));
 }
 
 /* Selector de rol: navegación entre los tres logins */
@@ -206,7 +205,7 @@
   }
 
   .auth-panel--ancho {
-    margin-top: 0;
+    min-height: 0;
   }
 }
 
