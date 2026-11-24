@@ -1,0 +1,163 @@
+.rc-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  align-items: start;
+}
+
+.rc-steps {
+  display: grid;
+  gap: 14px;
+}
+
+.rc-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 22px;
+}
+
+.rc-step__num {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--accent-soft);
+  border-radius: 50%;
+}
+
+.rc-step__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.rc-step__body .ui-hint {
+  margin-top: 2px;
+}
+
+.rc-motivo {
+  min-height: 96px;
+  resize: vertical;
+}
+
+select.ui-input:disabled {
+  color: var(--text-3);
+  cursor: not-allowed;
+  background: var(--bg);
+}
+
+/* Horas como píldoras (button.rounded-pill es parte de lo protegido por las pruebas) */
+.rc-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rc-pill {
+  min-width: 72px;
+  min-height: 40px;
+  padding: 8px 16px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.rc-pill:hover:not(:disabled) {
+  background: var(--accent-soft);
+  border-color: var(--primary);
+}
+
+.rc-pill.active {
+  color: #ffffff;
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+/* Hora no disponible: el componente hoy solo lista las libres; el estilo queda listo */
+.rc-pill:disabled {
+  color: var(--text-3);
+  cursor: not-allowed;
+  background: var(--bg);
+  border-color: var(--border);
+  opacity: 0.6;
+}
+
+.rc-sin-horas {
+  margin: 0;
+}
+
+/* Resumen */
+.rc-summary {
+  position: sticky;
+  top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px;
+}
+
+.rc-summary__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.rc-summary__list {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+}
+
+.rc-summary__list dt {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.rc-summary__list dd {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.rc-summary__motivo {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 1100px) {
+  .rc-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rc-summary {
+    position: static;
+  }
+}
+
+@media (max-width: 480px) {
+  .rc-step {
+    flex-direction: column;
+    gap: 10px;
+    padding: 18px;
+  }
+}

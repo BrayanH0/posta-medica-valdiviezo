@@ -1,0 +1,72 @@
+.hm-card {
+  padding: 22px 24px;
+  margin-bottom: 32px;
+}
+
+.hm-card__title,
+.hm-section-title {
+  margin: 0 0 14px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.hm-alergias {
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.hm-list {
+  display: grid;
+  gap: 12px;
+}
+
+.hm-item {
+  overflow: hidden;
+}
+
+.hm-item__head {
+  margin: 0;
+}
+
+.hm-item__btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 22px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+
+.hm-item__btn:hover {
+  background: var(--bg);
+}
+
+.hm-item__chev {
+  flex: none;
+  color: var(--text-3);
+  transition: transform 0.2s;
+}
+
+.hm-item__chev--abierto {
+  transform: rotate(180deg);
+}
+
+.hm-item__body {
+  padding: 4px 22px 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.hm-item__body[hidden] {
+  display: none;
+}

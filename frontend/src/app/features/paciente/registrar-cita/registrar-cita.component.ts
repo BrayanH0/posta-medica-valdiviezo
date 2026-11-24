@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { calcularHorariosDisponibles, diaDeLaSemana, horaAMinutos, minutosAHora } from './horarios-cita';
+import { PacienteLayoutComponent } from '../paciente-layout/paciente-layout.component';
 
 // Por si el 409 llega sin cuerpo (el backend manda este mismo texto en "message")
 export const MENSAJE_HORARIO_OCUPADO = 'Ese horario ya fue reservado. Elija otra hora.';
@@ -11,8 +12,9 @@ export const MENSAJE_HORARIO_OCUPADO = 'Ese horario ya fue reservado. Elija otra
 @Component({
   selector: 'app-registrar-cita',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, HttpClientModule],
-  templateUrl: './registrar-cita.component.html'
+  imports: [CommonModule, FormsModule, RouterModule, HttpClientModule, PacienteLayoutComponent],
+  templateUrl: './registrar-cita.component.html',
+  styleUrls: ['./registrar-cita.component.css']
 })
 export class RegistrarCitaComponent implements OnInit {
   especialidades: any[] = [];
@@ -91,6 +93,17 @@ export class RegistrarCitaComponent implements OnInit {
 
   minutesToTime(mins: number): string {
       return minutosAHora(mins);
+  }
+
+  // RFC-019: solo presentación (tarjeta de resumen). Los select entregan el id como texto, por eso se compara como texto.
+  nombreEspecialidad(): string {
+    const e = this.especialidades.find(x => String(x.id_especialidad) === String(this.cita.id_especialidad));
+    return e ? e.nombre_especialidad : '';
+  }
+
+  nombreMedico(): string {
+    const m = this.medicos.find(x => String(x.id_medico) === String(this.cita.id_medico));
+    return m ? `Dr(a). ${m.nombres} ${m.apellidos}` : '';
   }
 
   isValid() {

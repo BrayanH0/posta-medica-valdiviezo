@@ -3,12 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { PacienteLayoutComponent } from '../paciente-layout/paciente-layout.component';
 
 @Component({
   selector: 'app-mis-citas',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, HttpClientModule],
-  templateUrl: './mis-citas.component.html'
+  imports: [CommonModule, FormsModule, RouterModule, HttpClientModule, PacienteLayoutComponent],
+  templateUrl: './mis-citas.component.html',
+  styleUrls: ['./mis-citas.component.css']
 })
 export class MisCitasComponent implements OnInit {
   citas: any[] = [];
@@ -60,11 +62,11 @@ export class MisCitasComponent implements OnInit {
 
   getBadgeClass(estado: number) {
       switch(estado) {
-          case 1: return 'bg-warning text-dark';
-          case 2: return 'bg-primary';
-          case 3: return 'bg-danger';
-          case 4: return 'bg-success';
-          default: return 'bg-secondary';
+          case 1: return 'ui-badge--pendiente';
+          case 2: return 'ui-badge--confirmada';
+          case 3: return 'ui-badge--cancelada';
+          case 4: return 'ui-badge--atendida';
+          default: return 'ui-badge--neutra';
       }
   }
 
