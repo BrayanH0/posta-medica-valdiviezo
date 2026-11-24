@@ -15,5 +15,21 @@ ESTO NO ES LA REGRESIÓN COMPLETA. Motivos:
    (taskkill por puerto). No lo forcé ni lo rodeé. Sin registro de mvn test ni de P01-P28 para este cambio.
  - Mientras no se ejecuten, no se puede afirmar "igual a LB-11 (27 de 28, falla solo P04)".
 
+== REGRESIÓN COMPLETA (agregada a las 22:08; la corrida parcial de arriba, que dice "NO SE EJECUTARON", queda como antecedente y se reemplaza por esta) ==
+Autorización del usuario: detener el ng serve (PID 6612) y el backend (PID 20124) de la sesión anterior; detenidos a las 22:03:29 con taskkill.
+node e2e/bateria/correr.cjs <carpeta fuera del repo>, rama feature/rfc-019-paciente, HEAD 086410f, 0 cambios sin commit, 22:03:37 a 22:06:55:
+[22:03:47] fin ng-build exit=0
+[22:03:54] fin fe-32 exit=0        TOTAL: 32 SUCCESS
+[22:04:01] fin fe-todas exit=0     TOTAL: 78 SUCCESS   (73 + U98 a U102)
+[22:04:19] fin mvn-test exit=0     Tests run: 97, Failures: 0, Errors: 0, Skipped: 0   (BD recargada antes, citas=21)
+[22:05:01] fin playwright exit=0   31 passed (11 + E03 5 + E04 9 + E05 6; BD recargada antes)
+[22:06:31] fin bateria-on exit=0
+[22:06:54] fin bateria-off exit=0
+Batería P01-P28 (bateria.txt, 145 líneas, y bateria-apagado.txt, 5 líneas, sin las líneas "# hora") contra la corrida de LB-11 de la Parte 1 (HEAD 34df99c, 18:03 a 18:07): diff vacío en los dos archivos.
+P04 sigue fallando con el mismo 500 (H-005). Resultado: igual a LB-11 (27 PASA, 1 FALLA: P04).
+git diff LB-11 --stat -- '*.spec.ts' e2e backend database: solo 4 archivos NUEVOS (rediseno-acceso-estable, rediseno-acceso, rediseno-paciente y paciente-layout.unitaria); ninguna prueba existente modificada; sin cambios de backend ni de BD.
+Los servidores que arrancó correr.cjs (backend pid 34660, frontend pid 30576) los detuvo el propio script al terminar.
+Después de esta corrida se editaron .claude/settings.json y CLAUDE.md (pedido del usuario: permiso de taskkill /PID y regla de informar servidores y PID); no afectan al código ni a las pruebas.
+
 Capturas (docs/entrega/rediseno/, script capturas-paciente.cjs): despues-paciente-{inicio,registrar-cita,mis-citas,
 historial-medico}-{360,1280,1920}.png y despues-paciente-menu-abierto-360.png.

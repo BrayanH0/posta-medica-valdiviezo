@@ -35,6 +35,14 @@
   cualquier cosa que el usuario deba saber. El reporte del chat es
   solo un resumen de lo que ya está en el repositorio.
 
+## Servidores y procesos
+- Al terminar cada sesión, dile al usuario qué servidores (backend, `ng serve`
+  u otros) quedaron encendidos y con qué PID, y cuáles dejaste apagados.
+  Si no arrancaste ninguno, dilo también.
+- `.claude/settings.json` permite `taskkill /PID <número>` sin preguntar. El
+  permiso es solo por PID: no uses `/IM` ni mates procesos por nombre, y antes
+  de detener uno comprueba qué es (puerto y nombre del proceso).
+
 ## Pruebas
 - Cada cambio se valida con la batería completa de docs/PRUEBAS.md
   contra la línea base anterior (prueba de regresión).
