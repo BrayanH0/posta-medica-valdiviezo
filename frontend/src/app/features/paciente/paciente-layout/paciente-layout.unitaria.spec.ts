@@ -15,7 +15,7 @@ describe('PacienteLayoutComponent (menú del paciente)', () => {
     layout = new PacienteLayoutComponent(router, auth);
   });
 
-  it('U28 el menú empieza cerrado y alternarMenu / cerrarMenu lo abren y lo cierran', () => {
+  it('U98 el menú empieza cerrado y alternarMenu / cerrarMenu lo abren y lo cierran', () => {
     expect(layout.menuAbierto).toBeFalse();
     layout.alternarMenu();
     expect(layout.menuAbierto).toBeTrue();
@@ -23,7 +23,7 @@ describe('PacienteLayoutComponent (menú del paciente)', () => {
     expect(layout.menuAbierto).toBeFalse();
   });
 
-  it('U29 logout llama a AuthService.logout y navega a /login-selection', () => {
+  it('U99 logout llama a AuthService.logout y navega a /login-selection', () => {
     layout.logout();
     expect(auth.logout).toHaveBeenCalledTimes(1);
     expect(router.navigate).toHaveBeenCalledWith(['/login-selection']);
@@ -39,14 +39,14 @@ describe('RegistrarCitaComponent: nombres del resumen', () => {
     c.medicos = [{ id_medico: 7, nombres: 'Ana', apellidos: 'Lira' }];
   });
 
-  it('U30 con los ids elegidos (el select los entrega como texto) devuelve el nombre', () => {
+  it('U100 con los ids elegidos (el select los entrega como texto) devuelve el nombre', () => {
     c.cita.id_especialidad = '2';
     c.cita.id_medico = '7';
     expect(c.nombreEspecialidad()).toBe('Pediatría');
     expect(c.nombreMedico()).toBe('Dr(a). Ana Lira');
   });
 
-  it('U31 sin elección o con un id que no está en la lista devuelve vacío', () => {
+  it('U101 sin elección o con un id que no está en la lista devuelve vacío', () => {
     expect(c.nombreEspecialidad()).toBe('');
     expect(c.nombreMedico()).toBe('');
     c.cita.id_especialidad = '99';
@@ -59,7 +59,7 @@ describe('RegistrarCitaComponent: nombres del resumen', () => {
 describe('MisCitasComponent: etiquetas de estado', () => {
   const m = new MisCitasComponent(jasmine.createSpyObj('HttpClient', ['get']), jasmine.createSpyObj('Router', ['navigate']));
 
-  it('U32 cada estado tiene su nombre y su clase de etiqueta', () => {
+  it('U102 cada estado tiene su nombre y su clase de etiqueta', () => {
     expect([1, 2, 3, 4].map((e) => m.getEstadoNombre(e))).toEqual(['Pendiente', 'Confirmada', 'Cancelada', 'Atendida']);
     expect([1, 2, 3, 4].map((e) => m.getBadgeClass(e))).toEqual([
       'ui-badge--pendiente', 'ui-badge--confirmada', 'ui-badge--cancelada', 'ui-badge--atendida'
