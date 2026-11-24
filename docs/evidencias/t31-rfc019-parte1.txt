@@ -44,5 +44,9 @@ Medición de saltos entre roles (Playwright, top de .auth-roles / input / botón
 ng-build exit=0; fe-32 32/32; fe-todas 73/73; mvn 97/97; Playwright 21 passed (29.0s); bateria-on y bateria-off exit=0.
 Batería P01-P28 contra ANTES, sin líneas "# hora" ni tokens: diff vacío (igual a LB-11: 27 PASA, 1 FALLA, P04).
 
+== DESPUÉS 6: HEAD 0d11c6e (20:17:40-20:20:50), tras la vuelta 2 de la revisión visual ==
+ng-build exit=0; fe-32 32/32; fe-todas 73/73; mvn 97/97; Playwright 21 passed (19.5s); bateria-on y bateria-off exit=0.
+Batería P01-P28 contra ANTES, sin líneas "# hora" ni tokens: diff vacío (igual a LB-11: 27 PASA, 1 FALLA, P04).
+
 == Pruebas existentes sin modificar ==
 git diff LB-11 --stat -- '*.spec.ts' e2e backend database   -> solo aparecen archivos NUEVOS: e2e/tests/rediseno-acceso.spec.ts (desde la Parte 1) y e2e/tests/rediseno-acceso-estable.spec.ts (desde la corrección visual); ninguna prueba existente modificada. (En las secciones DESPUÉS 1 a 3 solo existía el primero.)
