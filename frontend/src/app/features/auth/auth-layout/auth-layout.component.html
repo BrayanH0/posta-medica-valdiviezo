@@ -1,0 +1,57 @@
+<div class="auth-shell">
+  <aside class="auth-brand">
+    <div class="auth-brand__top">
+      <span class="auth-logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+      </span>
+      <span class="auth-brand__name">Posta Médica Valdiviezo</span>
+    </div>
+
+    <div class="auth-brand__body">
+      <p class="auth-brand__title">Reserve su cita médica sin hacer filas.</p>
+      <p class="auth-brand__text">Elija especialidad, médico y horario desde cualquier dispositivo, y siga el estado de sus citas en un solo lugar.</p>
+
+      <ul class="auth-brand__cards">
+        <li class="auth-card">
+          <span class="auth-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 2" />
+            </svg>
+          </span>
+          <div>
+            <p class="auth-card__title">Horarios en tiempo real</p>
+            <p class="auth-card__text">Vea los horarios disponibles de cada médico antes de reservar.</p>
+          </div>
+        </li>
+        <li class="auth-card">
+          <span class="auth-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="11" width="14" height="9" rx="2" />
+              <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+            </svg>
+          </span>
+          <div>
+            <p class="auth-card__title">Datos protegidos</p>
+            <p class="auth-card__text">Acceso con DNI y contraseña, con permisos según su rol.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="auth-main">
+    <div class="auth-panel" [class.auth-panel--ancho]="ancho === 'ancho'" [class.auth-panel--roles]="mostrarSelectorRol">
+      @if (mostrarSelectorRol) {
+        <nav class="auth-roles" aria-label="Tipo de usuario">
+          <a class="auth-roles__item" routerLink="/login-paciente" routerLinkActive="is-active" ariaCurrentWhenActive="page">Paciente</a>
+          <a class="auth-roles__item" routerLink="/login-medico" routerLinkActive="is-active" ariaCurrentWhenActive="page">Médico</a>
+          <a class="auth-roles__item" routerLink="/login-admin" routerLinkActive="is-active" ariaCurrentWhenActive="page">Administrador</a>
+        </nav>
+      }
+      <ng-content></ng-content>
+    </div>
+  </main>
+</div>

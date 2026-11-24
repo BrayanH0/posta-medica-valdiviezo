@@ -39,3 +39,6 @@ e2e/package-lock.json
 
 # Registros de la herramienta de pruebas (Playwright MCP)
 .playwright-mcp/
+
+# Configuración local y caché del detector de diseño (impeccable)
+.impeccable/

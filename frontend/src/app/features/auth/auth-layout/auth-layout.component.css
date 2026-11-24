@@ -1,0 +1,230 @@
+:host {
+  display: block;
+}
+
+.auth-shell {
+  display: grid;
+  /* Mitad y mitad, como la pantalla de acceso de la guía de diseño. Con el panel de marca al 40 %
+     (tope de 640 px) a 1920 px el formulario quedaba rodeado de espacio vacío. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+}
+
+/* ---------- Panel izquierdo ---------- */
+/* Logo, mensaje y tarjetas forman un solo bloque, centrado en vertical en el panel */
+.auth-brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 56px;
+  padding: 48px clamp(56px, 6vw, 120px);
+  color: #ffffff;
+  background: var(--primary);
+}
+
+.auth-brand__top {
+  width: 100%;
+  max-width: 520px;
+  margin-inline: auto; /* misma columna que el mensaje, para que el logo y el texto compartan el borde izquierdo */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auth-logo {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  color: var(--primary);
+  background: #ffffff;
+  border-radius: var(--radius-sm);
+}
+
+.auth-brand__name {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Bloque de mensaje centrado en horizontal dentro del panel, con un ancho de lectura de hasta 520 px */
+.auth-brand__body {
+  width: 100%;
+  max-width: 520px;
+  margin-inline: auto;
+}
+
+.auth-brand__title {
+  margin: 0 0 16px;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.auth-brand__text {
+  margin: 0 0 32px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #d3e0f0;
+}
+
+.auth-brand__cards {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.auth-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-lg);
+}
+
+.auth-card__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-sm);
+}
+
+.auth-card__title {
+  margin: 0 0 2px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.auth-card__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #d3e0f0;
+}
+
+/* ---------- Lado derecho ---------- */
+/* En pantalla ancha el contenido se centra en vertical. Para que al cambiar de rol no salte, el bloque
+   de los 3 logins reserva siempre la misma altura (.auth-panel--roles: la del login más alto, con el aviso
+   de error visible), así su posición centrada es idéntica en los tres. */
+.auth-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px;
+}
+
+.auth-panel {
+  width: 100%;
+  max-width: 420px;
+}
+
+/* Logins y registro reservan la MISMA altura (720 px: el registro mide 718 px a 901 px, su ancho mínimo de dos columnas), así el
+   borde superior del bloque coincide al pasar de uno a otro. Nunca más que la pantalla menos el relleno:
+   en ventanas bajas no crea scroll vacío. El registro reserva además el aviso dentro de su formulario. */
+.auth-panel--roles,
+.auth-panel--ancho {
+  min-height: min(720px, calc(100vh - 80px));
+}
+
+.auth-panel--ancho {
+  max-width: 560px;
+}
+
+/* Selector de rol: navegación entre los tres logins */
+.auth-roles {
+  display: grid;
+  /* Columnas fijas (no dependen del texto ni del rol activo); "Administrador" es la palabra más larga
+     y recibe más ancho para no quedar pegada al borde en celular */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.35fr);
+  gap: 4px;
+  margin-bottom: 32px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.auth-roles__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 8px 6px;
+  font-size: 14px;
+  font-weight: 600; /* igual en todos: el activo se distingue por fondo y borde, y el ancho no cambia */
+  color: var(--text-2);
+  text-align: center;
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.auth-roles__item:hover {
+  color: var(--primary);
+  background: var(--bg);
+}
+
+/* El estado activo no depende solo del color: lleva fondo y borde */
+.auth-roles__item.is-active {
+  color: var(--primary);
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+/* ---------- Pantallas angostas: el panel pasa a ser una franja de marca ---------- */
+@media (max-width: 900px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .auth-brand {
+    gap: 0;
+    padding: 18px 20px;
+  }
+
+  .auth-brand__body {
+    display: none;
+  }
+
+  /* En la franja el logo va a la izquierda, como antes */
+  .auth-brand__top {
+    max-width: none;
+    margin-inline: 0;
+  }
+
+  /* Apilado: el contenido arranca justo debajo de la franja de marca */
+  .auth-main {
+    align-items: flex-start;
+    padding: 28px 20px 40px;
+  }
+
+  .auth-panel--roles {
+    min-height: 0;
+  }
+
+  .auth-panel--ancho {
+    min-height: 0;
+  }
+}
+
+/* Celular angosto: texto de 13 px y menos relleno lateral */
+@media (max-width: 400px) {
+  .auth-roles__item {
+    padding: 8px 4px;
+    font-size: 13px;
+  }
+}
