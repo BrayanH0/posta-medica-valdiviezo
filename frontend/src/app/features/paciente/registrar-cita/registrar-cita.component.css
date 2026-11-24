@@ -79,7 +79,9 @@ select.ui-input:disabled {
   border-color: var(--primary);
 }
 
-.rc-pill.active {
+/* Gana al :hover (que tiene más especificidad) para que la hora elegida siga en azul marino bajo el puntero */
+.rc-pill.active,
+.rc-pill.active:hover:not(:disabled) {
   color: #ffffff;
   background: var(--primary);
   border-color: var(--primary);
@@ -157,6 +159,7 @@ select.ui-input:disabled {
 @media (max-width: 480px) {
   .rc-step {
     flex-direction: column;
+    align-items: stretch; /* con align-items: flex-start los campos se encogían a su contenido */
     gap: 10px;
     padding: 18px;
   }
