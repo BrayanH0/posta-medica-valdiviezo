@@ -164,7 +164,8 @@ La tarea 18 pidió agregar hallazgos nuevos solo para lo que se va a trabajar. L
 
 - **Archivos de componentes duplicados y sin uso.** En `frontend/src/app/features/auth/` existen `login-selection/login-selection.html` y `login-selection.ts` (texto "Bienvenido al Hospital María Auxiliadora") y `registro/registro.html` y `registro.ts`, además de los `.component.*` que usa `app.routes.ts`. Nada los importa. No se tocaron (fuera del alcance de la RFC-019 Parte 1). Quitarlos sería una refactorización aparte.
 - **Inter se pide a Google Fonts.** `index.html` agrega una petición externa al abrir la app (decisión del usuario en el pedido). Sin red, se usa Segoe UI o Arial. Para producción conviene decidir si se aloja la fuente en el propio proyecto (privacidad y CSP).
-- **El registro sigue usando `alert()` nativo** al registrarse (`registro.component.ts`). Es parte de AUD-DIS-12; se resuelve en la parte del paciente de la RFC-019, no en esta.
+- **El registro sigue usando `alert()` nativo** al registrarse (`registro.component.ts`). Es parte de AUD-DIS-12. **Decisión del usuario (2026-11-23): AUD-DIS-12 queda parcial y fuera de RFC-019 en lo del `alert()`**, porque cambiarlo altera la salida de P12; necesita otra RFC y que el usuario decida cómo se actualiza esa prueba.
+- **AUD-DIS-09 y AUD-DIS-05, avance parcial (RFC-019):** los dos botones "×" de los modales del médico (Citas Pendientes y Pacientes) ahora tienen `aria-label="Cerrar"`, sin cambiar su texto. Siguen abiertos el foco atrapado, la tecla Escape y `role="dialog"` de AUD-DIS-05, y los botones sin nombre que no son esos dos. No se modifican P21 ni P22.
 
 ## Observaciones sin número (tarea 22, revisión de los PR; decide el usuario si se registran como hallazgo)
 

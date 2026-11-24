@@ -16,11 +16,14 @@ const PANTALLAS = [
 ];
 (async () => {
   const browser = await chromium.launch({ executablePath: process.env.CHROME_BIN || undefined });
-  for (const w of [360, 1280]) {
-    const ctx = await browser.newContext({ viewport: { width: w, height: w === 360 ? 740 : 800 } });
-    for (const [nombre, ruta] of PANTALLAS) {
+  // 360, 1280 siempre; 768 y 1920 se agregaron en la corrección visual de la Parte 1
+  const ANCHOS = { 360: 740, 768: 1024, 1280: 800, 1920: 1080 };
+  for (const [w, h] of Object.entries(ANCHOS)) {
+    const ctx = await browser.newContext({ viewport: { width: Number(w), height: h } });
+    for (const [nombre, ruta, estado] of [...PANTALLAS, ['login-paciente-error', '/login-paciente', 'error']]) {
       const page = await ctx.newPage();
       await page.goto('http://localhost:4200' + ruta, { waitUntil: 'networkidle' });
+      if (estado === 'error') await page.click('button[type=submit]'); // envío vacío: muestra el aviso de error
       await page.waitForTimeout(400);
       const f = path.join(out, `${fase}-${nombre}-${w}.png`);
       await page.screenshot({ path: f, fullPage: true });
