@@ -4,18 +4,21 @@
 
 .auth-shell {
   display: grid;
-  grid-template-columns: minmax(340px, 5fr) 6fr;
+  /* El panel de marca no crece con el monitor: 40% del ancho entre 380 y 640 px.
+     Así en 1920 px el formulario tiene el espacio y el panel no queda medio vacío. */
+  grid-template-columns: clamp(380px, 40%, 640px) 1fr;
   min-height: 100vh;
   min-height: 100dvh;
   background: var(--bg);
 }
 
 /* ---------- Panel izquierdo ---------- */
+/* Logo, mensaje y tarjetas forman un solo bloque desde la parte superior, con espaciado normal */
 .auth-brand {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 40px;
+  justify-content: flex-start;
+  gap: 56px;
   padding: 48px 56px;
   color: #ffffff;
   background: var(--primary);
@@ -106,11 +109,13 @@
 }
 
 /* ---------- Lado derecho ---------- */
+/* El contenido arranca siempre a la misma altura (no se centra en vertical): al cambiar de rol
+   el selector y el formulario no se mueven aunque cambie el alto del texto de cada login. */
 .auth-main {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 40px 32px;
+  padding: clamp(40px, 14vh, 140px) 32px 40px;
 }
 
 .auth-panel {
@@ -180,7 +185,6 @@
   }
 
   .auth-main {
-    align-items: flex-start;
     padding: 28px 20px 40px;
   }
 }

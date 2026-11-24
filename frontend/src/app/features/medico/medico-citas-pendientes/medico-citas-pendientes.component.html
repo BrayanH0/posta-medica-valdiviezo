@@ -46,7 +46,7 @@
     <div class="modal-content">
         <div class="modal-header" [ngClass]="{'header-accept': actionType === 'aceptar', 'header-cancel': actionType === 'cancelar'}">
             <h3>{{ actionType === 'aceptar' ? 'Aceptar Cita' : 'Cancelar Cita' }}</h3>
-            <button class="close-btn" [disabled]="procesando" (click)="closeModal()">×</button>
+            <button class="close-btn" aria-label="Cerrar" [disabled]="procesando" (click)="closeModal()">×</button>
         </div>
         <div class="modal-body">
             <p>¿Estás seguro que deseas <strong>{{ actionType === 'aceptar' ? 'aceptar' : 'cancelar' }}</strong> la siguiente cita?</p>
