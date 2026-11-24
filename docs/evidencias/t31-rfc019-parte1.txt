@@ -41,4 +41,4 @@ bateria-on y bateria-off exit=0. Batería P01-P28 contra ANTES, sin líneas "# h
 Medición de saltos entre roles (Playwright, top de .auth-roles / input / botón en paciente, médico y admin): iguales (sin ningún ancho con salto) en cada ancho de 320 a 1000 px (paso 10) y luego 1000, 1160, 1320, 1480, 1640, 1800, 1960, 2120, 2280, 2440 y 2600 px (paso 160). Además E04 lo comprueba a 360, 768, 1280 y 1920 px.
 
 == Pruebas existentes sin modificar ==
-git diff LB-11 --stat -- '*.spec.ts' e2e backend database   -> solo aparece el archivo NUEVO e2e/tests/rediseno-acceso.spec.ts (ninguna prueba existente modificada).
+git diff LB-11 --stat -- '*.spec.ts' e2e backend database   -> solo aparecen archivos NUEVOS: e2e/tests/rediseno-acceso.spec.ts (desde la Parte 1) y e2e/tests/rediseno-acceso-estable.spec.ts (desde la corrección visual); ninguna prueba existente modificada. (En las secciones DESPUÉS 1 a 3 solo existía el primero.)

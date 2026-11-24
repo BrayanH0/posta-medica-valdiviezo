@@ -1620,7 +1620,7 @@ gh pr create --base develop --head master --title "Merge master (conteo de PR) e
 - **Equivalencia de nombres de la prueba nueva:** la cabecera de `e2e/tests/rediseno-acceso.spec.ts` la llama `E-RFC019-1` y el catálogo de `docs/PRUEBAS.md` la llama E03: son la misma. No se cambió la cabecera para no tocar una prueba (decide el usuario si se unifica).
   - **Regresión tras la vuelta 2** (HEAD `d6680c1`, 18:46:51–18:49:55): `ng build` exit 0, frontend 32/32 y 73/73, backend 97/97, Playwright 16/16, batería P01–P28 idéntica a la de LB-11 (diff vacío sin horas; P04 sigue fallando). Resumen en `docs/evidencias/t31-rfc019-parte1.txt`.
 
-### [2026-11-23 19:15–19:30] Tarea 31 (continuación): corrección visual de la Parte 1 y revisor con revisión visual
+### [2026-11-23 19:13–19:27] Tarea 31 (continuación): corrección visual de la Parte 1 y revisor con revisión visual
 - **Por qué:** la revisión por el usuario en el navegador encontró dos fallas que el revisor **aprobó** porque solo miró código y pruebas: (1) hueco enorme en el panel izquierdo; (2) el formulario saltaba unos 30 px al cambiar de rol. **Fallo propio:** yo solo había mirado las capturas de paciente, selección de rol y registro a 1280 px; no miré la del médico ni la del administrador, no comparé los estados entre sí y no probé un monitor ancho. Por eso el agente se mejora primero.
 - **Agente `.claude/agents/revisor-rediseno.md`:** se agregó "REVISIÓN VISUAL" al OBJETIVO (capturas con Playwright de cada pantalla y estado a 360, 768, 1280 y 1920 px, mirarlas, comparar estados entre sí con `getBoundingClientRect`, consistencia con la guía PASO; las observaciones visuales llevan la captura; un problema visual evidente es OBSERVADO; capturas al scratchpad).
 - **Causas y cambios:**
