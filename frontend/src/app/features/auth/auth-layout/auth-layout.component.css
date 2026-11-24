@@ -109,18 +109,23 @@
 }
 
 /* ---------- Lado derecho ---------- */
-/* El contenido arranca siempre a la misma altura (no se centra en vertical): al cambiar de rol
-   el selector y el formulario no se mueven aunque cambie el alto del texto de cada login. */
+/* En pantalla ancha el contenido se centra en vertical. Para que al cambiar de rol no salte, el bloque
+   de los 3 logins reserva siempre la misma altura (.auth-panel--roles: la del login más alto, con el aviso
+   de error visible), así su posición centrada es idéntica en los tres. */
 .auth-main {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding: clamp(40px, 14vh, 140px) 32px 40px;
+  padding: 40px 32px;
 }
 
 .auth-panel {
   width: 100%;
   max-width: 420px;
+}
+
+.auth-panel--roles {
+  min-height: 580px;
 }
 
 .auth-panel--ancho {
@@ -130,7 +135,8 @@
 /* Selector de rol: navegación entre los tres logins */
 .auth-roles {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* minmax(0, 1fr): columnas siempre iguales aunque el texto de una sea más largo */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 4px;
   margin-bottom: 32px;
   padding: 4px;
@@ -146,7 +152,7 @@
   min-height: 42px;
   padding: 8px 6px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600; /* igual en todos: el activo se distingue por fondo y borde, y el ancho no cambia */
   color: var(--text-2);
   text-align: center;
   text-decoration: none;
@@ -160,9 +166,8 @@
   background: var(--bg);
 }
 
-/* El estado activo no depende solo del color: lleva borde y más peso */
+/* El estado activo no depende solo del color: lleva fondo y borde */
 .auth-roles__item.is-active {
-  font-weight: 700;
   color: var(--primary);
   background: var(--accent-soft);
   border-color: var(--accent);
@@ -184,7 +189,27 @@
     display: none;
   }
 
+  /* Apilado: el contenido arranca justo debajo de la franja de marca */
   .auth-main {
+    align-items: flex-start;
     padding: 28px 20px 40px;
+  }
+
+  .auth-panel--roles {
+    min-height: 0;
+  }
+}
+
+/* Celular angosto: el selector cabe sin apretar "Administrador" */
+@media (max-width: 400px) {
+  .auth-roles__item {
+    padding: 8px 2px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 340px) {
+  .auth-roles__item {
+    font-size: 12px;
   }
 }

@@ -43,7 +43,7 @@
   </aside>
 
   <main class="auth-main">
-    <div class="auth-panel" [class.auth-panel--ancho]="ancho === 'ancho'">
+    <div class="auth-panel" [class.auth-panel--ancho]="ancho === 'ancho'" [class.auth-panel--roles]="mostrarSelectorRol">
       @if (mostrarSelectorRol) {
         <nav class="auth-roles" aria-label="Tipo de usuario">
           <a class="auth-roles__item" routerLink="/login-paciente" routerLinkActive="is-active" ariaCurrentWhenActive="page">Paciente</a>

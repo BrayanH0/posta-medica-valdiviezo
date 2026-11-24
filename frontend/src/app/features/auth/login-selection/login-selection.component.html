@@ -1,7 +1,7 @@
 <app-auth-layout>
     <h1 class="auth-title">Bienvenido</h1>
-    <p *ngIf="aviso" class="aviso-sesion ui-alert ui-alert--warn" role="alert">{{ aviso }}</p>
     <p class="auth-subtitle">Seleccione su rol para continuar.</p>
+    <p *ngIf="aviso" class="aviso-sesion ui-alert ui-alert--warn" role="alert">{{ aviso }}</p>
 
     <div class="options">
         <button type="button" class="option" (click)="irALoginPaciente()" aria-labelledby="tit-paciente" aria-describedby="desc-paciente">

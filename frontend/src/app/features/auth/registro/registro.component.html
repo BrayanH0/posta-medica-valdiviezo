@@ -3,10 +3,6 @@
     <p class="auth-subtitle">Cree su cuenta para reservar citas. Los campos con asterisco son obligatorios.</p>
 
     <form (ngSubmit)="registrar()">
-        <div *ngIf="error" class="error-message ui-alert ui-alert--danger" role="alert">
-            {{ error }}
-        </div>
-
         <div class="form-grid">
             <div class="ui-field">
                 <label class="ui-label" for="nombres">Nombres *</label>
@@ -47,6 +43,11 @@
             <label class="ui-label" for="clave">Contraseña *</label>
             <input class="ui-input" type="password" id="clave" [(ngModel)]="paciente.clave" name="clave" required placeholder="Ingrese su contraseña" aria-describedby="clave-ayuda">
             <p class="ui-hint" id="clave-ayuda">Mínimo 6 caracteres, con una mayúscula, una minúscula, un número y un símbolo.</p>
+        </div>
+
+        <!-- El aviso va junto al botón que se acaba de pulsar: arriba del formulario quedaba fuera de pantalla en celular -->
+        <div *ngIf="error" class="error-message ui-alert ui-alert--danger" role="alert">
+            {{ error }}
         </div>
 
         <button type="submit" class="ui-btn ui-btn--primary">Registrar</button>

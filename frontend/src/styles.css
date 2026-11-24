@@ -83,10 +83,16 @@ body {
   }
 }
 
+@media (max-width: 340px) {
+  .auth-title {
+    font-size: 20px;
+  }
+}
+
 /* En celular el subtítulo de un rol puede ocupar 2 líneas y el de otro 1: se reservan 2 para que el
    primer campo arranque a la misma altura en los 3 logins (medido de 320 a 1000 px y en 1280/1920/2560). */
 @media (max-width: 520px) {
-  .auth-subtitle {
+  .auth-roles ~ .auth-subtitle { /* solo en los logins (los que tienen selector de rol) */
     min-height: 3em;
   }
 }
