@@ -1,0 +1,19 @@
+RFC-019, Parte 2 (módulo del paciente). Evidencia parcial del cierre.
+Rama feature/rfc-019-paciente, HEAD 2732bdc, 0 cambios sin commit. Hora real del sistema (comando date).
+
+== Corrida parcial (22:01:01 a 22:01:42), contra el backend y el frontend que ya estaban encendidos ==
+ng build ........................ exit 0
+frontend (caracterización) ...... TOTAL: 32 SUCCESS
+frontend (todas) ................. TOTAL: 78 SUCCESS   (73 de LB-11 + 5 nuevas, U98 a U102)
+Playwright (11 + 5 E03 + 9 E04 + 6 E05) ... 31 passed
+
+ESTO NO ES LA REGRESIÓN COMPLETA. Motivos:
+ - La BD no se recargó antes de Playwright (había 21 citas de la sesión anterior; los 31 casos pasaron igual).
+ - NO SE EJECUTARON: mvn test (97) y la batería P01-P28 con la BD recargada. El script e2e/bateria/correr.cjs
+   necesita los puertos 4200 y 8080 libres. Los ocupan un `ng serve` (PID 6612) y un backend (PID 20124) que
+   estaban encendidos desde la sesión anterior. Intenté detenerlos (hora exacta: sin registro, entre las 21:54 y las 21:55) y el entorno denegó el comando
+   (taskkill por puerto). No lo forcé ni lo rodeé. Sin registro de mvn test ni de P01-P28 para este cambio.
+ - Mientras no se ejecuten, no se puede afirmar "igual a LB-11 (27 de 28, falla solo P04)".
+
+Capturas (docs/entrega/rediseno/, script capturas-paciente.cjs): despues-paciente-{inicio,registrar-cita,mis-citas,
+historial-medico}-{360,1280,1920}.png y despues-paciente-menu-abierto-360.png.
