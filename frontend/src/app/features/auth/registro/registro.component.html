@@ -46,11 +46,15 @@
         </div>
 
         <!-- El aviso va junto al botón que se acaba de pulsar: arriba del formulario quedaba fuera de pantalla en celular -->
-        <div *ngIf="error" class="error-message ui-alert ui-alert--danger" role="alert">
-            {{ error }}
-        </div>
-
         <button type="submit" class="ui-btn ui-btn--primary">Registrar</button>
+
+        <!-- El aviso va justo debajo del botón que se acaba de pulsar (arriba del formulario quedaba fuera de pantalla en celular).
+             Su espacio está reservado: el formulario mide lo mismo con y sin error, así no se mueve -->
+        <div class="registro-aviso">
+            <div *ngIf="error" class="error-message ui-alert ui-alert--danger" role="alert">
+                {{ error }}
+            </div>
+        </div>
     </form>
 
     <p class="auth-footer">

@@ -25,6 +25,9 @@
 }
 
 .auth-brand__top {
+  width: 100%;
+  max-width: 520px;
+  margin-inline: auto; /* misma columna que el mensaje, para que el logo y el texto compartan el borde izquierdo */
   display: flex;
   align-items: center;
   gap: 12px;
@@ -47,8 +50,11 @@
   letter-spacing: -0.01em;
 }
 
+/* Bloque de mensaje centrado en horizontal dentro del panel, con un ancho de lectura de hasta 520 px */
 .auth-brand__body {
-  max-width: 440px;
+  width: 100%;
+  max-width: 520px;
+  margin-inline: auto;
 }
 
 .auth-brand__title {
@@ -124,16 +130,16 @@
   max-width: 420px;
 }
 
-/* 580 px, pero nunca más que la pantalla menos el relleno: en ventanas bajas no crea scroll vacío */
-.auth-panel--roles {
-  min-height: min(580px, calc(100vh - 80px));
+/* Logins y registro reservan la MISMA altura (720 px: el registro mide 718 px a 901 px, su ancho mínimo de dos columnas), así el
+   borde superior del bloque coincide al pasar de uno a otro. Nunca más que la pantalla menos el relleno:
+   en ventanas bajas no crea scroll vacío. El registro reserva además el aviso dentro de su formulario. */
+.auth-panel--roles,
+.auth-panel--ancho {
+  min-height: min(720px, calc(100vh - 80px));
 }
 
-/* El registro se centra con la misma regla que los logins. Como su alto cambia al mostrar un error,
-   reserva la altura del caso con error (658 px medidos a 1280 px) para que los campos no se muevan al editar. */
 .auth-panel--ancho {
   max-width: 560px;
-  min-height: min(660px, calc(100vh - 80px));
 }
 
 /* Selector de rol: navegación entre los tres logins */
@@ -192,6 +198,12 @@
 
   .auth-brand__body {
     display: none;
+  }
+
+  /* En la franja el logo va a la izquierda, como antes */
+  .auth-brand__top {
+    max-width: none;
+    margin-inline: 0;
   }
 
   /* Apilado: el contenido arranca justo debajo de la franja de marca */
