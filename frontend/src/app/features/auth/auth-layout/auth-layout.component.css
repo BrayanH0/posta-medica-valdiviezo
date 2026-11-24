@@ -124,19 +124,25 @@
   max-width: 420px;
 }
 
+/* 580 px, pero nunca más que la pantalla menos el relleno: en ventanas bajas no crea scroll vacío */
 .auth-panel--roles {
-  min-height: 580px;
+  min-height: min(580px, calc(100vh - 80px));
 }
 
+/* El registro cambia de alto al mostrar un error: se ancla arriba en vez de centrarse,
+   así los campos no se mueven mientras el usuario los edita */
 .auth-panel--ancho {
   max-width: 560px;
+  align-self: flex-start;
+  margin-top: clamp(0px, 6vh, 72px);
 }
 
 /* Selector de rol: navegación entre los tres logins */
 .auth-roles {
   display: grid;
-  /* minmax(0, 1fr): columnas siempre iguales aunque el texto de una sea más largo */
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Columnas fijas (no dependen del texto ni del rol activo); "Administrador" es la palabra más larga
+     y recibe más ancho para no quedar pegada al borde en celular */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.35fr);
   gap: 4px;
   margin-bottom: 32px;
   padding: 4px;
@@ -198,18 +204,16 @@
   .auth-panel--roles {
     min-height: 0;
   }
-}
 
-/* Celular angosto: el selector cabe sin apretar "Administrador" */
-@media (max-width: 400px) {
-  .auth-roles__item {
-    padding: 8px 2px;
-    font-size: 13px;
+  .auth-panel--ancho {
+    margin-top: 0;
   }
 }
 
-@media (max-width: 340px) {
+/* Celular angosto: texto de 13 px y menos relleno lateral */
+@media (max-width: 400px) {
   .auth-roles__item {
-    font-size: 12px;
+    padding: 8px 4px;
+    font-size: 13px;
   }
 }
