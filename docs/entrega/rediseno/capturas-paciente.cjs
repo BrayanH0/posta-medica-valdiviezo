@@ -74,11 +74,23 @@ async function captura(p, nombre, ancho) {
     await captura(p, 'historial-medico-vacio', w);
     await p.unroute('**/api/historia_clinica');
 
-    // Menú desplegable (en ≤ 900 px)
+    // Cajón del menú (en ≤ 900 px): arriba de la página y abajo de una página larga. Es de posición fija:
+    // se captura solo la ventana (no la página completa) para ver lo que el usuario ve.
     if (w <= 900) {
       await p.goto(`${FE}/welcome`);
-      await p.getByRole('button', { name: 'Menú' }).click();
-      await captura(p, 'menu-abierto', w);
+      await p.getByRole('button', { name: 'Menú', exact: true }).click();
+      await p.waitForTimeout(500);
+      await p.screenshot({ path: path.join(__dirname, `despues-paciente-menu-abierto-${w}.png`), animations: 'disabled' });
+      await p.keyboard.press('Escape');
+      await p.waitForTimeout(400);
+      await p.goto(`${FE}/paciente/historial-medico`);
+      await p.waitForSelector('.hm-item__btn');
+      for (let i = 0; i < (await p.locator('.hm-item__btn').count()); i++) await p.locator('.hm-item__btn').nth(i).click();
+      await p.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+      await p.waitForTimeout(300);
+      await p.getByRole('button', { name: 'Menú', exact: true }).click();
+      await p.waitForTimeout(500);
+      await p.screenshot({ path: path.join(__dirname, `despues-paciente-menu-abierto-abajo-${w}.png`), animations: 'disabled' });
     }
     await p.close();
   }

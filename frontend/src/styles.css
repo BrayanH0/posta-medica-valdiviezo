@@ -292,6 +292,11 @@ body {
   border-color: #f0d9b0;
 }
 
+/* Con un cajón de menú abierto la página de atrás no se desplaza (conserva su posición). Reutilizable en otros paneles. */
+body.ui-sin-scroll {
+  overflow: hidden;
+}
+
 /* ---------- Pantallas internas (RFC-019, Parte 2: paciente) ---------- */
 .ui-page-head {
   margin: 0 0 28px;

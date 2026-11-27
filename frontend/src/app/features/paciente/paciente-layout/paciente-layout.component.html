@@ -1,4 +1,5 @@
 <div class="pl-shell">
+  <!-- Barra superior fija (solo en celular y anchos ≤ 900 px): el botón de menú siempre queda a la vista al hacer scroll -->
   <header class="pl-topbar">
     <span class="pl-brand">
       <span class="pl-logo" aria-hidden="true">
@@ -8,20 +9,31 @@
       </span>
       <span class="pl-brand__name">Posta Médica Valdiviezo</span>
     </span>
-    <button type="button" class="pl-toggle" [attr.aria-expanded]="menuAbierto" aria-controls="pl-menu" (click)="alternarMenu()">
+    <button #botonMenu type="button" class="pl-toggle" [attr.aria-expanded]="menuAbierto" aria-controls="pl-cajon" (click)="alternarMenu()">
+      <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
       Menú
     </button>
   </header>
 
-  <aside class="pl-sidebar" [class.pl-sidebar--abierto]="menuAbierto">
-    <span class="pl-brand pl-brand--lateral">
-      <span class="pl-logo" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
-          <path d="M12 5v14M5 12h14" />
-        </svg>
+  <!-- Fondo oscuro detrás del cajón: al tocarlo se cierra el menú -->
+  <div class="pl-backdrop" [class.pl-backdrop--visible]="menuAbierto" (click)="cerrarMenu()" aria-hidden="true"></div>
+
+  <!-- En escritorio es el menú lateral de siempre; en celular es un cajón que entra desde la izquierda -->
+  <aside #cajon id="pl-cajon" class="pl-sidebar" [class.pl-sidebar--abierto]="menuAbierto" tabindex="-1"
+         [attr.role]="menuAbierto ? 'dialog' : null" [attr.aria-modal]="menuAbierto ? 'true' : null" [attr.aria-label]="menuAbierto ? 'Menú del paciente' : null">
+    <div class="pl-sidebar__head">
+      <span class="pl-brand pl-brand--lateral">
+        <span class="pl-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </span>
+        <span class="pl-brand__name">Posta Médica Valdiviezo</span>
       </span>
-      <span class="pl-brand__name">Posta Médica Valdiviezo</span>
-    </span>
+      <button type="button" class="pl-close" aria-label="Cerrar menú" (click)="cerrarMenu()">
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>
 
     <nav id="pl-menu" class="sidebar-nav pl-nav" aria-label="Menú del paciente">
       <a routerLink="/welcome" routerLinkActive="is-active" ariaCurrentWhenActive="page" class="pl-link" (click)="cerrarMenu()">
@@ -48,7 +60,8 @@
     </button>
   </aside>
 
-  <main class="pl-main">
+  <!-- Con el cajón abierto el contenido queda inerte: no recibe foco ni clics y el teclado se queda en el menú -->
+  <main class="pl-main" [attr.inert]="menuAbierto ? '' : null">
     <div class="pl-content">
       <ng-content></ng-content>
     </div>
