@@ -54,14 +54,16 @@ select.ui-input:disabled {
 }
 
 /* Horas como píldoras (button.rounded-pill es parte de lo protegido por las pruebas) */
+/* Columnas de ancho igual: las filas quedan alineadas en cualquier ancho */
 .rc-pills {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
   gap: 8px;
 }
 
 .rc-pill {
-  min-width: 72px;
+  width: 100%;
+  min-width: 0;
   min-height: 40px;
   padding: 8px 16px;
   font: inherit;

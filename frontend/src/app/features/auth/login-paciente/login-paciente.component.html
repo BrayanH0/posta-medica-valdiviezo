@@ -18,14 +18,15 @@
             </div>
         </div>
 
-        <div *ngIf="error" class="error-message ui-alert ui-alert--danger" role="alert">
-            {{ error }}
-        </div>
-
         <button type="submit" class="ui-btn ui-btn--primary">Iniciar Sesión</button>
     </form>
 
-    <p class="auth-footer">
-        ¿Aún no tiene cuenta? <a class="ui-link" routerLink="/registro">Registrarse</a>
-    </p>
+    <div class="auth-tail">
+        <p class="auth-footer">
+            ¿Aún no tiene cuenta? <a class="ui-link" routerLink="/registro">Registrarse</a>
+        </p>
+        <div *ngIf="error" class="error-message ui-alert ui-alert--danger" role="alert">
+            {{ error }}
+        </div>
+    </div>
 </app-auth-layout>

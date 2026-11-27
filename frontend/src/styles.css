@@ -111,6 +111,31 @@ body {
   color: var(--text-2);
 }
 
+/* Cola del formulario (enlace de ayuda y aviso de error). En pantalla ancha mide 0 de alto: el formulario se centra
+   en vertical solo con sus campos y el botón, y ni el enlace ni el aviso lo mueven al aparecer. Quedan justo debajo
+   del botón (enlace primero y aviso después). En celular (≤ 900 px) la cola entra en el flujo y el aviso va
+   pegado al botón, antes del enlace. */
+.auth-tail {
+  display: flex;
+  flex-direction: column;
+  height: 0;
+}
+
+.auth-tail .ui-alert {
+  margin: 16px 0 0;
+}
+
+@media (max-width: 900px) {
+  .auth-tail {
+    height: auto;
+  }
+
+  .auth-tail .ui-alert {
+    order: -1;
+    margin: 18px 0 0;
+  }
+}
+
 /* ---------- Formularios ---------- */
 .ui-field {
   display: flex;
@@ -355,6 +380,11 @@ body {
 .ui-empty p {
   margin: 0 0 16px;
   color: var(--text-2);
+}
+
+/* Sin botón debajo, el texto no deja un margen de más abajo (quedaba descentrado en vertical) */
+.ui-empty p:last-child {
+  margin-bottom: 0;
 }
 
 /* Lista de datos "Etiqueta: valor" */

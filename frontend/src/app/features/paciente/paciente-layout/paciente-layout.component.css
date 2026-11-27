@@ -46,6 +46,8 @@
   gap: 28px;
   height: 100vh;
   height: 100dvh;
+  /* En ventanas bajas el menú se desplaza dentro de sí mismo y "Cerrar Sesión" sigue alcanzable */
+  overflow-y: auto;
   padding: 24px 16px;
   background: var(--surface);
   border-right: 1px solid var(--border);

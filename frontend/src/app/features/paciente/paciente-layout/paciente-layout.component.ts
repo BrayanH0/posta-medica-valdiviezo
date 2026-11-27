@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth';
 
@@ -24,6 +24,12 @@ export class PacienteLayoutComponent {
 
   cerrarMenu() {
     this.menuAbierto = false;
+  }
+
+  /** La tecla Escape cierra el menú desplegable del celular. */
+  @HostListener('document:keydown.escape')
+  alPulsarEscape() {
+    this.cerrarMenu();
   }
 
   logout() {

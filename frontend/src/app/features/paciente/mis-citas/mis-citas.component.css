@@ -1,7 +1,14 @@
+/* Dos columnas como máximo: con auto-fill, a 1920 px aparecía una tercera columna vacía a la derecha */
 .mc-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+}
+
+@media (max-width: 760px) {
+  .mc-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .mc-card {
