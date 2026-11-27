@@ -25,8 +25,8 @@ test('la barra superior no cambia de alto al abrir el menú a 320 y 360 px', asy
     await page.goto(`${FE}/welcome`);
     const alto = () => page.evaluate(() => Math.round(document.querySelector('.pl-topbar')!.getBoundingClientRect().height));
     const cerrada = await alto();
-    await page.getByRole('button', { name: 'Menú' }).click();
-    await expect(page.getByRole('button', { name: 'Menú' })).toHaveAttribute('aria-expanded', 'true');
+    await page.getByRole('button', { name: 'Menú', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Menú', exact: true })).toHaveAttribute('aria-expanded', 'true');
     expect(await alto(), `alto de la barra a ${ancho} px`).toBe(cerrada);
   }
 });
@@ -35,7 +35,7 @@ test('la tecla Escape cierra el menú del celular', async ({ page }) => {
   await entrar(page);
   await page.setViewportSize({ width: 360, height: 740 });
   await page.goto(`${FE}/welcome`);
-  const boton = page.getByRole('button', { name: 'Menú' });
+  const boton = page.getByRole('button', { name: 'Menú', exact: true });
   await boton.click();
   await expect(boton).toHaveAttribute('aria-expanded', 'true');
   await page.keyboard.press('Escape');
