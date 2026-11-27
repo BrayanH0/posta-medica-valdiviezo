@@ -111,6 +111,31 @@ body {
   color: var(--text-2);
 }
 
+/* Cola del formulario (enlace de ayuda y aviso de error). En pantalla ancha mide 0 de alto: el formulario se centra
+   en vertical solo con sus campos y el botón, y ni el enlace ni el aviso lo mueven al aparecer. Quedan justo debajo
+   del botón (enlace primero y aviso después). En celular (≤ 900 px) la cola entra en el flujo y el aviso va
+   pegado al botón, antes del enlace. */
+.auth-tail {
+  display: flex;
+  flex-direction: column;
+  height: 0;
+}
+
+.auth-tail .ui-alert {
+  margin: 16px 0 0;
+}
+
+@media (max-width: 900px) {
+  .auth-tail {
+    height: auto;
+  }
+
+  .auth-tail .ui-alert {
+    order: -1;
+    margin: 18px 0 0;
+  }
+}
+
 /* ---------- Formularios ---------- */
 .ui-field {
   display: flex;
@@ -265,6 +290,131 @@ body {
   color: var(--warn);
   background: var(--warn-bg);
   border-color: #f0d9b0;
+}
+
+/* Con un cajón de menú abierto la página de atrás no se desplaza (conserva su posición). Reutilizable en otros paneles. */
+body.ui-sin-scroll {
+  overflow: hidden;
+}
+
+/* ---------- Pantallas internas (RFC-019, Parte 2: paciente) ---------- */
+.ui-page-head {
+  margin: 0 0 28px;
+}
+
+.ui-page-title {
+  margin: 0 0 6px;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.ui-page-sub {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+@media (max-width: 480px) {
+  .ui-page-title {
+    font-size: 24px;
+  }
+}
+
+/* Tarjeta blanca con borde suave */
+.ui-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+/* Etiquetas de estado suaves (los pares de color cumplen AA) */
+.ui-badge {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  border-radius: 999px;
+}
+
+.ui-badge--confirmada { color: #1e3a8a; background: var(--accent-soft); }
+.ui-badge--pendiente  { color: var(--warn); background: var(--warn-bg); }
+.ui-badge--atendida   { color: #14532d; background: #dcfce7; }
+.ui-badge--cancelada  { color: var(--danger); background: var(--danger-bg); }
+.ui-badge--neutra     { color: var(--text-2); background: var(--bg); border: 1px solid var(--border); }
+
+/* Botón principal que se ajusta a su texto (el .ui-btn--primary base ocupa todo el ancho) */
+.ui-btn--auto {
+  width: auto;
+}
+
+.ui-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.ui-btn--ghost-danger {
+  min-height: 40px;
+  padding: 8px 14px;
+  font-size: 14px;
+  color: var(--danger);
+  background: transparent;
+  border-color: #e6bcbc;
+}
+
+.ui-btn--ghost-danger:hover {
+  background: var(--danger-bg);
+}
+
+/* Estado vacío */
+.ui-empty {
+  padding: 40px 24px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+}
+
+.ui-empty p {
+  margin: 0 0 16px;
+  color: var(--text-2);
+}
+
+/* Sin botón debajo, el texto no deja un margen de más abajo (quedaba descentrado en vertical) */
+.ui-empty p:last-child {
+  margin-bottom: 0;
+}
+
+/* Lista de datos "Etiqueta: valor" */
+.ui-data {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 15px;
+}
+
+.ui-data div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
+.ui-data dt {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.ui-data dd {
+  margin: 0;
+  color: var(--text);
 }
 
 @media (prefers-reduced-motion: reduce) {

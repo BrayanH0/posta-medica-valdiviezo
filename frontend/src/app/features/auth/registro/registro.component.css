@@ -5,25 +5,7 @@
     column-gap: 16px;
 }
 
-/* Reserva el alto del aviso más largo: el de contraseña débil, que a 901 px ocupa 4 líneas (105 px con
-   su margen; medido con los 5 mensajes de validación de 901 a 1920 px). Así, en pantalla ancha, el formulario
-   centrado no se mueve cuando aparece un error. En celular el contenido va desde arriba y no hace falta. */
-.registro-aviso {
-    display: flow-root; /* el margen del aviso queda dentro del espacio reservado (sin colapsar hacia afuera) */
-    min-height: 106px;
-}
-
-/* Debajo del botón: el margen va arriba (87 px de aviso + 18 px de separación = 105 px) */
-.registro-aviso .ui-alert {
-    margin: 18px 0 0;
-}
-
-@media (max-width: 900px) {
-    .registro-aviso {
-        min-height: 0;
-    }
-}
-
+/* El aviso de error ya no reserva espacio: vive en .auth-tail (styles.css), que en pantalla ancha mide 0 de alto. */
 @media (max-width: 560px) {
     .form-grid {
         grid-template-columns: 1fr;

@@ -18,10 +18,12 @@
             </div>
         </div>
 
+        <button type="submit" class="ui-btn ui-btn--primary">Iniciar Sesión</button>
+    </form>
+
+    <div class="auth-tail">
         <div *ngIf="error" class="error-message ui-alert ui-alert--danger" role="alert">
             {{ error }}
         </div>
-
-        <button type="submit" class="ui-btn ui-btn--primary">Iniciar Sesión</button>
-    </form>
+    </div>
 </app-auth-layout>

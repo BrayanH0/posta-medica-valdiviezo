@@ -1,4 +1,10 @@
 {
+  "permissions": {
+    "allow": [
+      "PowerShell(taskkill /PID * /T /F)",
+      "Bash(taskkill /PID * /T /F)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {

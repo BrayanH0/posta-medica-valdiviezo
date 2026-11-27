@@ -45,19 +45,17 @@
             <p class="ui-hint" id="clave-ayuda">Mínimo 6 caracteres, con una mayúscula, una minúscula, un número y un símbolo.</p>
         </div>
 
-        <!-- El aviso va junto al botón que se acaba de pulsar: arriba del formulario quedaba fuera de pantalla en celular -->
         <button type="submit" class="ui-btn ui-btn--primary">Registrar</button>
-
-        <!-- El aviso va justo debajo del botón que se acaba de pulsar (arriba del formulario quedaba fuera de pantalla en celular).
-             Su espacio está reservado: el formulario mide lo mismo con y sin error, así no se mueve -->
-        <div class="registro-aviso">
-            <div *ngIf="error" class="error-message ui-alert ui-alert--danger" role="alert">
-                {{ error }}
-            </div>
-        </div>
     </form>
 
-    <p class="auth-footer">
-        ¿Ya tiene cuenta? <a class="ui-link" routerLink="/login-paciente">Volver al ingreso</a>
-    </p>
+    <!-- El aviso va debajo del botón que se acaba de pulsar (arriba del formulario quedaba fuera de pantalla en celular).
+         En pantalla ancha la cola no ocupa alto, así el formulario no se mueve al aparecer un error; en celular entra en el flujo. -->
+    <div class="auth-tail">
+        <p class="auth-footer">
+            ¿Ya tiene cuenta? <a class="ui-link" routerLink="/login-paciente">Volver al ingreso</a>
+        </p>
+        <div *ngIf="error" class="error-message ui-alert ui-alert--danger" role="alert">
+            {{ error }}
+        </div>
+    </div>
 </app-auth-layout>

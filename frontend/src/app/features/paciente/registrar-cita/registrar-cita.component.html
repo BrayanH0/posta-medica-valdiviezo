@@ -1,67 +1,100 @@
-<div class="container mt-5 pt-5">
-  <div class="card shadow">
-    <div class="card-header bg-primary text-white">
-      <h3 class="mb-0 text-center">Registrar Nueva Cita</h3>
-    </div>
-    <div class="card-body">
-      <form (ngSubmit)="registrarCita()">
+<app-paciente-layout>
+  <header class="ui-page-head">
+    <h1 class="ui-page-title">Registrar nueva cita</h1>
+    <p class="ui-page-sub">Complete los cinco pasos y confirme su cita.</p>
+  </header>
 
-        <!-- Especialidad -->
-        <div class="mb-3">
-          <label class="form-label">Seleccione Especialidad:</label>
-          <select class="form-select" [(ngModel)]="cita.id_especialidad" name="especialidad" (change)="cargarMedicos()" required>
+  <form class="rc-grid" (ngSubmit)="registrarCita()">
+    <div class="rc-steps">
+
+      <!-- 1. Especialidad -->
+      <section class="ui-card rc-step">
+        <div class="rc-step__body">
+          <div class="rc-step__head">
+            <span class="rc-step__num" aria-hidden="true">1</span>
+            <label class="ui-label" for="rc-especialidad">Seleccione Especialidad:</label>
+          </div>
+          <select id="rc-especialidad" class="ui-input" [(ngModel)]="cita.id_especialidad" name="especialidad" (change)="cargarMedicos()" required>
             <option *ngFor="let esp of especialidades" [value]="esp.id_especialidad">
               {{ esp.nombre_especialidad }} (S/ {{ esp.precio }})
             </option>
           </select>
         </div>
+      </section>
 
-        <!-- Médico -->
-        <div class="mb-3">
-          <label class="form-label">Seleccione Médico:</label>
-          <select class="form-select" [(ngModel)]="cita.id_medico" name="medico" (change)="cargarHorarios()" required [disabled]="!cita.id_especialidad">
+      <!-- 2. Médico -->
+      <section class="ui-card rc-step">
+        <div class="rc-step__body">
+          <div class="rc-step__head">
+            <span class="rc-step__num" aria-hidden="true">2</span>
+            <label class="ui-label" for="rc-medico">Seleccione Médico:</label>
+          </div>
+          <select id="rc-medico" class="ui-input" [(ngModel)]="cita.id_medico" name="medico" (change)="cargarHorarios()" required [disabled]="!cita.id_especialidad">
             <option *ngFor="let med of medicos" [value]="med.id_medico">
               Dr(a). {{ med.nombres }} {{ med.apellidos }}
             </option>
           </select>
         </div>
+      </section>
 
-        <!-- Fecha -->
-        <div class="mb-3">
-          <label class="form-label">Seleccione Fecha:</label>
-          <input type="date" class="form-control" [(ngModel)]="cita.fecha_cita" name="fecha" required [min]="minDate" (change)="cargarHorarios()">
+      <!-- 3. Fecha -->
+      <section class="ui-card rc-step">
+        <div class="rc-step__body">
+          <div class="rc-step__head">
+            <span class="rc-step__num" aria-hidden="true">3</span>
+            <label class="ui-label" for="rc-fecha">Seleccione Fecha:</label>
+          </div>
+          <input id="rc-fecha" type="date" class="ui-input" [(ngModel)]="cita.fecha_cita" name="fecha" required [min]="minDate" (change)="cargarHorarios()">
         </div>
+      </section>
 
-        <!-- Horarios -->
-        <div class="mb-3" *ngIf="horariosDisponibles.length > 0">
-          <label class="form-label">Seleccione Hora Disponible:</label>
-          <div class="d-flex flex-wrap gap-2">
+      <!-- 4. Horario -->
+      <section class="ui-card rc-step">
+        <div class="rc-step__body">
+          <div class="rc-step__head">
+            <span class="rc-step__num" aria-hidden="true">4</span>
+            <span class="ui-label" id="rc-horas-label">Seleccione Hora Disponible:</span>
+          </div>
+          <div *ngIf="horariosDisponibles.length > 0" class="rc-pills" role="group" aria-labelledby="rc-horas-label">
             <button type="button"
                     *ngFor="let hora of horariosDisponibles"
-                    class="btn btn-outline-primary rounded-pill"
+                    class="rounded-pill rc-pill"
                     [class.active]="cita.hora_cita === hora"
+                    [attr.aria-pressed]="cita.hora_cita === hora"
                     (click)="cita.hora_cita = hora">
               {{ hora }}
             </button>
           </div>
-        </div>
-        <div *ngIf="cita.fecha_cita && cita.id_medico && horariosDisponibles.length === 0" class="alert alert-warning">
+          <p *ngIf="horariosDisponibles.length === 0 && !(cita.fecha_cita && cita.id_medico)" class="ui-hint">Elija médico y fecha para ver los horarios.</p>
+          <div *ngIf="cita.fecha_cita && cita.id_medico && horariosDisponibles.length === 0" class="ui-alert ui-alert--warn rc-sin-horas" role="status">
             No hay horarios disponibles para esta fecha.
+          </div>
         </div>
+      </section>
 
-        <!-- Motivo -->
-        <div class="mb-3">
-          <label class="form-label">Motivo de la Consulta:</label>
-          <textarea class="form-control" [(ngModel)]="cita.motivo" name="motivo" rows="3" required></textarea>
+      <!-- 5. Motivo -->
+      <section class="ui-card rc-step">
+        <div class="rc-step__body">
+          <div class="rc-step__head">
+            <span class="rc-step__num" aria-hidden="true">5</span>
+            <label class="ui-label" for="rc-motivo">Motivo de la Consulta:</label>
+          </div>
+          <textarea id="rc-motivo" class="ui-input rc-motivo" [(ngModel)]="cita.motivo" name="motivo" rows="3" required></textarea>
         </div>
-
-        <!-- Botones -->
-        <div class="d-flex justify-content-between mt-4">
-          <a routerLink="/welcome" class="btn btn-secondary">Volver</a>
-          <button type="submit" class="btn btn-primary" [disabled]="!isValid()">Confirmar Cita</button>
-        </div>
-
-      </form>
+      </section>
     </div>
-  </div>
-</div>
+
+    <!-- Resumen de la cita -->
+    <aside class="ui-card rc-summary" aria-labelledby="rc-resumen-titulo">
+      <h2 id="rc-resumen-titulo" class="rc-summary__title">Resumen de la cita</h2>
+      <dl class="rc-summary__list">
+        <div><dt>Especialidad</dt><dd>{{ nombreEspecialidad() || 'Sin elegir' }}</dd></div>
+        <div><dt>Médico</dt><dd>{{ nombreMedico() || 'Sin elegir' }}</dd></div>
+        <div><dt>Fecha</dt><dd>{{ cita.fecha_cita || 'Sin elegir' }}</dd></div>
+        <div><dt>Hora</dt><dd>{{ cita.hora_cita || 'Sin elegir' }}</dd></div>
+        <div><dt>Motivo</dt><dd class="rc-summary__motivo">{{ cita.motivo || 'Sin escribir' }}</dd></div>
+      </dl>
+      <button type="submit" class="ui-btn ui-btn--primary" [disabled]="!isValid()">Confirmar Cita</button>
+    </aside>
+  </form>
+</app-paciente-layout>

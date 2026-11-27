@@ -125,7 +125,11 @@
   padding: 40px 32px;
 }
 
+/* El contenido va centrado en vertical dentro de la altura reservada, igual que el bloque azul del panel izquierdo. */
 .auth-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   width: 100%;
   max-width: 420px;
 }
@@ -210,6 +214,10 @@
   .auth-main {
     align-items: flex-start;
     padding: 28px 20px 40px;
+  }
+
+  .auth-panel {
+    justify-content: flex-start;
   }
 
   .auth-panel--roles {

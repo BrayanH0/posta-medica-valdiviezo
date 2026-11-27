@@ -2,12 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { PacienteLayoutComponent } from '../paciente-layout/paciente-layout.component';
 
 @Component({
   selector: 'app-historial-medico',
   standalone: true,
-  imports: [CommonModule, RouterModule, HttpClientModule],
-  templateUrl: './historial-medico.component.html'
+  imports: [CommonModule, RouterModule, HttpClientModule, PacienteLayoutComponent],
+  templateUrl: './historial-medico.component.html',
+  styleUrls: ['./historial-medico.component.css']
 })
 export class HistorialMedicoComponent implements OnInit {
   historia: any = null;

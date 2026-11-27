@@ -35,6 +35,18 @@
   cualquier cosa que el usuario deba saber. El reporte del chat es
   solo un resumen de lo que ya está en el repositorio.
 
+## Servidores y procesos
+- Al terminar cada sesión, dile al usuario qué servidores (backend, `ng serve`
+  u otros) quedaron encendidos y con qué PID, y cuáles dejaste apagados.
+  Si no arrancaste ninguno, dilo también.
+- `.claude/settings.json` permite, sin preguntar, solo la forma exacta
+  `taskkill /PID <número> /T /F` (en PowerShell y en Bash). El permiso es por
+  PID: no uses `/IM`, no mates procesos por nombre, no agregues otros
+  argumentos ni encadenes comandos, y antes de detener uno comprueba qué es
+  (puerto y nombre del proceso). Limitación conocida: la regla usa `*` para el
+  número, así que el control de que sea un solo PID depende de esta regla de
+  trabajo y no solo de la configuración.
+
 ## Pruebas
 - Cada cambio se valida con la batería completa de docs/PRUEBAS.md
   contra la línea base anterior (prueba de regresión).
