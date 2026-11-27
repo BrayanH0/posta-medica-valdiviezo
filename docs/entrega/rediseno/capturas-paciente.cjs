@@ -1,6 +1,7 @@
-// RFC-019, Parte 2: capturas del módulo del paciente a 360, 1280 y 1920 px.
+// RFC-019, Parte 2: capturas del módulo del paciente a 360, 768, 1280 y 1920 px, con sus estados.
 // Uso (con el backend en 8080 y el frontend en 4200): node docs/entrega/rediseno/capturas-paciente.cjs
-// Entra con el paciente de e2e/tests/sesion-token.spec.ts y guarda despues-paciente-<pantalla>-<ancho>.png junto a este archivo.
+// Entra con el paciente de e2e/tests/sesion-token.spec.ts y guarda despues-paciente-<pantalla>[-estado]-<ancho>.png junto a este archivo.
+// Los estados vacíos se muestran interceptando la respuesta del navegador (no se toca la BD ni el backend).
 const path = require('path');
 const { chromium } = require(path.resolve(__dirname, '..', '..', '..', 'e2e', 'node_modules', 'playwright'));
 
@@ -11,7 +12,13 @@ const PANTALLAS = [
   ['mis-citas', '/paciente/mis-citas'],
   ['historial-medico', '/paciente/historial-medico']
 ];
-const ANCHOS = [[360, 740], [1280, 800], [1920, 1080]];
+const ANCHOS = [[360, 740], [768, 1024], [1280, 800], [1920, 1080]];
+
+async function captura(p, nombre, ancho) {
+  // El menú y el resumen son "sticky": con la página desplazada aparecerían a mitad de la captura
+  await p.evaluate(() => window.scrollTo(0, 0));
+  await p.screenshot({ path: path.join(__dirname, `despues-paciente-${nombre}-${ancho}.png`), fullPage: true, animations: 'disabled' });
+}
 
 (async () => {
   const b = await chromium.launch();
@@ -22,11 +29,13 @@ const ANCHOS = [[360, 740], [1280, 800], [1920, 1080]];
     await p.fill('input[name="clave"]', '123456');
     await p.click('button[type="submit"]');
     await p.waitForURL(/welcome/);
+
     for (const [nombre, ruta] of PANTALLAS) {
       await p.goto(FE + ruta);
       await p.waitForTimeout(1200);
       if (nombre === 'registrar-cita') {
-        // Estado con el formulario lleno: especialidad, médico, un día hábil futuro, una hora y un motivo
+        // Estado inicial (sin elegir nada) y luego con el formulario lleno
+        await captura(p, 'registrar-cita-vacio', w);
         await p.selectOption('select[name="especialidad"]', { index: 0 });
         await p.waitForFunction(() => document.querySelectorAll('select[name="medico"] option').length > 0);
         await p.selectOption('select[name="medico"]', { index: 0 });
@@ -42,17 +51,34 @@ const ANCHOS = [[360, 740], [1280, 800], [1920, 1080]];
         await p.waitForTimeout(600);
       }
       if (nombre === 'historial-medico') {
-        const abrir = p.locator('.hm-item__btn').first();
-        if (await abrir.count()) await abrir.click();
+        // Primero con la lista cerrada y luego con todas las evoluciones abiertas
+        await captura(p, 'historial-medico-cerrado', w);
+        const botones = p.locator('.hm-item__btn');
+        for (let i = 0; i < (await botones.count()); i++) await botones.nth(i).click();
+        await p.mouse.move(5, 5);
+        await p.waitForTimeout(300);
       }
-      // El menú y el resumen son "sticky": con la página desplazada aparecerían a mitad de la captura
-      await p.evaluate(() => window.scrollTo(0, 0));
-      await p.screenshot({ path: path.join(__dirname, `despues-paciente-${nombre}-${w}.png`), fullPage: true, animations: 'disabled' });
+      // Estado final de cada pantalla: formulario lleno (registrar-cita), evoluciones abiertas (historial) o lo normal
+      await captura(p, nombre, w);
     }
-    if (w === 360) {
+
+    // Estados vacíos: se intercepta la respuesta del navegador, no se toca la BD
+    await p.route((u) => u.pathname === '/api/cita', (r) => (r.request().method() === 'GET' ? r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }) : r.continue()));
+    await p.goto(`${FE}/paciente/mis-citas`);
+    await p.waitForSelector('.ui-empty');
+    await captura(p, 'mis-citas-vacio', w);
+    await p.unroute((u) => u.pathname === '/api/cita');
+    await p.route('**/api/historia_clinica', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
+    await p.goto(`${FE}/paciente/historial-medico`);
+    await p.waitForSelector('.ui-empty');
+    await captura(p, 'historial-medico-vacio', w);
+    await p.unroute('**/api/historia_clinica');
+
+    // Menú desplegable (en ≤ 900 px)
+    if (w <= 900) {
       await p.goto(`${FE}/welcome`);
       await p.getByRole('button', { name: 'Menú' }).click();
-      await p.screenshot({ path: path.join(__dirname, 'despues-paciente-menu-abierto-360.png'), fullPage: true });
+      await captura(p, 'menu-abierto', w);
     }
     await p.close();
   }
