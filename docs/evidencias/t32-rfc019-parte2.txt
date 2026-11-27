@@ -31,5 +31,22 @@ git diff LB-11 --stat -- '*.spec.ts' e2e backend database: solo 4 archivos NUEVO
 Los servidores que arrancó correr.cjs (backend pid 34660, frontend pid 30576) los detuvo el propio script al terminar.
 Después de esta corrida se editaron .claude/settings.json y CLAUDE.md (pedido del usuario: permiso de taskkill /PID y regla de informar servidores y PID); no afectan al código ni a las pruebas.
 
+== REGRESIÓN COMPLETA TRAS LAS CORRECCIONES DE LA REVISIÓN Y EL AJUSTE DE ACCESO (2026-11-26) ==
+Se repitió porque el ajuste del centrado toca las plantillas de los logins y del registro, que están fuera de las pantallas del paciente.
+Servidores de la sesión detenidos antes con `taskkill /PID <n> /T /F` (PID 29852 java y PID 26944 node; se comprobó antes que eran los de los puertos 8080 y 4200).
+node e2e/bateria/correr.cjs <carpeta fuera del repo>, rama feature/rfc-019-paciente, HEAD 1d66655, 0 cambios sin commit, 19:52:34 a 19:56:21:
+[19:52:46] fin ng-build exit=0
+[19:52:58] fin fe-32 exit=0        TOTAL: 32 SUCCESS
+[19:53:05] fin fe-todas exit=0     TOTAL: 79 SUCCESS   (73 + U98 a U103)
+[19:53:30] fin mvn-test exit=0     Tests run: 97, Failures: 0, Errors: 0, Skipped: 0   (BD recargada antes)
+[19:54:26] fin playwright exit=0   41 passed (11 + E03 5 + E04 9 + E05 6 + E06 6 + E07 4; BD recargada antes)
+[19:55:58] fin bateria-on exit=0
+[19:56:20] fin bateria-off exit=0
+Batería P01-P28 (bateria.txt, 145 líneas, y bateria-apagado.txt, 5 líneas, sin las líneas "# hora") contra la corrida de LB-11 de la Parte 1 (HEAD 34df99c): diff vacío en los dos archivos. P04 sigue fallando con el mismo 500 (H-005). Igual a LB-11 (27 de 28).
+git diff LB-11 --stat -- '*.spec.ts' e2e backend database: 7 archivos, todos NUEVOS (E03, E04, E05, E06, E07, U98-U102, U103); ninguna prueba existente modificada.
+Medición del centrado (Playwright, antes de escribir E07; centro del formulario / centro del bloque azul / centro de la ventana): 1280x800 400/400/400, 1920x1080 540/540/540, 2560x1440 720/720/720 en paciente, médico, administrador y registro; hueco botón-enlace 24 px; con error el formulario y el botón no se mueven.
+E03 (5) y E04 (9) sin modificar: pasan.
+Los servidores que arrancó correr.cjs (backend pid 22668, frontend pid 21712) los detuvo el propio script.
+
 Capturas (docs/entrega/rediseno/, script capturas-paciente.cjs): despues-paciente-{inicio,registrar-cita,mis-citas,
 historial-medico}-{360,1280,1920}.png y despues-paciente-menu-abierto-360.png.
