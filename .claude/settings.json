@@ -1,8 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell(taskkill /PID *)",
-      "Bash(taskkill /PID *)"
+      "PowerShell(taskkill /PID * /T /F)",
+      "Bash(taskkill /PID * /T /F)"
     ]
   },
   "hooks": {
