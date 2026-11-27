@@ -53,6 +53,8 @@ Las pruebas de navegador se hacen con Playwright, **una pestaña nueva por caso*
 - Obtenido: `500 {"message":"Cannot instantiate query result type 'com.centro_valdiviezo.backend.dto.ResumenMedico' due to: Result class must have a single constructor with exac…`
 - Resultado: **FALLA** → H-005
 
+- **Actualización RFC-020 (2026-11-26, H-005):** con el cambio de RFC-020 el endpoint responde `200` con la cantidad de médicos por especialidad (`[{"id_especialidad":1,"cantidad_medicos":3},{"id_especialidad":2,"cantidad_medicos":3},…]`, 5 filas). Resultado: **PASA**. Lo anterior (500, FALLA) se conserva como el registro de las líneas base LB-3 a LB-11. Cubierta además por U108 y U109.
+
 ### P05 — Login por formulario: paciente
 - Tipo: Sistema/E2E (navegador de punta a punta)
 - Qué se hace: abrir `/login-paciente`, escribir `12345678` / `123456`, pulsar "Iniciar Sesión".
@@ -872,6 +874,8 @@ Script de la base de datos (desde LB-4): `database/BDPostaMedica.sql`.
 | U100 | ídem | `RegistrarCitaComponent.nombreEspecialidad` y `nombreMedico` (resumen): con los ids como texto, que es como los entrega el `select`, devuelven "Pediatría" y "Dr(a). Ana Lira" | Unitaria | — |
 | U101 | ídem | Los mismos métodos devuelven vacío sin elección o con un id que no está en la lista | Unitaria | — |
 | U102 | ídem | `MisCitasComponent`: `getEstadoNombre` y `getBadgeClass` para los estados 1 a 4 y uno desconocido (clases `ui-badge--*`) | Unitaria | — |
+| U108 | `BE/…/ResumenMedicoIntegracionTest.java` (RFC-020; 2 casos, U108 y U109) | Contexto de Spring + MySQL: `GET /api/medico/resumenMedico` con el token del administrador responde 200 y cada fila trae la cantidad de médicos por especialidad igual a la de la BD (U108) | Integración | H-005 (P04) |
+| U109 | ídem | Con un médico sin especialidad (`id_especialidad` NULL, insertado dentro de una transacción de la prueba que se deshace al terminar) responde 200 y esa fila trae `id_especialidad` null con `cantidad_medicos` 1; las filas con especialidad siguen apareciendo. Sin el arreglo ambos casos dan 500; con el constructor de `int` (sin tolerar NULL) U109 da 500 | Integración | H-005 (P04) |
 | U104 | `FE/features/paciente/paciente-layout/paciente-layout-cajon.unitaria.spec.ts` (RFC-019, Parte 2, cajón del menú; 4 casos U104 a U107) | `PacienteLayoutComponent`: abrir el cajón pone `ui-sin-scroll` en `body` y cerrarlo la quita (U104); destruir el componente con el cajón abierto la quita (U105); cerrar con el menú ya cerrado no cambia nada (U106); ensanchar la ventana a más de 900 px con el cajón abierto lo cierra y suelta el scroll (U107) | Unitaria | — |
 | U103 | `FE/features/paciente/paciente-layout/paciente-layout-escape.unitaria.spec.ts` (RFC-019, Parte 2, corrección de la revisión; 1 caso) | `PacienteLayoutComponent.alPulsarEscape` cierra el menú abierto y no hace nada con el menú cerrado (la conexión con la tecla se prueba en E06) | Unitaria | — |
 

@@ -1,0 +1,28 @@
+RFC-020 (H-005, P04). Evidencia de regresión. Hora real del sistema (comando date).
+Rama feature/rfc-020-resumen-medico, HEAD 1a09d9a, 0 cambios sin commit.
+
+== Reproducción del error antes del cambio (backend en marcha, token del administrador de prueba) ==
+500 {"message":"Cannot instantiate query result type 'com.centro_valdiviezo.backend.dto.ResumenMedico' due to: Result class must have a single constructor with exactly 2 parameters 'com.centro_valdiviezo.backend.dto.ResumenMedico'","status":"error"}
+
+== Las pruebas nuevas fallan sin el arreglo (ResumenMedicoIntegracionTest, ./mvnw test -Dtest=ResumenMedicoIntegracionTest) ==
+Con el constructor de 2 parámetros e Integer (versión final): 2 de 2 pasan (21:29).
+Con el constructor (int, Long): elResumen...ConLosConteosDeLaBd pasa; unMedicoSinEspecialidadNoProvocaElError FALLA: Status expected:<200> but was:<500>.
+Sin constructor de 2 parámetros (cambiado a 3 parámetros): las dos FALLAN: Status expected:<200> but was:<500>.
+Después se restauró la versión final; git diff contra lo escrito: solo los cambios previstos.
+Comprobación de que U109 no ensucia la BD: 15 médicos y 0 con id_especialidad NULL después de correrla (el contador AUTO_INCREMENT de la tabla avanzó 1).
+
+== Regresión completa: node e2e/bateria/correr.cjs <carpeta fuera del repo> (21:31:14 a 21:35:04) ==
+[21:31:25] fin ng-build exit=0
+[21:31:32] fin fe-32 exit=0        TOTAL: 32 SUCCESS
+[21:31:38] fin fe-todas exit=0     TOTAL: 83 SUCCESS
+[21:32:03] fin mvn-test exit=0     Tests run: 99, Failures: 0, Errors: 0, Skipped: 0   (97 + U108 y U109)
+[21:33:10] fin playwright exit=0   49 passed
+[21:34:41] fin bateria-on exit=0
+[21:35:04] fin bateria-off exit=0
+Batería P01-P28 (bateria.txt, 145 líneas, y bateria-apagado.txt, 5 líneas, sin las líneas "# hora") contra la corrida de LB-11 de la Parte 1 (HEAD 34df99c):
+  bateria-apagado.txt: diff vacío.
+  bateria.txt: UNA sola línea distinta, la de P04:
+    antes: P04 500 {"message":"Cannot instantiate query result type 'com.centro_valdiviezo.backend.dto.ResumenMedico' due to: Res…
+    ahora: P04 200 [{"id_especialidad":1,"cantidad_medicos":3},{"id_especialidad":2,"cantidad_medicos":3},{"id_especialidad":3,"c…
+Resultado: P04 pasa (28 de 28); ninguna otra prueba cambió.
+Servidores: antes de la corrida se detuvieron con `taskkill /PID <n> /T /F` el backend (PID 22108) y el ng serve (PID 23220) que esta sesión había arrancado a las 19:57; los de la corrida (backend pid 12164, frontend pid 29904) los detuvo el propio script. Al terminar no queda ningún servidor encendido por esta sesión.
